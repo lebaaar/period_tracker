@@ -2,7 +2,7 @@ class Period {
   final DateTime startDate;
   final DateTime? endDate;
 
-  Period({required this.startDate, required this.endDate});
+  Period({required this.startDate, this.endDate});
 
   bool get isOngoing => endDate == null;
   bool get isCompleted => endDate != null;
