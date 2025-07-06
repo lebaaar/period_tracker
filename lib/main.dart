@@ -5,6 +5,7 @@ import 'home_page.dart';
 import 'insights_page.dart';
 import 'user_page.dart';
 import 'log_period_page.dart';
+// import 'package:provider/provider.dart';
 
 void main() {
   runApp(const PeriodTrackerApp());
@@ -31,9 +32,13 @@ class PeriodTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // return ChangeNotifierProvider(
+    //   create: (context) => ThemeNotifier(),
+    //   child: const PeriodTracker(),
+    // );
     return MaterialApp.router(
       title: 'Period Tracker',
-      theme: appTheme, // from theme.dart
+      theme: appTheme,
       routerConfig: _router,
     );
   }
@@ -80,6 +85,7 @@ class _MainNavigationState extends State<MainNavigation> {
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
               onPressed: () {
+                // go_router navigation
                 context.go('/log');
               },
               backgroundColor: Theme.of(context).colorScheme.primary,
