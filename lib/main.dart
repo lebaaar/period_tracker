@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/theme.dart';
-import 'home_page.dart';
-import 'insights_page.dart';
-import 'profile_page.dart';
-import 'log_period_page.dart';
+import 'pages/home_page.dart';
+import 'pages/insights_page.dart';
+import 'pages/profile_page.dart';
+import 'pages/log_period_page.dart';
 // import 'package:provider/provider.dart';
 
 void main() {
