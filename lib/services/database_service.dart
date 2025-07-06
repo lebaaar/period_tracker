@@ -1,3 +1,4 @@
+import 'package:period_tracker/models/period.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 
@@ -13,8 +14,8 @@ class DatabaseService {
   final int _databaseVersion = 1;
   final String _periodsTableName = 'periods';
   final String _periodsIdColumnName = 'id';
-  final String _periodsStartDateColumnName = 'start_date';
-  final String _periodsEndDateColumnName = 'end_date';
+  final String _periodsStartDateColumnName = 'startDate';
+  final String _periodsEndDateColumnName = 'endDate';
 
   DatabaseService._constructor();
 
@@ -45,16 +46,18 @@ class DatabaseService {
     ''');
   }
 
-  Future<int> insertPeriod(String startDate, String? endDate) async {
+  Future<int> insertPeriod(Period period) async {
     final db = await database;
-    return await db.insert(_periodsTableName, {
-      _periodsStartDateColumnName: startDate,
-      _periodsEndDateColumnName: endDate,
-    });
+    return await db.insert(
+      _periodsTableName,
+      period.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<List<Map<String, dynamic>>> getAllPeriods() async {
+  Future<List<Period>> getAllPeriods() async {
     final db = await database;
-    return await db.query(_periodsTableName);
+    final rows = await db.query(_periodsTableName);
+    return rows.map((row) => Period.fromMap(row)).toList();
   }
 }

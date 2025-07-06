@@ -1,8 +1,9 @@
 class Period {
+  final int? id;
   final DateTime startDate;
   final DateTime? endDate;
 
-  Period({required this.startDate, this.endDate});
+  Period({this.id, required this.startDate, this.endDate});
 
   bool get isOngoing => endDate == null;
   bool get isCompleted => endDate != null;
@@ -16,15 +17,19 @@ class Period {
         : endDate!.difference(startDate).inDays;
   }
 
-  factory Period.fromJson(Map<String, dynamic> json) {
+  factory Period.fromMap(Map<String, dynamic> map) {
     return Period(
-      startDate: DateTime.parse(json['startDate']),
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
+      id: map['id'] as int?,
+      startDate: DateTime.parse(map['startDate'] as String),
+      endDate: map['endDate'] != null
+          ? DateTime.parse(map['endDate'] as String)
+          : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
     };
