@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/theme.dart';
 import 'home_page.dart';
 import 'insights_page.dart';
-import 'user_page.dart';
+import 'profile_page.dart';
 import 'log_period_page.dart';
 // import 'package:provider/provider.dart';
 
@@ -59,7 +59,7 @@ class _MainNavigationState extends State<MainNavigation> {
     final pages = [
       HomePage(isSelected: _selectedIndex == 0),
       InsightsPage(isSelected: _selectedIndex == 1),
-      UserPage(isSelected: _selectedIndex == 2),
+      ProfilePage(isSelected: _selectedIndex == 2),
     ];
 
     return Scaffold(
@@ -71,7 +71,8 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Home',
             tooltip: null,
           ),
-          NavigationDestination(icon: Icon(Icons.insights), label: 'Insights'),
+          // timeline, pie_cjart, insights
+          NavigationDestination(icon: Icon(Icons.timeline), label: 'Insights'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
         selectedIndex: _selectedIndex,

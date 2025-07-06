@@ -13,29 +13,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.isSelected
-        ? Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.lightbulb),
-                SizedBox(width: 100),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      isOn = !isOn;
-                    });
-                  },
-                  child: isOn
-                      ? Text(
-                          'Light is ON',
-                          style: TextStyle(color: Colors.white),
-                        )
-                      : Text('Light is OFF'),
-                ),
-              ],
-            ),
-          )
-        : const SizedBox.shrink();
+    return Center(child: Text('Home page'));
   }
 }
