@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'models/period.dart';
+import '../models/period.dart';
 
 class InsightsPage extends StatefulWidget {
   final bool isSelected;
