@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:period_tracker/period_provider.dart';
 import 'package:period_tracker/theme.dart';
+import 'package:provider/provider.dart';
 import 'pages/home_page.dart';
 import 'pages/insights_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/log_period_page.dart';
-// import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const PeriodTrackerApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => PeriodProvider())],
+      child: PeriodTrackerApp(),
+    ),
+  );
 }
 
 final GoRouter _router = GoRouter(
@@ -32,10 +38,6 @@ class PeriodTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return ChangeNotifierProvider(
-    //   create: (context) => ThemeNotifier(),
-    //   child: const PeriodTracker(),
-    // );
     return MaterialApp.router(
       title: 'Period Tracker',
       theme: appTheme,
