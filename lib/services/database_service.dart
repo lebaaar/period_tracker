@@ -46,6 +46,12 @@ class DatabaseService {
     ''');
   }
 
+  Future<List<Period>> getAllPeriods() async {
+    final db = await database;
+    final rows = await db.query(_periodsTableName);
+    return rows.map((row) => Period.fromMap(row)).toList();
+  }
+
   Future<int> insertPeriod(Period period) async {
     final db = await database;
     return await db.insert(
@@ -55,9 +61,23 @@ class DatabaseService {
     );
   }
 
-  Future<List<Period>> getAllPeriods() async {
+  Future<int> deletePeriod(int id) async {
     final db = await database;
-    final rows = await db.query(_periodsTableName);
-    return rows.map((row) => Period.fromMap(row)).toList();
+    return await db.delete(
+      _periodsTableName,
+      where: '$_periodsIdColumnName = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // updatePeriod
+  Future<int> updatePeriod(Period period) async {
+    final db = await database;
+    return await db.update(
+      _periodsTableName,
+      period.toMap(),
+      where: '$_periodsIdColumnName = ?',
+      whereArgs: [period.id],
+    );
   }
 }
