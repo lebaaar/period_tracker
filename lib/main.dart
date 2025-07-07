@@ -56,11 +56,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      HomePage(isSelected: _selectedIndex == 0),
-      InsightsPage(isSelected: _selectedIndex == 1),
-      ProfilePage(isSelected: _selectedIndex == 2),
-    ];
+    final pages = [HomePage(), InsightsPage(), ProfilePage()];
 
     return Scaffold(
       body: pages[_selectedIndex],

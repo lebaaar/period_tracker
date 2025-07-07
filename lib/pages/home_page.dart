@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  final bool isSelected;
-  const HomePage({super.key, required this.isSelected});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
