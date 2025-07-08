@@ -63,15 +63,32 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: pages[_selectedIndex],
       bottomNavigationBar: NavigationBar(
-        destinations: const <Widget>[
+        destinations: <Widget>[
           NavigationDestination(
             icon: Icon(Icons.home),
+            selectedIcon: Icon(
+              Icons.home,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
             label: 'Home',
             tooltip: null,
           ),
-          // timeline, pie_cjart, insights
-          NavigationDestination(icon: Icon(Icons.timeline), label: 'Insights'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+          NavigationDestination(
+            icon: Icon(Icons.timeline),
+            selectedIcon: Icon(
+              Icons.timeline,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+            label: 'Insights',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person),
+            selectedIcon: Icon(
+              Icons.person,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+            label: 'Profile',
+          ),
         ],
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
