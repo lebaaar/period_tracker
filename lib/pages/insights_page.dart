@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/period.dart';
+import '../models/period_model.dart';
 
 class InsightsPage extends StatefulWidget {
   const InsightsPage({super.key});

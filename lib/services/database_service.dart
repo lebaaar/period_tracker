@@ -1,4 +1,4 @@
-import 'package:period_tracker/models/period.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 

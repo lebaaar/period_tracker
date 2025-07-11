@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:period_tracker/models/period.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/database_service.dart';
 
 class PeriodProvider extends ChangeNotifier {

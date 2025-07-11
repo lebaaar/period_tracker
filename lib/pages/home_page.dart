@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:period_tracker/models/period.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/period_provider.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:provider/provider.dart';
