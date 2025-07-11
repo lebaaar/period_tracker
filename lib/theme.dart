@@ -5,9 +5,9 @@ final ColorScheme colorScheme = ColorScheme.dark(
   brightness: Brightness.dark,
 
   primary: Color(0xFFFF91C5),
-  onPrimary: Color(0xFF4A1135),
-  primaryContainer: Color(0xFF752C56),
-  onPrimaryContainer: const Color.fromARGB(255, 255, 0, 0),
+  onPrimary: Colors.black,
+  primaryContainer: Colors.black,
+  onPrimaryContainer: Colors.black,
 
   // TBD - when creating calendar highlighting...
   secondary: Color(0xFFB1A6C9),
@@ -27,10 +27,10 @@ final ColorScheme colorScheme = ColorScheme.dark(
   errorContainer: Color(0xFF93000A),
   onErrorContainer: Color(0xFFFFDAD6),
 
-  surface: Color(0x00000000),
+  surface: Colors.black,
   onSurface: Colors.white,
   surfaceContainerHighest: Color(0xFF49454F),
-  onSurfaceVariant: Color.fromARGB(255, 255, 255, 255),
+  onSurfaceVariant: Color(0xFFCAC4D0),
 
   outline: Color(0xFF938F99),
   outlineVariant: Color(0xFF49454F),
