@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/models/user_model.dart';
-import 'package:period_tracker/services/database_service.dart';
+import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -281,31 +282,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     );
                     break;
                   case 2:
+                    // Validate input
+                    if (context.mounted) {
+                      if (_lastPeriodDate == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select your last period date.',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
+                    }
+
                     // Save onboarding data
                     await setOnboaringValue(true);
 
                     // Save user to database
-                    if (_lastPeriodDate == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please select your last period date.'),
-                          behavior: SnackBarBehavior.floating,
-                          duration: Duration(seconds: 2),
+                    if (context.mounted) {
+                      await context.read<UserProvider>().insertUser(
+                        User(
+                          id: 1,
+                          name: _nameController.text,
+                          cycleLength: int.parse(_cycleLengthController.text),
+                          periodLength: int.parse(_periodLengthController.text),
+                          lastPeriodDate: _lastPeriodDate!,
                         ),
                       );
-                      return;
                     }
-
-                    User user = User(
-                      id: 1,
-                      name: _nameController.text,
-                      cycleLength: int.parse(_cycleLengthController.text),
-                      periodLength: int.parse(_periodLengthController.text),
-                      lastPeriodDate: _lastPeriodDate!,
-                    );
-
-                    final db = DatabaseService();
-                    await db.insertUser(user);
 
                     // Navigate to home screen
                     if (context.mounted) {

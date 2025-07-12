@@ -1,4 +1,5 @@
 import "package:path_provider/path_provider.dart";
+import "package:shared_preferences/shared_preferences.dart";
 
 class ApplicationDataService {
   static final ApplicationDataService _instance =
@@ -16,6 +17,8 @@ class ApplicationDataService {
   }
 
   Future<void> clearAppData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
     final directory = await getApplicationCacheDirectory();
     if (await directory.exists()) {
       await directory.delete(recursive: true);

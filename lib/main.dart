@@ -115,7 +115,10 @@ class _MainNavigationState extends State<MainNavigation> {
               await ApplicationDataService().clearAppData();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('App data cleared!')),
+                  const SnackBar(
+                    content: Text('App data cleared!'),
+                    duration: Duration(seconds: 2),
+                  ),
                 );
                 context.go('/onboarding');
               }
