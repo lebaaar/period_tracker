@@ -1,13 +1,14 @@
 import "package:path_provider/path_provider.dart";
 
-class UserDataService {
-  static final UserDataService _instance = UserDataService._constructor();
+class ApplicationDataService {
+  static final ApplicationDataService _instance =
+      ApplicationDataService._constructor();
 
-  factory UserDataService() {
+  factory ApplicationDataService() {
     return _instance;
   }
 
-  UserDataService._constructor();
+  ApplicationDataService._constructor();
 
   Future<String> getCacheDirectoryPath() async {
     final directory = await getApplicationCacheDirectory();

@@ -112,7 +112,7 @@ class _MainNavigationState extends State<MainNavigation> {
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
-              await UserDataService().clearAppData();
+              await ApplicationDataService().clearAppData();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('App data cleared!')),
