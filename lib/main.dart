@@ -23,21 +23,18 @@ Future<void> main() async {
       statusBarIconBrightness:
           Brightness.light, // Android: light icons (dark background)
       systemNavigationBarColor:
-          Colors.red, // Android: background color of bottom navigation bar
+          Colors.black, // Android: background color of bottom navigation bar
       systemNavigationBarDividerColor:
-          Colors.black, // Android: divider above nav bar (rarely needed)
+          Colors.black, // Android: divider above navbar (optional)
       systemNavigationBarIconBrightness:
-          Brightness.light, // Android: light icons for dark nav bar
-      systemStatusBarContrastEnforced:
-          false, // Android 10+: disable forced contrast (allows custom styling)
-      systemNavigationBarContrastEnforced:
-          false, // Android 10+: disable forced contrast
+          Brightness.light, // Android: light icons for dark navbar
+      systemStatusBarContrastEnforced: false, // Allow custom navbar styling
+      systemNavigationBarContrastEnforced: false, // Allow custom navbar styling
     ),
   );
 
   final prefs = await SharedPreferences.getInstance();
   bool onBoardingComplete = prefs.getBool('onboarding_complete') ?? false;
-  onBoardingComplete = false;
 
   runApp(
     MultiProvider(

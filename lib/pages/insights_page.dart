@@ -18,6 +18,6 @@ class _InsightsPageState extends State<InsightsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Insights pagee'));
+    return SafeArea(child: Center(child: Text('Insights pagee')));
   }
 }

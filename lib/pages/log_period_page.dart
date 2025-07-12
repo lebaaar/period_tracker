@@ -26,7 +26,11 @@ class LogPeriodPage extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: const Center(child: Text('Add or edit your period details here.')),
+      body: SafeArea(
+        child: const Center(
+          child: Text('Add or edit your period details here.'),
+        ),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Container(
         height: 50,
