@@ -109,7 +109,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Hi ${_nameController.text.isNotEmpty ? _nameController.text : 'there'}!\nEnter your cycle and period lengths in days',
+            'Hi ${_nameController.text.isNotEmpty ? _nameController.text.trim() : 'there'}!\nEnter your cycle and period lengths in days',
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -306,7 +306,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       await context.read<UserProvider>().insertUser(
                         User(
                           id: 1,
-                          name: _nameController.text,
+                          name: _nameController.text.trim(),
                           cycleLength: int.parse(_cycleLengthController.text),
                           periodLength: int.parse(_periodLengthController.text),
                           lastPeriodDate: _lastPeriodDate!,
