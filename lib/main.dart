@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
+import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +39,10 @@ Future<void> main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => PeriodProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => PeriodProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
       child: PeriodTrackerApp(showOnboarding: !onBoardingComplete),
     ),
   );

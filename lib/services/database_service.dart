@@ -1,4 +1,5 @@
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 
@@ -12,10 +13,18 @@ class DatabaseService {
 
   final String _databaseName = 'period_tracker.db';
   final int _databaseVersion = 1;
+
   final String _periodsTableName = 'periods';
   final String _periodsIdColumnName = 'id';
   final String _periodsStartDateColumnName = 'startDate';
   final String _periodsEndDateColumnName = 'endDate';
+
+  final String _userTableName = 'user';
+  final String _userIdColumnName = 'id';
+  final String _userNameColumnName = 'name';
+  final String _userCycleLengthColumnName = 'cycleLength';
+  final String _userPeriodLengthColumnName = 'periodLength';
+  final String _userLastPeriodDateColumnName = 'lastPeriodDate';
 
   DatabaseService._constructor();
 
@@ -44,8 +53,19 @@ class DatabaseService {
         $_periodsEndDateColumnName TEXT
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE $_userTableName (
+        $_userIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
+        $_userNameColumnName TEXT NULL,
+        $_userCycleLengthColumnName INTEGER NOT NULL,
+        $_userPeriodLengthColumnName INTEGER NOT NULL,
+        $_userLastPeriodDateColumnName TEXT NOT NULL
+      )
+    ''');
   }
 
+  // Period methods
   Future<List<Period>> getAllPeriods() async {
     final db = await database;
     final rows = await db.query(_periodsTableName);
@@ -70,7 +90,6 @@ class DatabaseService {
     );
   }
 
-  // updatePeriod
   Future<int> updatePeriod(Period period) async {
     final db = await database;
     return await db.update(
@@ -78,6 +97,30 @@ class DatabaseService {
       period.toMap(),
       where: '$_periodsIdColumnName = ?',
       whereArgs: [period.id],
+    );
+  }
+
+  // User methods
+  Future<User> getUser() async {
+    final db = await database;
+    final rows = await db.query(
+      _userTableName,
+      where: '$_userIdColumnName = ?',
+      whereArgs: [1],
+    );
+    if (rows.isEmpty) {
+      throw Exception('User with id=1 not found');
+    }
+    return User.fromMap(rows.first);
+  }
+
+  Future<int> insertUser(User user) async {
+    final db = await database;
+    final userMap = user.toMap()..['id'] = 1;
+    return await db.insert(
+      _userTableName,
+      userMap,
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 }
