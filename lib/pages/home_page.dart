@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:period_tracker/models/period_model.dart';
-import 'package:period_tracker/period_provider.dart';
+import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
