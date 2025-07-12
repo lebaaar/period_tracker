@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
-import 'package:period_tracker/services/user_data_service.dart';
+import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
