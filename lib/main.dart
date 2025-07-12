@@ -120,7 +120,7 @@ class _MainNavigationState extends State<MainNavigation> {
                 context.go('/onboarding');
               }
             },
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ],
       ),
