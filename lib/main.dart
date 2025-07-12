@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
-import 'package:period_tracker/period_provider.dart';
+import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
