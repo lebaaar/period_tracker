@@ -193,7 +193,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             },
           ),
           const SizedBox(height: 16),
-          // TODO: Display selected date localized using intl
           Text(
             _lastPeriodDate == null
                 ? 'No date selected'
@@ -283,7 +282,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     break;
                   case 2:
                     // Save onboarding data
-                    setOnboaringValue(true);
+                    await setOnboaringValue(true);
 
                     // Save user to database
                     if (_lastPeriodDate == null) {
@@ -309,7 +308,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     await db.insertUser(user);
 
                     // Navigate to home screen
-                    context.go('/');
+                    if (context.mounted) {
+                      context.go('/');
+                    }
                     break;
                 }
               },
