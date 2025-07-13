@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/models/user_model.dart';
+import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/period_service.dart';
@@ -18,6 +19,13 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _cycleLengthController = TextEditingController();
   final TextEditingController _periodLengthController = TextEditingController();
+  late Future<PackageInfo> _packageInfoFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _packageInfoFuture = _getPackageInfo();
+  }
 
   @override
   void dispose() {
@@ -30,7 +38,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
-
     return SafeArea(
       child: user == null
           ? const Center(child: CircularProgressIndicator())
@@ -75,21 +82,29 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(height: 34),
         _buildSectionTitle('Personal Information'),
         _buildListTile(user, 'name'),
-        if (true) ...[
-          _buildListTile(user, 'cycle_length'),
-          _buildListTile(user, 'period_length'),
-        ],
+        _buildListTile(user, 'cycle_length'),
+        _buildListTile(user, 'period_length'),
         const SizedBox(height: 24),
         _buildSectionTitle('Notifications'),
-        _buildSwitchTile(
-          'Enable notifications',
-          'Receive reminders for your next period',
-          false,
-          (value) {
-            // context.read<UserProvider>().toggleNotificationEnabled(value);
+        Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, child) {
+            return _buildSwitchTile(
+              'Enable notifications',
+              'Receive reminders for your next period',
+              settingsProvider.notificationEnabled,
+              (value) {
+                settingsProvider.toggleNotificationEnabled(value);
+              },
+            );
           },
         ),
-        if (true) _buildListTile(user, 'notifications'),
+        Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, child) {
+            return settingsProvider.notificationEnabled
+                ? _buildListTile(user, 'notifications')
+                : SizedBox.shrink();
+          },
+        ),
         const SizedBox(height: 24),
         _buildSectionTitle('App settings'),
         _buildSwitchTile(

@@ -106,6 +106,16 @@ class DatabaseService {
         $_notificationScheduledDateColumnName TEXT NOT NULL,
         $_notificationStatusColumnName TEXT NOT NULL CHECK (status IN ('scheduled', 'sent', 'cancelled')) DEFAULT 'scheduled')''',
     );
+
+    // insert default settings
+    await db.insert(_settingsTableName, {
+      _settingsIdColumnName: 1,
+      _settingsPredictionModeColumnName: 'static',
+      _settingsDarkModeColumnName: 1,
+      _settingsNotificationEnabledColumnName: 1,
+      _settingsNotificationDaysBeforeColumnName: 3,
+      _settingsNotificationTimeColumnName: '08:00',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // Period methods
@@ -164,6 +174,28 @@ class DatabaseService {
       _userTableName,
       userMap,
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Settings methods
+  Future<bool> getNotificationEnabled() async {
+    final db = await database;
+    final rows = await db.query(
+      _settingsTableName,
+      where: '$_settingsIdColumnName = ?',
+      whereArgs: [1],
+    );
+    if (rows.isEmpty) return false;
+    return rows.first[_settingsNotificationEnabledColumnName] == 1;
+  }
+
+  Future<void> updateNotificationEnabled(bool enabled) async {
+    final db = await database;
+    await db.update(
+      _settingsTableName,
+      {_settingsNotificationEnabledColumnName: enabled ? 1 : 0},
+      where: '$_settingsIdColumnName = ?',
+      whereArgs: [1],
     );
   }
 }
