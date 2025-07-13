@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -30,10 +31,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final cycleLength = int.tryParse(_cycleLengthController.text);
     final periodLength = int.tryParse(_periodLengthController.text);
 
-    if (periodLength == null ||
-        periodLength.isNegative ||
-        periodLength < 2 ||
-        periodLength > 10) {
+    final bool periodValid = PeriodService.validatePeriodLength(periodLength);
+    final bool cycleValid = PeriodService.validateCycleLength(cycleLength);
+
+    if (!periodValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a valid period length.'),
@@ -44,19 +45,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return false;
     }
 
-    if (cycleLength == null ||
-        cycleLength.isNegative ||
-        cycleLength > 60 ||
-        cycleLength < 15) {
+    if (!cycleValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please enter a valid cycle length.'),
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
       return false;
     }
+
     return true;
   }
 
