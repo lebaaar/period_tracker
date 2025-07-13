@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
-import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,27 +105,8 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.clear();
-              await ApplicationDataService().clearAppData();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('App data cleared!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-                context.go('/onboarding');
-              }
-            },
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ],
       ),
+      extendBodyBehindAppBar: true,
       body: pages[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         destinations: <Widget>[

@@ -64,11 +64,42 @@ final textTheme = TextTheme(
   bodyLarge: TextStyle(fontSize: 16, color: colorScheme.onSurface),
   bodyMedium: TextStyle(fontSize: 14, color: colorScheme.onSurface),
   bodySmall: TextStyle(fontSize: 12, color: colorScheme.onSurface),
+  titleLarge: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: colorScheme.onSurface,
+  ),
+  titleMedium: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: colorScheme.primary,
+  ),
+  titleSmall: TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    color: colorScheme.onSurface,
+  ),
+  labelLarge: TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: colorScheme.onSurface,
+  ),
+  labelMedium: TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: colorScheme.primary,
+  ),
+  labelSmall: TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    color: colorScheme.onSurface,
+  ),
 );
 
 final appBarTheme = AppBarTheme(
   backgroundColor: colorScheme.primary,
   foregroundColor: colorScheme.onPrimary,
+  scrolledUnderElevation: 0,
   titleTextStyle: TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,

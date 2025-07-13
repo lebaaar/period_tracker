@@ -25,6 +25,23 @@ class DatabaseService {
   final String _userCycleLengthColumnName = 'cycleLength';
   final String _userPeriodLengthColumnName = 'periodLength';
   final String _userLastPeriodDateColumnName = 'lastPeriodDate';
+  final String _userDynamicCycleLength = 'dynamicCycleLength';
+
+  final String _settingsTableName = 'settings';
+  final String _settingsIdColumnName = 'id';
+  final String _settingsPredictionModeColumnName = 'predictionMode';
+  final String _settingsDarkModeColumnName = 'darkMode';
+  final String _settingsNotificationEnabledColumnName = 'notificationEnabled';
+  final String _settingsNotificationDaysBeforeColumnName =
+      'notificationDaysBefore';
+  final String _settingsNotificationTimeColumnName = 'notificationTime';
+
+  final String _notificationTableName = 'notifications';
+  final String _notificationIdColumnName = 'id';
+  final String _notificationTitleColumnName = 'title';
+  final String _notificationBodyColumnName = 'body';
+  final String _notificationScheduledDateColumnName = 'scheduledDate';
+  final String _notificationStatusColumnName = 'status';
 
   DatabaseService._constructor();
 
@@ -46,6 +63,7 @@ class DatabaseService {
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // periods table
     await db.execute('''
       CREATE TABLE $_periodsTableName (
         $_periodsIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,15 +72,40 @@ class DatabaseService {
       )
     ''');
 
+    // user table
     await db.execute('''
       CREATE TABLE $_userTableName (
         $_userIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
         $_userNameColumnName TEXT NULL,
         $_userCycleLengthColumnName INTEGER NOT NULL,
         $_userPeriodLengthColumnName INTEGER NOT NULL,
-        $_userLastPeriodDateColumnName TEXT NOT NULL
+        $_userLastPeriodDateColumnName TEXT NOT NULL,
+        $_userDynamicCycleLength REAL NOT NULL DEFAULT 0
       )
     ''');
+
+    // settings table
+    await db.execute('''
+      CREATE TABLE $_settingsTableName (
+        $_settingsIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
+        $_settingsPredictionModeColumnName TEXT NOT NULL CHECK ($_settingsPredictionModeColumnName IN ('dynamic', 'static')) DEFAULT 'static',
+        $_settingsDarkModeColumnName INTEGER NOT NULL DEFAULT 0,
+        $_settingsNotificationEnabledColumnName INTEGER NOT NULL DEFAULT 0,
+        $_settingsNotificationDaysBeforeColumnName INTEGER NOT NULL DEFAULT 3,
+        $_settingsNotificationTimeColumnName TEXT NOT NULL DEFAULT '08:00'
+      )
+    ''');
+
+    // notifications table
+    await db.execute(
+      '''
+      CREATE TABLE $_notificationTableName (
+        $_notificationIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
+        $_notificationTitleColumnName TEXT NOT NULL,
+        $_notificationBodyColumnName TEXT NOT NULL,
+        $_notificationScheduledDateColumnName TEXT NOT NULL,
+        $_notificationStatusColumnName TEXT NOT NULL CHECK (status IN ('scheduled', 'sent', 'cancelled')) DEFAULT 'scheduled')''',
+    );
   }
 
   // Period methods
