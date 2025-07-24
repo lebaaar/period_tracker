@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 
-class LogPeriodPage extends StatelessWidget {
+class LogPeriodPage extends StatefulWidget {
   final bool isEditing;
   final DateTimeRange? dateTimeRange;
   const LogPeriodPage({super.key, required this.isEditing, this.dateTimeRange});
+
+  @override
+  State<LogPeriodPage> createState() => _LogPeriodPageState();
+}
+
+class _LogPeriodPageState extends State<LogPeriodPage> {
+  bool get isEditing => widget.isEditing;
+  DateTimeRange? get dateTimeRange => widget.dateTimeRange;
 
   void _onSave(BuildContext context) {
     // TODO: Save to database
@@ -23,7 +31,7 @@ class LogPeriodPage extends StatelessWidget {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () => Navigator.of(context).pop(),
         ),
