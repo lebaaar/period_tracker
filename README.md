@@ -51,5 +51,5 @@ Pull requests are always welcome! For major changes, please open an issue first 
 
 ### Development tips
 
-- Running emulator via CLI  
+- Running emulator via CLI (TODO: replace medium_36 <AVD_NAME>)  
 `emulator -avd medium_36 -no-snapshot-save -no-boot-anim -gpu host -accel on`
