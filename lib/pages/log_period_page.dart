@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class LogPeriodPage extends StatelessWidget {
-  const LogPeriodPage({super.key});
+  final bool isEditing;
+  final DateTimeRange? dateTimeRange;
+  const LogPeriodPage({super.key, required this.isEditing, this.dateTimeRange});
 
   void _onSave(BuildContext context) {
     // TODO: Save to database
@@ -15,10 +17,10 @@ class LogPeriodPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Add Period',
-          style: TextStyle(color: Colors.white),
-        ), // or edit period if editing
+        title: Text(
+          isEditing ? 'Edit Period' : 'Add Period',
+          style: const TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -27,8 +29,10 @@ class LogPeriodPage extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: const Center(
-          child: Text('Add or edit your period details here.'),
+        child: Center(
+          child: Text(
+            'isEditing: ${isEditing}\ndateTimeRange: ${dateTimeRange}.',
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

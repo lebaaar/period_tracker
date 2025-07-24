@@ -65,7 +65,17 @@ class PeriodTrackerApp extends StatelessWidget {
           routes: [
             GoRoute(
               path: '/log',
-              builder: (context, state) => const LogPeriodPage(),
+              builder: (context, state) {
+                final bool isEditing =
+                    state.uri.queryParameters['isEditing'] == 'true';
+                final DateTimeRange? dateTimeRange =
+                    state.extra as DateTimeRange?;
+
+                return LogPeriodPage(
+                  isEditing: isEditing,
+                  dateTimeRange: dateTimeRange,
+                );
+              },
             ),
           ],
         ),
@@ -149,8 +159,7 @@ class _MainNavigationState extends State<MainNavigation> {
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
               onPressed: () {
-                // go_router navigation
-                context.go('/log');
+                context.go('/log?isEditing=false', extra: null);
               },
               backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(
