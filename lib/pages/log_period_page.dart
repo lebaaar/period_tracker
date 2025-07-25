@@ -33,6 +33,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
+          // TODO: ask if user wants to discard changes if page is dirty
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

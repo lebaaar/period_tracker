@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
@@ -44,6 +45,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => PeriodProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       child: PeriodTrackerApp(showOnboarding: !onBoardingComplete),
     ),
@@ -75,6 +77,12 @@ class PeriodTrackerApp extends StatelessWidget {
                   isEditing: isEditing,
                   dateTimeRange: dateTimeRange,
                 );
+              },
+            ),
+            GoRoute(
+              path: 'notifications',
+              builder: (context, state) {
+                return NotificationsPage();
               },
             ),
           ],

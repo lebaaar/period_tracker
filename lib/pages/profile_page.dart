@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
@@ -19,12 +20,10 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _cycleLengthController = TextEditingController();
   final TextEditingController _periodLengthController = TextEditingController();
-  late Future<PackageInfo> _packageInfoFuture;
 
   @override
   void initState() {
     super.initState();
-    _packageInfoFuture = _getPackageInfo();
   }
 
   @override
@@ -38,14 +37,15 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
+    final settings = context.watch<SettingsProvider>().settings;
     return SafeArea(
-      child: user == null
+      child: user == null || settings == null
           ? const Center(child: CircularProgressIndicator())
-          : _buildProfileContent(user),
+          : _buildProfileContent(user, settings),
     );
   }
 
-  Widget _buildProfileContent(User user) {
+  Widget _buildProfileContent(User user, Settings settings) {
     return ListView(
       children: [
         const SizedBox(height: 16),
@@ -91,28 +91,33 @@ class _ProfilePageState extends State<ProfilePage> {
             return _buildSwitchTile(
               'Enable notifications',
               'Receive reminders for your next period',
-              settingsProvider.notificationEnabled,
+              settingsProvider.settings?.notificationEnabled ?? false,
               (value) {
-                settingsProvider.toggleNotificationEnabled(value);
+                print(value);
+                settingsProvider.setNotificationEnabled(value);
               },
             );
           },
         ),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
-            return settingsProvider.notificationEnabled
+            return settingsProvider.settings?.notificationEnabled == true
                 ? _buildListTile(user, 'notifications')
                 : SizedBox.shrink();
           },
         ),
         const SizedBox(height: 24),
         _buildSectionTitle('App settings'),
-        _buildSwitchTile(
-          'Dynamic period prediction',
-          'Predict the next period based on your cycle history',
-          true,
-          (value) {
-            // context.read<UserProvider>().toggleDarkMode(value);
+        Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, child) {
+            return _buildSwitchTile(
+              'Dynamic period prediction',
+              'Predict the next period based on your cycle history',
+              settingsProvider.settings?.predictionMode == 'dynamic',
+              (value) {
+                // context.read<SettingsProvider>().setPredictionMode(value ? 'dynamic' : 'static');
+              },
+            );
           },
         ),
         _buildListTile(user, 'backup'),
@@ -261,8 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
             });
             break;
           case 'notifications':
-            // TODO: notifications settings page
-            Navigator.pushNamed(context, '/notifications');
+            context.go('/notifications');
             break;
           case 'backup':
             _showBackupDialog();
@@ -287,7 +291,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSwitchTile(
     String title,
-    String subittle,
+    String subtitle,
     bool value,
     Function(bool) onChanged,
   ) {
@@ -297,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
       subtitle: Text(
-        subittle,
+        subtitle,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 50),
         ),

@@ -1,4 +1,5 @@
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
@@ -112,7 +113,7 @@ class DatabaseService {
       _settingsIdColumnName: 1,
       _settingsPredictionModeColumnName: 'static',
       _settingsDarkModeColumnName: 1,
-      _settingsNotificationEnabledColumnName: 1,
+      _settingsNotificationEnabledColumnName: 0,
       _settingsNotificationDaysBeforeColumnName: 3,
       _settingsNotificationTimeColumnName: '08:00',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -178,6 +179,19 @@ class DatabaseService {
   }
 
   // Settings methods
+  Future<Settings> getSettings() async {
+    final db = await database;
+    final rows = await db.query(
+      _settingsTableName,
+      where: '$_settingsIdColumnName = ?',
+      whereArgs: [1],
+    );
+    if (rows.isEmpty) {
+      throw Exception('Settings with id=1 not found');
+    }
+    return Settings.fromMap(rows.first);
+  }
+
   Future<bool> getNotificationEnabled() async {
     final db = await database;
     final rows = await db.query(
@@ -194,6 +208,26 @@ class DatabaseService {
     await db.update(
       _settingsTableName,
       {_settingsNotificationEnabledColumnName: enabled ? 1 : 0},
+      where: '$_settingsIdColumnName = ?',
+      whereArgs: [1],
+    );
+  }
+
+  Future<void> updateSettings(Settings settings) async {
+    final db = await database;
+    await db.update(
+      _settingsTableName,
+      {
+        _settingsPredictionModeColumnName: settings.predictionMode,
+        _settingsDarkModeColumnName: settings.darkMode ? 1 : 0,
+        _settingsNotificationEnabledColumnName: settings.notificationEnabled
+            ? 1
+            : 0,
+        _settingsNotificationDaysBeforeColumnName:
+            settings.notificationDaysBefore,
+        _settingsNotificationTimeColumnName:
+            '${settings.notificationTime.hour.toString().padLeft(2, '0')}:${settings.notificationTime.minute.toString().padLeft(2, '0')}',
+      },
       where: '$_settingsIdColumnName = ?',
       whereArgs: [1],
     );
