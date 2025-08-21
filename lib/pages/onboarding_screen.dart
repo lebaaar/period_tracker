@@ -35,23 +35,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final bool cycleValid = PeriodService.validateCycleLength(cycleLength);
 
     if (!periodValid) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid period length.'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text('Please enter a valid period length.')),
       );
       return false;
     }
 
     if (!cycleValid) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a valid cycle length.'),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
+        SnackBar(content: Text('Please enter a valid cycle length.')),
       );
       return false;
     }
@@ -284,13 +278,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Validate input
                     if (context.mounted) {
                       if (_lastPeriodDate == null) {
+                        ScaffoldMessenger.of(context).clearSnackBars();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
                               'Please select your last period date.',
                             ),
-                            behavior: SnackBarBehavior.floating,
-                            duration: Duration(seconds: 2),
                           ),
                         );
                         return;

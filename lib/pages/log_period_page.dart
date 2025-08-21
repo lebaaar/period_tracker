@@ -39,9 +39,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       ),
       body: SafeArea(
         child: Center(
-          child: Text(
-            'isEditing: ${isEditing}\ndateTimeRange: ${dateTimeRange}.',
-          ),
+          child: Text('isEditing: $isEditing\ndateTimeRange: $dateTimeRange.'),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

@@ -52,12 +52,12 @@ class _ProfilePageState extends State<ProfilePage> {
         Center(
           child: GestureDetector(
             onTap: () {
+              ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
                     'Do you really want to have a profile picture in a period tracking app?',
                   ),
-                  duration: Duration(seconds: 3),
                 ),
               );
             },
@@ -383,6 +383,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   int.tryParse(_cycleLengthController.text),
                 )) {
                   Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Please enter a valid cycle length.'),
@@ -436,7 +437,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   int.tryParse(_periodLengthController.text),
                 )) {
                   Navigator.of(context).pop();
-                  // TODO: prevent queue of snack bars
+                  ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Please enter a valid period length.'),
@@ -518,11 +519,9 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () async {
                 await ApplicationDataService().clearAppData();
                 if (context.mounted) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('App data cleared!'),
-                      duration: Duration(seconds: 2),
-                    ),
+                    const SnackBar(content: Text('App data cleared!')),
                   );
                   context.go('/onboarding');
                 }
