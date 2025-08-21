@@ -2,8 +2,9 @@ class Period {
   final int? id;
   final DateTime startDate;
   final DateTime? endDate;
+  final String? notes;
 
-  Period({this.id, required this.startDate, this.endDate});
+  Period({this.id, required this.startDate, this.endDate, this.notes});
 
   bool get isOngoing => endDate == null;
   bool get isCompleted => endDate != null;
@@ -24,6 +25,7 @@ class Period {
       endDate: map['endDate'] != null
           ? DateTime.parse(map['endDate'] as String)
           : null,
+      notes: map['notes'] as String?,
     );
   }
 
@@ -32,11 +34,12 @@ class Period {
       'id': id,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
+      'notes': notes,
     };
   }
 
   @override
   String toString() {
-    return 'Period(startDate: $startDate, endDate: $endDate, duration: $duration)';
+    return 'Period(startDate: $startDate, endDate: $endDate, duration: $duration, notes: $notes)';
   }
 }

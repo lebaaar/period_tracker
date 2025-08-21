@@ -7,6 +7,10 @@ class PeriodProvider extends ChangeNotifier {
   List<Period> get periods => _periods;
   final DatabaseService _db = DatabaseService();
 
+  PeriodProvider() {
+    fetchPeriods();
+  }
+
   Future<void> fetchPeriods() async {
     _periods = await _db.getAllPeriods();
     _periods.sort((a, b) => b.startDate.compareTo(a.startDate));
@@ -40,6 +44,7 @@ class PeriodProvider extends ChangeNotifier {
 
   // Returns the current cycle day for a given date
   int getCurrentCycleDay([DateTime? date]) {
+    // TODO - check logis
     if (_periods.isEmpty) return 0;
     date ??= DateTime.now();
     final lastPeriod = _periods.lastWhere(
@@ -94,18 +99,30 @@ class PeriodProvider extends ChangeNotifier {
           (p.endDate == null || !date.isAfter(p.endDate!)),
       orElse: () => Period(startDate: date),
     );
+
+    final String notes;
+    if (period.notes != null && period.notes!.isNotEmpty) {
+      notes = 'Notes: ${period.notes!}';
+    } else {
+      notes = 'No notes';
+    }
+
     if (period.id == null) {
       return const Text('No data for this date');
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Cycle Day: 	${getCurrentCycleDay(date)}'),
-        Text(
-          'Period: 	${period.startDate.toIso8601String().split('T').first} to '
-          '${period.endDate != null ? period.endDate!.toIso8601String().split('T').first : 'Ongoing'}',
-        ),
-      ],
+
+    // TODO - make pretty, follow figma
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            'Selected period: ${period.startDate.toIso8601String().split('T').first} - '
+            '${period.endDate != null ? period.endDate!.toIso8601String().split('T').first : 'Ongoing'}',
+          ),
+          Text(notes),
+          Text('Cycle Day: 	${getCurrentCycleDay(date)}'),
+        ],
+      ),
     );
   }
 }

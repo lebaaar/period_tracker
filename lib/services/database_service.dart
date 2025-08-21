@@ -19,6 +19,7 @@ class DatabaseService {
   final String _periodsIdColumnName = 'id';
   final String _periodsStartDateColumnName = 'startDate';
   final String _periodsEndDateColumnName = 'endDate';
+  final String _periodsNotesColumnName = 'notes';
 
   final String _userTableName = 'user';
   final String _userIdColumnName = 'id';
@@ -69,7 +70,8 @@ class DatabaseService {
       CREATE TABLE $_periodsTableName (
         $_periodsIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
         $_periodsStartDateColumnName TEXT NOT NULL,
-        $_periodsEndDateColumnName TEXT
+        $_periodsEndDateColumnName TEXT,
+        $_periodsNotesColumnName TEXT NULL
       )
     ''');
 

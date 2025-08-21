@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
@@ -70,12 +71,16 @@ class PeriodTrackerApp extends StatelessWidget {
               builder: (context, state) {
                 final bool isEditing =
                     state.uri.queryParameters['isEditing'] == 'true';
-                final DateTimeRange? dateTimeRange =
-                    state.extra as DateTimeRange?;
+                final Period? period = state.extra as Period?;
+                final DateTime? focusedDay =
+                    state.uri.queryParameters['focusedDay'] != null
+                    ? DateTime.parse(state.uri.queryParameters['focusedDay']!)
+                    : null;
 
                 return LogPeriodPage(
                   isEditing: isEditing,
-                  dateTimeRange: dateTimeRange,
+                  period: period,
+                  focusedDay: focusedDay,
                 );
               },
             ),
@@ -164,18 +169,6 @@ class _MainNavigationState extends State<MainNavigation> {
         },
         indicatorColor: Theme.of(context).colorScheme.primary,
       ),
-      floatingActionButton: _selectedIndex == 0
-          ? FloatingActionButton(
-              onPressed: () {
-                context.go('/log?isEditing=false', extra: null);
-              },
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(99.0),
-              ),
-              child: const Icon(Icons.add),
-            )
-          : null,
     );
   }
 }
