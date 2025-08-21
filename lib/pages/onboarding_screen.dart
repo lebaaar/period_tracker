@@ -37,7 +37,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!periodValid) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid period length.')),
+        const SnackBar(
+          content: Text('Please enter a valid period length.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return false;
     }
@@ -45,7 +48,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!cycleValid) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a valid cycle length.')),
+        SnackBar(
+          content: Text('Please enter a valid cycle length.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return false;
     }
@@ -284,6 +290,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             content: Text(
                               'Please select your last period date.',
                             ),
+                            behavior: SnackBarBehavior.floating,
                           ),
                         );
                         return;

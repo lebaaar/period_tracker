@@ -58,6 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   content: Text(
                     'Do you really want to have a profile picture in a period tracking app?',
                   ),
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
@@ -387,6 +388,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Please enter a valid cycle length.'),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                   return;
@@ -441,6 +443,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Please enter a valid period length.'),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                   return;
@@ -521,7 +524,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('App data cleared!')),
+                    const SnackBar(
+                      content: Text('App data cleared!'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
                   context.go('/onboarding');
                 }
