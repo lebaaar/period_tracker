@@ -17,13 +17,16 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _cycleLengthController = TextEditingController();
-  final TextEditingController _periodLengthController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _cycleLengthController;
+  late final TextEditingController _periodLengthController;
 
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
+    _cycleLengthController = TextEditingController();
+    _periodLengthController = TextEditingController();
   }
 
   @override

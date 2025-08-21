@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/user_model.dart';
+import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
@@ -19,13 +21,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _cycleLengthController = TextEditingController();
-  final TextEditingController _periodLengthController = TextEditingController();
-  final FocusNode _nameFocusNode = FocusNode();
-  final FocusNode _periodLengthFocusNode = FocusNode();
-  final FocusNode _cycleLengthFocusNode = FocusNode();
+  late final TextEditingController _nameController;
+  late final TextEditingController _cycleLengthController;
+  late final TextEditingController _periodLengthController;
+  late final FocusNode _nameFocusNode;
+  late final FocusNode _periodLengthFocusNode;
+  late final FocusNode _cycleLengthFocusNode;
   DateTime? _lastPeriodDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _cycleLengthController = TextEditingController();
+    _periodLengthController = TextEditingController();
+    _nameFocusNode = FocusNode();
+    _periodLengthFocusNode = FocusNode();
+    _cycleLengthFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _cycleLengthController.dispose();
+    _periodLengthController.dispose();
+    _nameFocusNode.dispose();
+    _periodLengthFocusNode.dispose();
+    _cycleLengthFocusNode.dispose();
+    super.dispose();
+  }
 
   bool validateInput() {
     final cycleLength = int.tryParse(_cycleLengthController.text);
@@ -298,7 +322,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }
 
                     // Save onboarding data
-                    await setOnboaringValue(true);
+                    await setOnboardingValue(true);
 
                     // Save user to database
                     if (context.mounted) {
@@ -312,6 +336,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       );
                     }
+
+                    // Set initial period
+                    final DateTime start = DateTime.utc(
+                      _lastPeriodDate!.year,
+                      _lastPeriodDate!.month,
+                      _lastPeriodDate!.day,
+                    );
+                    final DateTime end = start.add(
+                      Duration(
+                        days: int.parse(_periodLengthController.text) - 1,
+                      ),
+                    );
+
+                    final period = Period(
+                      startDate: start,
+                      endDate: end,
+                      notes: '',
+                    );
+                    await context.read<PeriodProvider>().insertPeriod(period);
+                    await context.read<PeriodProvider>().fetchPeriods();
 
                     // Navigate to home screen
                     if (context.mounted) {
