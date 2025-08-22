@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
@@ -17,6 +18,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late final _packageInfoFuture = PackageInfo.fromPlatform();
   late final TextEditingController _nameController;
   late final TextEditingController _cycleLengthController;
   late final TextEditingController _periodLengthController;
@@ -67,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             child: CircleAvatar(
               radius: 48,
-              backgroundColor: Colors.grey[800],
+              backgroundColor: Colors.grey[800], // TODO
               child: Icon(Icons.person, size: 48, color: Colors.white),
             ),
           ),
@@ -97,7 +99,6 @@ class _ProfilePageState extends State<ProfilePage> {
               'Receive reminders for your next period',
               settingsProvider.settings?.notificationEnabled ?? false,
               (value) {
-                print(value);
                 settingsProvider.setNotificationEnabled(value);
               },
             );
@@ -119,7 +120,9 @@ class _ProfilePageState extends State<ProfilePage> {
               'Predict the next period based on your cycle history',
               settingsProvider.settings?.predictionMode == 'dynamic',
               (value) {
-                // context.read<SettingsProvider>().setPredictionMode(value ? 'dynamic' : 'static');
+                settingsProvider.setPredictionMode(
+                  value ? 'dynamic' : 'static',
+                );
               },
             );
           },
@@ -139,7 +142,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         Center(
           child: FutureBuilder<PackageInfo>(
-            future: _getPackageInfo(),
+            future: _packageInfoFuture,
             builder: (context, snapshot) {
               // simulate loading state, wait 5sec
               // sleep(const Duration(seconds: 5));
@@ -349,7 +352,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Text('Save'),
             ),
           ],
-          backgroundColor: Color(0xFF121212),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
@@ -402,7 +405,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Text('Save'),
             ),
           ],
-          backgroundColor: Color(0xFF121212),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
@@ -457,7 +460,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Text('Save'),
             ),
           ],
-          backgroundColor: Color(0xFF121212),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
@@ -469,14 +472,14 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Backup Data'),
-          content: const Text('This feature is not implemented yet.'),
+          content: const Text('This feature is not implemented yet :('),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('OK'),
             ),
           ],
-          backgroundColor: Color(0xFF121212),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
@@ -489,14 +492,14 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Restore Data'),
-          content: const Text('This feature is not implemented yet.'),
+          content: const Text('This feature is not implemented yet :('),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('OK'),
             ),
           ],
-          backgroundColor: Color(0xFF121212),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
@@ -538,7 +541,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Text('Delete'),
             ),
           ],
-          backgroundColor: Color(0xFF121212),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
@@ -546,10 +549,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Helpers
   String _getUserName(User user) {
-    return user.name?.isNotEmpty == true ? user.name! : 'Mysterious User';
-  }
-
-  Future<PackageInfo> _getPackageInfo() async {
-    return await PackageInfo.fromPlatform();
+    return user.name?.isNotEmpty == true ? user.name! : kMysteriousUserName;
   }
 }

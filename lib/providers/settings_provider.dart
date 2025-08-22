@@ -19,10 +19,6 @@ class SettingsProvider extends ChangeNotifier {
 
   // Example: toggle notification enabled
   Future<void> setNotificationEnabled(bool enabled) async {
-    print(_settings);
-    print(_settings);
-    print(_settings);
-    print(_settings);
     if (_settings == null) return;
     await _db.updateNotificationEnabled(enabled);
     _settings = Settings(
@@ -30,6 +26,21 @@ class SettingsProvider extends ChangeNotifier {
       predictionMode: _settings!.predictionMode,
       darkMode: _settings!.darkMode,
       notificationEnabled: enabled,
+      notificationDaysBefore: _settings!.notificationDaysBefore,
+      notificationTime: _settings!.notificationTime,
+    );
+    await _db.updateSettings(_settings!);
+    notifyListeners();
+  }
+
+  Future<void> setPredictionMode(String mode) async {
+    if (_settings == null) return;
+    await _db.updatePredictionMode(mode);
+    _settings = Settings(
+      id: _settings!.id,
+      predictionMode: mode,
+      darkMode: _settings!.darkMode,
+      notificationEnabled: _settings!.notificationEnabled,
       notificationDaysBefore: _settings!.notificationDaysBefore,
       notificationTime: _settings!.notificationTime,
     );
