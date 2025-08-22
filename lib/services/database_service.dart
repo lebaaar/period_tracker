@@ -1,3 +1,4 @@
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
@@ -12,16 +13,16 @@ class DatabaseService {
     return _instance;
   }
 
-  final String _databaseName = 'period_tracker.db';
+  final String _databaseName = kDatabaseName;
   final int _databaseVersion = 1;
 
-  final String _periodsTableName = 'periods';
+  final String _periodsTableName = kPeriodsTableName;
   final String _periodsIdColumnName = 'id';
   final String _periodsStartDateColumnName = 'startDate';
   final String _periodsEndDateColumnName = 'endDate';
   final String _periodsNotesColumnName = 'notes';
 
-  final String _userTableName = 'user';
+  final String _userTableName = kUserTableName;
   final String _userIdColumnName = 'id';
   final String _userNameColumnName = 'name';
   final String _userCycleLengthColumnName = 'cycleLength';
@@ -29,7 +30,7 @@ class DatabaseService {
   final String _userLastPeriodDateColumnName = 'lastPeriodDate';
   final String _userDynamicCycleLength = 'dynamicCycleLength';
 
-  final String _settingsTableName = 'settings';
+  final String _settingsTableName = kSettingsTableName;
   final String _settingsIdColumnName = 'id';
   final String _settingsPredictionModeColumnName = 'predictionMode';
   final String _settingsDarkModeColumnName = 'darkMode';
@@ -38,7 +39,7 @@ class DatabaseService {
       'notificationDaysBefore';
   final String _settingsNotificationTimeColumnName = 'notificationTime';
 
-  final String _notificationTableName = 'notifications';
+  final String _notificationTableName = kNotificationsTableName;
   final String _notificationIdColumnName = 'id';
   final String _notificationTitleColumnName = 'title';
   final String _notificationBodyColumnName = 'body';
@@ -111,14 +112,7 @@ class DatabaseService {
     );
 
     // insert default settings
-    await db.insert(_settingsTableName, {
-      _settingsIdColumnName: 1,
-      _settingsPredictionModeColumnName: 'static',
-      _settingsDarkModeColumnName: 1,
-      _settingsNotificationEnabledColumnName: 0,
-      _settingsNotificationDaysBeforeColumnName: 3,
-      _settingsNotificationTimeColumnName: '08:00',
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await insertDefaultSettings(db);
   }
 
   // Period methods
@@ -181,6 +175,17 @@ class DatabaseService {
   }
 
   // Settings methods
+  Future<void> insertDefaultSettings(Database db) async {
+    await db.insert(_settingsTableName, {
+      _settingsIdColumnName: 1,
+      _settingsPredictionModeColumnName: 'static',
+      _settingsDarkModeColumnName: 0,
+      _settingsNotificationEnabledColumnName: 0,
+      _settingsNotificationDaysBeforeColumnName: 3,
+      _settingsNotificationTimeColumnName: '08:00',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
   Future<Settings> getSettings() async {
     final db = await database;
     final rows = await db.query(
@@ -189,7 +194,8 @@ class DatabaseService {
       whereArgs: [1],
     );
     if (rows.isEmpty) {
-      throw Exception('Settings with id=1 not found');
+      insertDefaultSettings(db);
+      getSettings();
     }
     return Settings.fromMap(rows.first);
   }
@@ -215,6 +221,16 @@ class DatabaseService {
     );
   }
 
+  Future<void> updatePredictionMode(String mode) async {
+    final db = await database;
+    await db.update(
+      _settingsTableName,
+      {_settingsPredictionModeColumnName: mode},
+      where: '$_settingsIdColumnName = ?',
+      whereArgs: [1],
+    );
+  }
+
   Future<void> updateSettings(Settings settings) async {
     final db = await database;
     await db.update(
@@ -233,5 +249,13 @@ class DatabaseService {
       where: '$_settingsIdColumnName = ?',
       whereArgs: [1],
     );
+  }
+
+  Future<void> truncateDatabaseTables() async {
+    final db = await database;
+    await db.execute('DELETE FROM $_periodsTableName');
+    await db.execute('DELETE FROM $_userTableName');
+    await db.execute('DELETE FROM $_settingsTableName');
+    await db.execute('DELETE FROM $_notificationTableName');
   }
 }

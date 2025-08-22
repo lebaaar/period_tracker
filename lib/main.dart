@@ -46,7 +46,6 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => PeriodProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       child: PeriodTrackerApp(showOnboarding: !onBoardingComplete),
     ),

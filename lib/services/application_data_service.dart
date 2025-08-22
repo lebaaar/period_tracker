@@ -1,4 +1,6 @@
 import "package:path_provider/path_provider.dart";
+import "package:period_tracker/services/database_service.dart";
+import "package:period_tracker/shared_preferences/shared_preferences.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 class ApplicationDataService {
@@ -19,10 +21,12 @@ class ApplicationDataService {
   Future<void> clearAppData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    await DatabaseService().truncateDatabaseTables();
+    setOnboardingValue(false);
     final directory = await getApplicationCacheDirectory();
     if (await directory.exists()) {
       await directory.delete(recursive: true);
     }
-    await directory.create(recursive: true); // Recreate the directory
+    await directory.create(recursive: true);
   }
 }
