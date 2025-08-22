@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
@@ -194,8 +195,9 @@ class DatabaseService {
       whereArgs: [1],
     );
     if (rows.isEmpty) {
-      insertDefaultSettings(db);
-      getSettings();
+      // this will only be triggered after deleting app data to reinsert default settings
+      await insertDefaultSettings(db);
+      return await getSettings();
     }
     return Settings.fromMap(rows.first);
   }
@@ -253,9 +255,13 @@ class DatabaseService {
 
   Future<void> truncateDatabaseTables() async {
     final db = await database;
-    await db.execute('DELETE FROM $_periodsTableName');
-    await db.execute('DELETE FROM $_userTableName');
-    await db.execute('DELETE FROM $_settingsTableName');
-    await db.execute('DELETE FROM $_notificationTableName');
+    try {
+      await db.execute('DELETE FROM $_periodsTableName');
+      await db.execute('DELETE FROM $_userTableName');
+      await db.execute('DELETE FROM $_settingsTableName');
+      await db.execute('DELETE FROM $_notificationTableName');
+    } catch (e) {
+      debugPrint('Error truncating tables: $e');
+    }
   }
 }

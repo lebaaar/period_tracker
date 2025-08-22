@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
+import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
@@ -356,6 +357,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     );
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
+                    await context.read<SettingsProvider>().loadSettings();
 
                     // Navigate to home screen
                     if (context.mounted) {
