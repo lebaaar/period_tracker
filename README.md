@@ -21,7 +21,7 @@ Configurable in settings
 
 
 <p align="center">
-  <a href="https://play.google.com/store/apps/details?id=com.example.app">
+  <a href="https://play.google.com/store/apps/details?id=com.lebaaar.app">
     <img src="https://cdn.rawgit.com/steverichey/google-play-badge-svg/master/img/en_get.svg" width="200" alt="Get it on Google Play">
   </a>
   <br>
