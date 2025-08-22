@@ -27,7 +27,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   DateTime? rangeStart;
   DateTime? rangeEnd;
   DateTime focusedDay = DateTime.now();
+
   bool _initialLoad = true;
+  DateTime? _initialRangeStart;
+  DateTime? _initialRangeEnd;
+  String? _initialNotes;
 
   bool get isEditing => widget.isEditing;
   Period? get period => widget.period;
@@ -66,6 +70,17 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     Navigator.of(context).pop();
   }
 
+  bool isPageDirty() {
+    if (isEditing && period != null) {
+      return rangeStart != _initialRangeStart ||
+          rangeEnd != _initialRangeEnd ||
+          _notesController.text != _initialNotes;
+    }
+    return rangeStart != null &&
+        rangeEnd != null &&
+        (_notesController.text.isNotEmpty || _notesController.text != '');
+  }
+
   @override
   void initState() {
     // TODO set ranges
@@ -78,6 +93,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       rangeEnd = period!.endDate;
       _notesController.text = period!.notes ?? '';
     }
+    _initialRangeStart = rangeStart;
+    _initialRangeEnd = rangeEnd;
+    _initialNotes = _notesController.text;
   }
 
   @override
@@ -105,10 +123,83 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
-          // TODO: ask if user wants to discard changes if page is dirty
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (isPageDirty()) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Unsaved Changes'),
+                  content: const Text('Do you want to discard changes?'),
+                  actions: [
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(200),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Discard'),
+                    ),
+                  ],
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                ),
+              );
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
+        actions: [
+          if (isEditing && period != null)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              color: Colors.white,
+              tooltip: 'Delete Period',
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Period'),
+                    content: const Text(
+                      'Are you sure you want to delete this period entry?',
+                    ),
+                    actions: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(200),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await context.read<PeriodProvider>().deletePeriod(
+                    period!.id!,
+                  );
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+        ],
       ),
+
       body: SafeArea(
         child: ListView(
           children: [
@@ -211,9 +302,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       floatingActionButton: Container(
         height: 50,
         margin: const EdgeInsets.all(10),
-        child: ElevatedButton(
+        child: TextButton(
           onPressed: () => _onSave(context),
-          style: ElevatedButton.styleFrom(
+          style: TextButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             shape: RoundedRectangleBorder(
