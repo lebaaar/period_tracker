@@ -39,18 +39,22 @@ class PeriodProvider extends ChangeNotifier {
     if (_periods.length < 2) return null;
     final avgCycle = getAverageCycleLength();
     if (avgCycle == null) return null;
-    return _periods.last.startDate.add(Duration(days: avgCycle.round()));
+    // _periods is sorted descending by startDate, so _periods.first is the most recent
+    return _periods.first.startDate.add(Duration(days: avgCycle.round()));
   }
 
   // Returns the current cycle day for a given date
   int getCurrentCycleDay([DateTime? date]) {
-    // TODO - check logis
     if (_periods.isEmpty) return 0;
     date ??= DateTime.now();
-    final lastPeriod = _periods.lastWhere(
-      (p) => p.startDate.isBefore(date!),
-      orElse: () => _periods.first,
-    );
+    final lastPeriod = _periods
+        .where((p) => !p.startDate.isAfter(date!))
+        .fold<Period?>(
+          null,
+          (prev, p) =>
+              prev == null || p.startDate.isAfter(prev.startDate) ? p : prev,
+        );
+    if (lastPeriod == null) return 0;
     return date.difference(lastPeriod.startDate).inDays + 1;
   }
 
@@ -81,10 +85,12 @@ class PeriodProvider extends ChangeNotifier {
   // Returns average cycle length in days
   double? getAverageCycleLength() {
     if (_periods.length < 2) return null;
+    final sorted = List<Period>.from(_periods)
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
     List<int> cycles = [];
-    for (int i = 1; i < _periods.length; i++) {
+    for (int i = 1; i < sorted.length; i++) {
       cycles.add(
-        _periods[i].startDate.difference(_periods[i - 1].startDate).inDays,
+        sorted[i].startDate.difference(sorted[i - 1].startDate).inDays,
       );
     }
     if (cycles.isEmpty) return null;
@@ -108,7 +114,7 @@ class PeriodProvider extends ChangeNotifier {
     }
 
     if (period.id == null) {
-      return const Text('No data for this date');
+      return Text('Cycle Day: 	${getCurrentCycleDay(date)}');
     }
 
     // TODO - make pretty, follow figma
