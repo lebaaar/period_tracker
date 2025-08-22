@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
   late DateTime _selectedDay;
@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
     List<Period> periods = context.watch<PeriodProvider>().periods;
 
     final nextPeriod = periodProvider.getNextPeriodDate();
-    final currentCycleDay = periodProvider.getCurrentCycleDay(_selectedDay);
+    final currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.now());
     final avgCycleLength = periodProvider.getAverageCycleLength();
     final status = periodProvider.getStatusMessage();
 
@@ -93,15 +93,23 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
+                    'Average cycle length: ${avgCycleLength?.toStringAsFixed(1) ?? 'N/A'} days',
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
                     'Current cycle: day $currentCycleDay',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: progress,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.secondary,
+                    ),
                     minHeight: 8,
-                    backgroundColor: Colors.grey[300],
-                    color: Theme.of(context).colorScheme.primary,
+                    backgroundColor: Colors.grey[300], // TODO
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -237,8 +245,8 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(99.0),
         ),
         child: isInPeriod(_selectedDay)
-            ? const Icon(Icons.edit)
-            : const Icon(Icons.add),
+            ? Icon(Icons.edit, color: Theme.of(context).colorScheme.onPrimary)
+            : Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
       ),
     );
   }
