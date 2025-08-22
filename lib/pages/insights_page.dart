@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:period_tracker/providers/period_provider.dart';
+import 'package:provider/provider.dart';
 import '../models/period_model.dart';
 
 class InsightsPage extends StatefulWidget {
@@ -9,15 +12,37 @@ class InsightsPage extends StatefulWidget {
 }
 
 class _InsightsPageState extends State<InsightsPage> {
-  // TODO: fetch from database
-  final List<Period> periods = [
-    Period(startDate: DateTime(2024, 6, 1), endDate: DateTime(2024, 6, 6)),
-    Period(startDate: DateTime(2024, 6, 28), endDate: DateTime(2024, 7, 3)),
-    Period(startDate: DateTime(2024, 7, 25), endDate: DateTime(2024, 7, 30)),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: Center(child: Text('Insights page')));
+    List<Period> periods = context.watch<PeriodProvider>().periods;
+
+    return SafeArea(
+      child: periods.isEmpty
+          ? const Center(child: Text('No periods logged.'))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: periods.length,
+              itemBuilder: (context, index) {
+                final period = periods[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.calendar_today,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: Text(
+                      'Start: 	${period.startDate.toLocal().toIso8601String().split('T').first}',
+                    ),
+                    subtitle: Text(
+                      period.endDate != null
+                          ? 'End:   ${period.endDate!.toLocal().toIso8601String().split('T').first}'
+                          : 'Ongoing',
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
   }
 }
