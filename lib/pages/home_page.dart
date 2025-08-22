@@ -104,11 +104,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   LinearProgressIndicator(
                     value: progress,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.secondary,
+                      Theme.of(context).colorScheme.primary,
                     ),
                     minHeight: 8,
-                    backgroundColor: Colors.grey[300], // TODO
-                    color: Theme.of(context).colorScheme.secondary,
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   const SizedBox(height: 16),

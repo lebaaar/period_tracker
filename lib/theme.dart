@@ -10,7 +10,7 @@ final ColorScheme colorScheme = ColorScheme.dark(
   onPrimaryContainer: Colors.white,
 
   // TBD - when creating calendar highlighting...
-  secondary: Color(0xFFB1A6C9),
+  secondary: Color.fromARGB(255, 89, 89, 89),
   onSecondary: Color(0xFF231532),
   secondaryContainer: Color(0xFF3A2C4A),
   onSecondaryContainer: Color(0xFFE5DFF2),
