@@ -187,6 +187,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                         child: const Text('Delete'),
                       ),
                     ],
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
                   ),
                 );
                 if (confirm == true) {
@@ -294,7 +297,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 onChanged: (value) {},
               ),
             ),
-            Text('isEditing: $isEditing\nperiod: $period.'),
           ],
         ),
       ),
