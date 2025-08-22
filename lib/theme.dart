@@ -6,8 +6,8 @@ final ColorScheme colorScheme = ColorScheme.dark(
 
   primary: Color(0xFFFF91C5),
   onPrimary: Colors.black,
-  primaryContainer: Colors.black,
-  onPrimaryContainer: Colors.black,
+  primaryContainer: Color(0xFF121212),
+  onPrimaryContainer: Colors.white,
 
   // TBD - when creating calendar highlighting...
   secondary: Color(0xFFB1A6C9),
@@ -29,7 +29,7 @@ final ColorScheme colorScheme = ColorScheme.dark(
 
   surface: Colors.black,
   onSurface: Colors.white,
-  surfaceContainerHighest: Color(0xFF49454F),
+  surfaceContainerHighest: Color(0xFF121212),
   onSurfaceVariant: Color(0xFFCAC4D0),
 
   outline: Color(0xFF938F99),
