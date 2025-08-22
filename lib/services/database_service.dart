@@ -179,9 +179,9 @@ class DatabaseService {
   Future<void> insertDefaultSettings(Database db) async {
     await db.insert(_settingsTableName, {
       _settingsIdColumnName: 1,
-      _settingsPredictionModeColumnName: 'static',
+      _settingsPredictionModeColumnName: 'dynamic',
       _settingsDarkModeColumnName: 0,
-      _settingsNotificationEnabledColumnName: 0,
+      _settingsNotificationEnabledColumnName: 1,
       _settingsNotificationDaysBeforeColumnName: 3,
       _settingsNotificationTimeColumnName: '08:00',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
