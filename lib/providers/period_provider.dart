@@ -61,14 +61,34 @@ class PeriodProvider extends ChangeNotifier {
   // Returns a status message (e.g., late, on track)
   String getStatusMessage() {
     final next = getNextPeriodDate();
-    if (next == null) return 'Not enough data';
+    if (_periods.isEmpty) {
+      return 'No period data available';
+    }
+    if (next == null) {
+      return 'Not enough data to predict next period';
+    }
     final today = DateTime.now();
+    // Check if currently in an ongoing period
+    final ongoing = _periods.any(
+      (p) =>
+          !today.isBefore(p.startDate) &&
+          (p.endDate == null || !today.isAfter(p.endDate!)),
+    );
+    if (ongoing) {
+      return 'Currently in period';
+    }
     if (today.isAfter(next)) {
-      return 'Period is late';
+      final daysLate = today.difference(next).inDays;
+      return daysLate == 1
+          ? 'Period is 1 day late'
+          : 'Period is $daysLate days late';
     } else if (today.isAtSameMomentAs(next)) {
       return 'Period expected today';
     } else {
-      return 'On track';
+      final daysLeft = next.difference(today).inDays;
+      return daysLeft == 1
+          ? 'Period expected tomorrow'
+          : 'Period expected in $daysLeft days';
     }
   }
 
