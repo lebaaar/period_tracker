@@ -83,20 +83,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
             _showEditNotificationDaysBeforeDialog(settings, (newDays) {
               context.read<SettingsProvider>().updateSettings(
                 notificationDaysBefore: int.parse(newDays),
-                notificationTime: settings.notificationTime,
               );
             });
             break;
-          // case 'notifications_time':
-          //   _showEditCycleLengthDialog(settings, (newLength) {
-          //     context.read<SettingsProvider>().updateSettings(
-          //       cycleLength: int.parse(newLength),
-          //       name: settings.name,
-          //       periodLength: settings.periodLength,
-          //       lastPeriodDate: user.lastPeriodDate,
-          //     );
-          //   });
-          //   break;
+          case 'notifications_time':
+            _showEditCycleLengthDialog(settings, (newLength) {
+              context.read<SettingsProvider>().updateSettings(
+                notificationTime: TimeOfDay(
+                  hour: int.parse(newLength.split(':')[0]),
+                  minute: int.parse(newLength.split(':')[1]),
+                ),
+              );
+            });
+            break;
           default:
             throw ArgumentError(
               '''Invalid tile type: $tileType. Should be one the following:
@@ -119,7 +118,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Send Notification Days Before'),
+          title: const Text('Send notification days before'),
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
@@ -131,7 +130,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
                 onSave(controller.text);
                 Navigator.of(context).pop();
@@ -139,8 +138,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
               child: const Text('Save'),
             ),
           ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         );
       },
     );
+  }
+
+  void _showEditCycleLengthDialog(Settings settings, Function(String) onSave) {
+    showTimePicker(
+      context: context,
+      initialTime: settings.notificationTime,
+      initialEntryMode: TimePickerEntryMode.dial,
+    ).then((TimeOfDay? time) {
+      if (time != null) {
+        onSave('${time.hour}:${time.minute}');
+      }
+    });
   }
 }
