@@ -54,7 +54,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     switch (tileType) {
       case 'notifications_days_before':
-        title = 'Notification Days Before';
+        title = 'Notification days before period';
         subtitle = settings.notificationDaysBefore.toString();
         break;
       case 'notifications_time':
@@ -82,6 +82,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
         switch (tileType) {
           case 'notifications_days_before':
             _showEditNotificationDaysBeforeDialog(settings, (newDays) {
+              // Validate input
+              if (newDays.isEmpty || int.tryParse(newDays) == null) {
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a valid number.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+
               // Check max days before
               if (int.parse(newDays) > kMaxNotificationsDaysBefore) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -132,7 +143,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Send notification days before'),
+          title: const Text('Notification days before period'),
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
@@ -167,6 +178,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
       context: context,
       initialTime: settings.notificationTime,
       initialEntryMode: TimePickerEntryMode.dial,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
     ).then((TimeOfDay? time) {
       if (time != null) {
         onSave('${time.hour}:${time.minute}');

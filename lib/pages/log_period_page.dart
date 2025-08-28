@@ -319,7 +319,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               child: TextField(
                 controller: _notesController,
                 decoration: InputDecoration(
-                  hintText: 'Add any notes about this period...',
+                  hintText: 'Add notes about this period',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
