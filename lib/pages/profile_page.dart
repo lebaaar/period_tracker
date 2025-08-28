@@ -69,8 +69,12 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             child: CircleAvatar(
               radius: 48,
-              backgroundColor: Colors.grey[800], // TODO
-              child: Icon(Icons.person_rounded, size: 48, color: Colors.white),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              child: Icon(
+                Icons.person_rounded,
+                size: 48,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
             ),
           ),
         ),
@@ -78,11 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
         Center(
           child: Text(
             _getUserName(user),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
         const SizedBox(height: 34),
@@ -134,19 +134,14 @@ class _ProfilePageState extends State<ProfilePage> {
         Center(
           child: Text(
             'Made with ❤️ for Nina',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: Theme.of(context).textTheme.bodySmall?.fontSize,
-            ),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
         Center(
           child: FutureBuilder<PackageInfo>(
             future: _packageInfoFuture,
             builder: (context, snapshot) {
-              // simulate loading state, wait 5sec
-              // sleep(const Duration(seconds: 5));
-
+              ;
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(
                   padding: const EdgeInsets.all(8),
@@ -161,10 +156,9 @@ class _ProfilePageState extends State<ProfilePage> {
               final packageInfo = snapshot.data!;
               return Text(
                 'Version ${packageInfo.version} (${packageInfo.buildNumber})',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: Theme.of(context).textTheme.labelSmall?.fontSize,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 10),
               );
             },
           ),
@@ -178,21 +172,13 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize,
-        ),
-      ),
+      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
     );
   }
 
   Widget _buildListTile(User user, String tileType) {
     String title;
     String subtitle;
-    Color subtitleColor = Theme.of(context).colorScheme.onSurface;
 
     switch (tileType) {
       case 'name':
@@ -231,15 +217,14 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.tertiary,
+        ),
       ),
-      subtitle: Text(subtitle, style: TextStyle(color: subtitleColor)),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 50),
-      ),
+      trailing: Icon(Icons.chevron_right_rounded),
       onTap: () {
         switch (tileType) {
           case 'name':
@@ -303,14 +288,11 @@ class _ProfilePageState extends State<ProfilePage> {
     Function(bool) onChanged,
   ) {
     return SwitchListTile(
-      title: Text(
-        title,
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-      ),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 50),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.tertiary,
         ),
       ),
       value: value,
@@ -332,15 +314,23 @@ class _ProfilePageState extends State<ProfilePage> {
           title: const Text('Edit name'),
           content: TextField(
             controller: _nameController,
-            decoration: const InputDecoration(hintText: 'Your name'),
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              hintText: 'Your name',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withAlpha(200),
+                foregroundColor: Theme.of(context).colorScheme.tertiary,
               ),
               child: const Text('Cancel'),
             ),
@@ -368,7 +358,16 @@ class _ProfilePageState extends State<ProfilePage> {
           title: const Text('Edit cycle length'),
           content: TextField(
             controller: _cycleLengthController,
-            decoration: const InputDecoration(hintText: 'Average cycle length'),
+            decoration: InputDecoration(
+              hintText: 'Average cycle length',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
+            ),
             keyboardType: TextInputType.numberWithOptions(
               decimal: false,
               signed: false,
@@ -378,9 +377,7 @@ class _ProfilePageState extends State<ProfilePage> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withAlpha(200),
+                foregroundColor: Theme.of(context).colorScheme.tertiary,
               ),
               child: const Text('Cancel'),
             ),
@@ -421,8 +418,15 @@ class _ProfilePageState extends State<ProfilePage> {
           title: const Text('Edit period length'),
           content: TextField(
             controller: _periodLengthController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Average period length',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
             ),
             keyboardType: TextInputType.numberWithOptions(
               decimal: false,
@@ -433,9 +437,7 @@ class _ProfilePageState extends State<ProfilePage> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withAlpha(200),
+                foregroundColor: Theme.of(context).colorScheme.tertiary,
               ),
               child: const Text('Cancel'),
             ),
@@ -518,9 +520,7 @@ class _ProfilePageState extends State<ProfilePage> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withAlpha(200),
+                foregroundColor: Theme.of(context).colorScheme.tertiary,
               ),
               child: const Text('Cancel'),
             ),

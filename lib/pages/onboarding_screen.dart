@@ -8,7 +8,7 @@ import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -90,20 +90,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Welcome!',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
+          Text('Welcome!', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 12),
-          const Text('Let\'s start with your name'),
-          const SizedBox(height: 24),
+          Text(
+            'Let\'s start with your name',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 20),
           TextField(
             controller: _nameController,
             focusNode: _nameFocusNode,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              labelText: 'Your Name',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: 'Your name',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
             ),
             textInputAction: TextInputAction.next,
             onSubmitted: (_) {
@@ -127,16 +133,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Cycle Info',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
+          Text('Cycle Info', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 12),
           Text(
-            'Hi ${_nameController.text.isNotEmpty ? _nameController.text.trim() : 'there'}!\nEnter your cycle and period lengths in days',
+            'Enter your cycle and period lengths in days',
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           TextField(
             controller: _periodLengthController,
             focusNode: _periodLengthFocusNode,
@@ -144,9 +147,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               decimal: false,
               signed: false,
             ),
-            decoration: const InputDecoration(
-              labelText: 'Average Period Length',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: 'Average period length',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
             ),
             textInputAction: TextInputAction.next,
             onSubmitted: (_) {
@@ -161,9 +170,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               decimal: false,
               signed: false,
             ),
-            decoration: const InputDecoration(
-              labelText: 'Average Cycle Length',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: 'Average cycle length',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
             ),
             textInputAction: TextInputAction.next,
             onSubmitted: (_) {
@@ -192,16 +207,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Last Period',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Select the date your last period started',
-            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Builder(
             builder: (context) {
               FocusScope.of(context).unfocus();
@@ -221,7 +236,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             _lastPeriodDate == null
                 ? 'No date selected'
-                : 'My last period started on: ${DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(_lastPeriodDate!)}',
+                : 'My last period started ${DateTimeHelper.displayDate(_lastPeriodDate!)}',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
@@ -313,7 +328,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'Please select your last period date.',
+                              'Please select the start day of your last period.',
                             ),
                             behavior: SnackBarBehavior.floating,
                           ),

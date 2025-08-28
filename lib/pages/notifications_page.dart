@@ -24,7 +24,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         elevation: 0,
         title: Text(
           'Notifications',
-          style: const TextStyle(color: Colors.white),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         leading: IconButton(
@@ -50,7 +50,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget _buildListTile(Settings settings, String tileType) {
     String title;
     String subtitle;
-    Color subtitleColor = Theme.of(context).colorScheme.onSurface;
 
     switch (tileType) {
       case 'notifications_days_before':
@@ -69,15 +68,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
 
     return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.tertiary,
+        ),
       ),
-      subtitle: Text(subtitle, style: TextStyle(color: subtitleColor)),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 50),
-      ),
+      trailing: Icon(Icons.chevron_right_rounded),
       onTap: () {
         switch (tileType) {
           case 'notifications_days_before':
@@ -150,10 +148,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
               decimal: false,
               signed: false,
             ),
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1,
+                ),
+              ),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.tertiary,
+              ),
               child: const Text('Cancel'),
             ),
             TextButton(

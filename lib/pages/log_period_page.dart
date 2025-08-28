@@ -155,7 +155,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         elevation: 0,
         title: Text(
           isEditing ? 'Edit Period' : 'Add Period',
-          style: const TextStyle(color: Colors.white),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         leading: IconButton(
@@ -171,9 +171,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   actions: [
                     TextButton(
                       style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(200),
+                        foregroundColor: Theme.of(context).colorScheme.tertiary,
                       ),
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text('Cancel'),
@@ -215,7 +213,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                         style: TextButton.styleFrom(
                           foregroundColor: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withAlpha(200),
+                          ).colorScheme.tertiary,
                         ),
                         onPressed: () => Navigator.of(context).pop(false),
                         child: const Text('Cancel'),
@@ -359,15 +357,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   Widget _buildTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize,
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Text(text, style: Theme.of(context).textTheme.titleMedium),
     );
   }
 }

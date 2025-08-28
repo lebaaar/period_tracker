@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // icon color: FF91C5
 final ColorScheme colorScheme = ColorScheme.dark(
@@ -10,13 +11,13 @@ final ColorScheme colorScheme = ColorScheme.dark(
   onPrimaryContainer: Colors.white,
 
   // TBD - when creating calendar highlighting...
-  secondary: Color.fromARGB(255, 89, 89, 89),
+  secondary: Color.fromARGB(255, 124, 123, 123),
   onSecondary: Color(0xFF231532),
   secondaryContainer: Color(0xFF3A2C4A),
   onSecondaryContainer: Color(0xFFE5DFF2),
 
   // TBD - ?
-  tertiary: Color(0xFFE5B7D0),
+  tertiary: Color.fromARGB(255, 198, 198, 198),
   onTertiary: Color(0xFF39182A),
   tertiaryContainer: Color(0xFF542E41),
   onTertiaryContainer: Color(0xFFFFD9E7),
@@ -43,55 +44,65 @@ final ColorScheme colorScheme = ColorScheme.dark(
   inversePrimary: Color(0xFF98406F),
 );
 
-final ColorScheme old = ColorScheme.dark(
-  primary: const Color.fromRGBO(255, 145, 197, 1),
-  onPrimary: Colors.black,
-  secondary: Colors.white,
-  onSecondary: Colors.black,
-  surface: Colors.black,
-  onSurface: Colors.white,
-  error: Colors.redAccent,
-  onError: Colors.black,
-  tertiary: Colors.pinkAccent, // required for ColorScheme
-  onTertiary: Colors.black, // required for ColorScheme
-  outline: Colors.grey, // required for ColorScheme
-  shadow: Colors.black, // required for ColorScheme
-  inverseSurface: Colors.white,
-  inversePrimary: Colors.white,
-);
-
 final textTheme = TextTheme(
-  bodyLarge: TextStyle(fontSize: 16, color: colorScheme.onSurface),
-  bodyMedium: TextStyle(fontSize: 14, color: colorScheme.onSurface),
-  bodySmall: TextStyle(fontSize: 12, color: colorScheme.onSurface),
-  titleLarge: TextStyle(
+  bodyLarge: GoogleFonts.lexend(
+    fontSize: 16,
+    color: colorScheme.onSurface,
+    fontWeight: FontWeight.w400,
+  ),
+  bodyMedium: GoogleFonts.lexend(
+    fontSize: 14,
+    color: colorScheme.onSurface,
+    fontWeight: FontWeight.w400,
+  ),
+  bodySmall: GoogleFonts.lexend(
+    fontSize: 12,
+    color: colorScheme.onSurface,
+    fontWeight: FontWeight.w400,
+  ),
+  titleLarge: GoogleFonts.lexend(
     fontSize: 20,
     fontWeight: FontWeight.bold,
     color: colorScheme.onSurface,
   ),
-  titleMedium: TextStyle(
+  titleMedium: GoogleFonts.lexend(
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: colorScheme.primary,
+    color: colorScheme.onSurface,
   ),
-  titleSmall: TextStyle(
+  titleSmall: GoogleFonts.lexend(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     color: colorScheme.onSurface,
   ),
-  labelLarge: TextStyle(
+  labelLarge: GoogleFonts.lexend(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: colorScheme.onSurface,
   ),
-  labelMedium: TextStyle(
+  labelMedium: GoogleFonts.lexend(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    color: colorScheme.primary,
+    color: colorScheme.onSurface,
   ),
-  labelSmall: TextStyle(
+  labelSmall: GoogleFonts.lexend(
     fontSize: 10,
     fontWeight: FontWeight.w400,
+    color: colorScheme.onSurface,
+  ),
+  headlineLarge: GoogleFonts.lexend(
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+    color: colorScheme.onSurface,
+  ),
+  headlineMedium: GoogleFonts.lexend(
+    fontSize: 28,
+    fontWeight: FontWeight.bold,
+    color: colorScheme.onSurface,
+  ),
+  headlineSmall: GoogleFonts.lexend(
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
     color: colorScheme.onSurface,
   ),
 );

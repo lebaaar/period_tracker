@@ -112,12 +112,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SizedBox(height: 16),
                   Text(
                     status,
-                    style: TextStyle(
-                      color: status.contains('late')
-                          ? Colors.red
-                          : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.green,
+                    ), // TODO, method to get color based on status, no hardcoded colors
                   ),
                 ],
               ),

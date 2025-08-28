@@ -125,7 +125,7 @@ class _MainNavigationState extends State<MainNavigation> {
       appBar: AppBar(
         title: Text(
           appBarTitles[_selectedIndex],
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
