@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
@@ -81,6 +82,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
         switch (tileType) {
           case 'notifications_days_before':
             _showEditNotificationDaysBeforeDialog(settings, (newDays) {
+              // Check max days before
+              if (int.parse(newDays) > kMaxNotificationsDaysBefore) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Notifications can only be sent up to $kMaxNotificationsDaysBefore days before the period starts.',
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+
               context.read<SettingsProvider>().updateSettings(
                 notificationDaysBefore: int.parse(newDays),
               );
@@ -123,6 +137,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
             controller: controller,
             decoration: const InputDecoration(
               hintText: 'Enter notification days before',
+            ),
+            keyboardType: TextInputType.numberWithOptions(
+              decimal: false,
+              signed: false,
             ),
           ),
           actions: [

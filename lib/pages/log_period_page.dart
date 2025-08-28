@@ -3,6 +3,7 @@ import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/period_service.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -37,10 +38,44 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   Period? get period => widget.period;
 
   void _onSave(BuildContext context) {
+    // Check if range is selected
+    // TODO - support on going periods
     if (rangeStart == null || rangeEnd == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select a period range'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check for overlapping periods
+    final periods = context.read<PeriodProvider>().periods;
+    final hasOverlap = PeriodService.isOverlappingPeriod(
+      rangeStart!,
+      periods,
+      newEndDate: rangeEnd,
+    );
+    if (hasOverlap) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('The selected period overlaps with an existing one.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check if period is in the future
+    final isInFuture = PeriodService.checkPeriodInFuture(
+      rangeStart!,
+      rangeEnd,
+    ); // TODO - support ongoing periods
+    if (isInFuture) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('The start date cannot be in the future.'),
           behavior: SnackBarBehavior.floating,
         ),
       );

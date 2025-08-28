@@ -94,9 +94,9 @@ class DatabaseService {
       CREATE TABLE $_settingsTableName (
         $_settingsIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
         $_settingsPredictionModeColumnName TEXT NOT NULL CHECK ($_settingsPredictionModeColumnName IN ('dynamic', 'static')) DEFAULT 'static',
-        $_settingsDarkModeColumnName INTEGER NOT NULL DEFAULT 0,
-        $_settingsNotificationEnabledColumnName INTEGER NOT NULL DEFAULT 0,
-        $_settingsNotificationDaysBeforeColumnName INTEGER NOT NULL DEFAULT 3,
+        $_settingsDarkModeColumnName INTEGER NOT NULL DEFAULT 1,
+        $_settingsNotificationEnabledColumnName INTEGER NOT NULL DEFAULT 1,
+        $_settingsNotificationDaysBeforeColumnName INTEGER NOT NULL DEFAULT $kDefaultNotificationsDaysBefore,
         $_settingsNotificationTimeColumnName TEXT NOT NULL DEFAULT '08:00'
       )
     ''');
