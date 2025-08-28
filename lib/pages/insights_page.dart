@@ -48,9 +48,35 @@ class _InsightsPageState extends State<InsightsPage> {
             )
           : Column(
               children: [
-                Text(
-                  'Average cycle length: ${periodProvider.getAverageCycleLength()?.toStringAsFixed(1) ?? 'N/A'} days',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                SizedBox(
+                  height: 130,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: _statCard(
+                          title: "Average Cycle Length",
+                          value:
+                              periodProvider
+                                  .getAverageCycleLength()
+                                  ?.toStringAsFixed(1) ??
+                              'N/A days',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _statCard(
+                          title: "Average Period Length",
+                          value:
+                              periodProvider
+                                  .getAveragePeriodLength()
+                                  ?.toStringAsFixed(1) ??
+                              'N/A days',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -80,6 +106,33 @@ class _InsightsPageState extends State<InsightsPage> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _statCard({required String title, required String value}) {
+    return Card(
+      color: Theme.of(context).colorScheme.secondary,
+      shadowColor: Theme.of(context).colorScheme.onSurface,
+      margin: const EdgeInsets.all(8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+              child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

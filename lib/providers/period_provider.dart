@@ -94,11 +94,15 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns average period length in days
+  // TODO - fix logic
   double? getAveragePeriodLength() {
-    if (_periods.isEmpty) return null;
-    final lengths = _periods
-        .where((p) => p.isCompleted)
-        .map((p) => p.lengthInDays());
+    // Only consider periods with both start and end dates
+    final completed = _periods.where((p) => p.endDate != null).toList();
+    if (completed.isEmpty) return null;
+    final lengths = completed
+        .map((p) => p.endDate!.difference(p.startDate).inDays + 1)
+        .where((days) => days > 0)
+        .toList();
     if (lengths.isEmpty) return null;
     return lengths.reduce((a, b) => a + b) / lengths.length;
   }
