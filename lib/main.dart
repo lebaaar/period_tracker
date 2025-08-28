@@ -144,17 +144,17 @@ class _MainNavigationState extends State<MainNavigation> {
             tooltip: null,
           ),
           NavigationDestination(
-            icon: Icon(Icons.timeline),
+            icon: Icon(Icons.bar_chart_rounded),
             selectedIcon: Icon(
-              Icons.timeline,
+              Icons.bar_chart_rounded,
               color: Theme.of(context).colorScheme.onPrimary,
             ),
             label: 'Insights',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_rounded),
             selectedIcon: Icon(
-              Icons.person,
+              Icons.person_rounded,
               color: Theme.of(context).colorScheme.onPrimary,
             ),
             label: 'Profile',

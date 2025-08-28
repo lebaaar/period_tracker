@@ -70,8 +70,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Row(
                     children: [
                       Icon(
-                        Icons.calendar_month,
-                        size: 32,
+                        Icons.calendar_month_rounded,
+                        size: 40,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                       const SizedBox(width: 12),
@@ -246,8 +246,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(99.0),
         ),
         child: isInPeriod(_selectedDay)
-            ? Icon(Icons.edit, color: Theme.of(context).colorScheme.onPrimary)
-            : Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
+            ? Icon(
+                Icons.edit_rounded,
+                color: Theme.of(context).colorScheme.onPrimary,
+              )
+            : Icon(
+                Icons.add_rounded,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
       ),
     );
   }

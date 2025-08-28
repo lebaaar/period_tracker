@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: CircleAvatar(
               radius: 48,
               backgroundColor: Colors.grey[800], // TODO
-              child: Icon(Icons.person, size: 48, color: Colors.white),
+              child: Icon(Icons.person_rounded, size: 48, color: Colors.white),
             ),
           ),
         ),

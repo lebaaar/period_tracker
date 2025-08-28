@@ -28,7 +28,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           color: Colors.white,
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -75,7 +75,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       subtitle: Text(subtitle, style: TextStyle(color: subtitleColor)),
       trailing: Icon(
-        Icons.chevron_right,
+        Icons.chevron_right_rounded,
         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 50),
       ),
       onTap: () {

@@ -156,7 +156,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           color: Colors.white,
           onPressed: () {
             if (isPageDirty()) {
@@ -196,7 +196,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         actions: [
           if (isEditing && period != null)
             IconButton(
-              icon: const Icon(Icons.delete),
+              icon: const Icon(Icons.delete_rounded),
               color: Colors.white,
               tooltip: 'Delete Period',
               onPressed: () async {
