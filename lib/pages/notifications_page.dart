@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
-import 'package:period_tracker/utils/string_helper.dart';
+import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -58,8 +58,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         subtitle = settings.notificationDaysBefore.toString();
         break;
       case 'notifications_time':
-        title = 'Notification Time';
-        subtitle = StringHelper.displayTime(settings.notificationTime);
+        title = 'Notification time';
+        subtitle = DateTimeHelper.displayTime(settings.notificationTime);
         break;
       default:
         throw ArgumentError(
@@ -146,9 +146,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
           title: const Text('Notification days before period'),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(
-              hintText: 'Enter notification days before',
-            ),
             keyboardType: TextInputType.numberWithOptions(
               decimal: false,
               signed: false,

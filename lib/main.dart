@@ -135,9 +135,9 @@ class _MainNavigationState extends State<MainNavigation> {
       bottomNavigationBar: NavigationBar(
         destinations: <Widget>[
           NavigationDestination(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_rounded),
             selectedIcon: Icon(
-              Icons.home,
+              Icons.home_rounded,
               color: Theme.of(context).colorScheme.onPrimary,
             ),
             label: 'Home',

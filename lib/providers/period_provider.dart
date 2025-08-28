@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/database_service.dart';
+import 'package:period_tracker/utils/date_time_helper.dart';
 
 class PeriodProvider extends ChangeNotifier {
   List<Period> _periods = [];
@@ -142,11 +143,11 @@ class PeriodProvider extends ChangeNotifier {
       child: Column(
         children: [
           Text(
-            'Selected period: ${period.startDate.toIso8601String().split('T').first} - '
-            '${period.endDate != null ? period.endDate!.toIso8601String().split('T').first : 'Ongoing'}',
+            'Selected period: ${DateTimeHelper.displayDate(period.startDate)} - '
+            '${period.endDate != null ? DateTimeHelper.displayDate(period.endDate!) : 'Ongoing'}',
           ),
           Text(notes),
-          Text('Cycle Day: 	${getCurrentCycleDay(date)}'),
+          Text('Cycle Day: ${getCurrentCycleDay(date)}'),
         ],
       ),
     );
