@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:period_tracker/providers/period_provider.dart';
+import 'package:period_tracker/utils/date_helper.dart';
 import 'package:provider/provider.dart';
 import '../models/period_model.dart';
 
@@ -31,11 +32,11 @@ class _InsightsPageState extends State<InsightsPage> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     title: Text(
-                      'Start: 	${period.startDate.toLocal().toIso8601String().split('T').first}',
+                      'Start: ${DateHelper.formatDate(period.startDate!)}',
                     ),
                     subtitle: Text(
                       period.endDate != null
-                          ? 'End:   ${period.endDate!.toLocal().toIso8601String().split('T').first}'
+                          ? 'End:   ${DateHelper.formatDate(period.endDate!)}'
                           : 'Ongoing',
                     ),
                   ),

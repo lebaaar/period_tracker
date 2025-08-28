@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/utils/string_helper.dart';
 import 'package:provider/provider.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -58,8 +59,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         break;
       case 'notifications_time':
         title = 'Notification Time';
-        subtitle =
-            '${settings.notificationTime.hour}:${settings.notificationTime.minute}';
+        subtitle = StringHelper.displayTime(settings.notificationTime);
         break;
       default:
         throw ArgumentError(

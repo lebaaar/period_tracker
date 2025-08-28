@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/utils/date_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -83,7 +84,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                           Text(
                             nextPeriod != null
-                                ? _formatDate(nextPeriod)
+                                ? DateHelper.formatDate(nextPeriod)
                                 : 'Unknown',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -250,7 +251,4 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
-
-  String _formatDate(DateTime date) =>
-      "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 }
