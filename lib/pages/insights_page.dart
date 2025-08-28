@@ -32,7 +32,7 @@ class _InsightsPageState extends State<InsightsPage> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     title: Text(
-                      'Start: ${DateHelper.formatDate(period.startDate!)}',
+                      'Start: ${DateHelper.formatDate(period.startDate)}',
                     ),
                     subtitle: Text(
                       period.endDate != null
