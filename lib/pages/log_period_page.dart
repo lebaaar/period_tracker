@@ -41,6 +41,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     // Check if range is selected
     // TODO - support on going periods
     if (rangeStart == null || rangeEnd == null) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select a period range'),
@@ -58,6 +59,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       newEndDate: rangeEnd,
     );
     if (hasOverlap) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('The selected period overlaps with an existing one.'),
@@ -73,6 +75,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       rangeEnd,
     ); // TODO - support ongoing periods
     if (isInFuture) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('The start date cannot be in the future.'),
