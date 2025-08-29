@@ -37,7 +37,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: settings == null
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(8),
                 children: [
                   _buildListTile(settings, 'notifications_days_before'),
                   _buildListTile(settings, 'notifications_time'),

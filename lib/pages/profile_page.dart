@@ -129,11 +129,47 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, settingsProvider, child) {
             return _buildSwitchTile(
               'Dynamic period prediction',
-              'Predict the next period based on your cycle history',
+              settingsProvider.settings?.predictionMode == 'dynamic'
+                  ? 'Next period date is based on your cycle history'
+                  : 'Next period date is based on your cycle length you specify',
               settingsProvider.settings?.predictionMode == 'dynamic',
               (value) {
-                settingsProvider.setPredictionMode(
-                  value ? 'dynamic' : 'static',
+                // show conformation dialog
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Change Prediction Mode'),
+                      content: Text(
+                        value
+                            ? 'Are you sure you want to switch to dynamic prediction? This will adjust your future period predictions based on your cycle history.'
+                            : 'Are you sure you want to switch to static prediction? This will use the cycle length you specify in settings for future period predictions.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.tertiary,
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            settingsProvider.setPredictionMode(
+                              value ? 'dynamic' : 'static',
+                            );
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Confirm'),
+                        ),
+                      ],
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer,
+                    );
+                  },
                 );
               },
             );
