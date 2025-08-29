@@ -62,4 +62,23 @@ class PeriodService {
     }
     return false;
   }
+
+  static bool isStartDay(DateTime day, List<Period> periods) {
+    return periods.any(
+      (p) =>
+          p.startDate.year == day.year &&
+          p.startDate.month == day.month &&
+          p.startDate.day == day.day,
+    );
+  }
+
+  static bool isEndDay(DateTime day, List<Period> periods) {
+    return periods.any(
+      (p) =>
+          p.endDate != null &&
+          p.endDate!.year == day.year &&
+          p.endDate!.month == day.month &&
+          p.endDate!.day == day.day,
+    );
+  }
 }

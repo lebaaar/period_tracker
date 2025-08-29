@@ -47,9 +47,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       body: SafeArea(
         child: Column(
           children: [
-            // Top section: Next period, current cycle day, status
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -78,8 +77,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 26),
                   Text(
                     'Current cycle day: $currentCycleDay',
                     style: Theme.of(context).textTheme.bodyMedium,
@@ -92,6 +90,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     minHeight: 8,
                     backgroundColor: Theme.of(context).colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(99),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -124,49 +123,78 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   }
                 });
               },
+              daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
+              daysOfWeekStyle: DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+                weekendStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+              ),
               calendarStyle: CalendarStyle(
+                outsideDaysVisible: false,
                 selectedDecoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
+                selectedTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
-                  final isPeriod = PeriodService.isInPeriod(day, periods);
-                  final isWithinRange =
-                      _rangeStart != null &&
-                      _rangeEnd != null &&
-                      !day.isBefore(_rangeStart!) &&
-                      !day.isAfter(_rangeEnd!);
+                  final isInPeriod = PeriodService.isInPeriod(day, periods);
+                  final isStartDay = PeriodService.isStartDay(day, periods);
+                  final isEndDay = PeriodService.isEndDay(day, periods);
+
+                  BoxDecoration? decoration;
+                  Color? textColor;
+                  if (isInPeriod) {
+                    decoration = BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondary,
+                      borderRadius: BorderRadius.horizontal(
+                        left: isStartDay
+                            ? const Radius.circular(99)
+                            : Radius.zero,
+                        right: isEndDay
+                            ? const Radius.circular(99)
+                            : Radius.zero,
+                      ),
+                    );
+                    textColor = Theme.of(context).colorScheme.onSurface;
+
+                    if (DateTimeHelper.isFirstDayOfMonth(day) ||
+                        day.weekday == DateTime.monday) {
+                      decoration = decoration.copyWith(
+                        borderRadius: BorderRadius.horizontal(
+                          left: const Radius.circular(4),
+                        ),
+                      );
+                    } else if (DateTimeHelper.isLastDayOfMonth(day) ||
+                        day.weekday == DateTime.sunday) {
+                      decoration = decoration.copyWith(
+                        borderRadius: BorderRadius.horizontal(
+                          right: const Radius.circular(4),
+                        ),
+                      );
+                    }
+                  }
+
                   return Container(
-                    decoration: BoxDecoration(
-                      color: isPeriod
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.2)
-                          : isWithinRange
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.secondary.withOpacity(0.3)
-                          : null,
-                      shape: BoxShape.circle,
-                    ),
+                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                    decoration: decoration,
                     child: Center(
                       child: Text(
                         '${day.day}',
-                        style: TextStyle(
-                          color: isPeriod
-                              ? Theme.of(context).colorScheme.primary
-                              : isWithinRange
-                              ? Theme.of(context).colorScheme.secondary
-                              : null,
-                        ),
+                        style: TextStyle(color: textColor),
                       ),
                     ),
                   );
                 },
                 todayBuilder: (context, day, focusedDay) {
                   return Container(
+                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -178,7 +206,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       child: Text(
                         '${day.day}',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -190,7 +218,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: periodProvider.getDataForDate(_selectedDay),
+                child: periodProvider.getDataForDate(_selectedDay, context),
               ),
             ),
           ],

@@ -18,4 +18,13 @@ class DateTimeHelper {
     final String minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
+
+  static bool isFirstDayOfMonth(DateTime date) {
+    return date.day == 1;
+  }
+
+  static bool isLastDayOfMonth(DateTime date) {
+    final nextDay = date.add(const Duration(days: 1));
+    return nextDay.day == 1;
+  }
 }

@@ -1,5 +1,6 @@
 // UI
 final double kBorderRadius = 12;
+final double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2020, 1, 1);

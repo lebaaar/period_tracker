@@ -371,6 +371,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       endDate: end,
                       notes: '',
                     );
+
+                    // TODO: handle errors
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
                     await context.read<SettingsProvider>().loadSettings();

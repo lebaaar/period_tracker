@@ -277,30 +277,48 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               rangeSelectionMode: RangeSelectionMode.toggledOn,
               rangeStartDay: rangeStart,
               rangeEndDay: rangeEnd,
+              daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
+              daysOfWeekStyle: DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+                weekendStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+              ),
               calendarStyle: CalendarStyle(
-                rangeHighlightColor: Colors.grey.shade900,
+                rangeHighlightColor: Theme.of(
+                  context,
+                ).colorScheme.primaryContainer,
                 rangeStartDecoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
+                ),
+                rangeStartTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
                 rangeEndDecoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
-                withinRangeTextStyle: const TextStyle(color: Colors.white),
+                rangeEndTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+                withinRangeTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 todayDecoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 weekendTextStyle: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface, // Use normal text color
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               calendarBuilders: CalendarBuilders(
                 todayBuilder: (context, day, focusedDay) {
                   return Container(
+                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -308,15 +326,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                         width: 2,
                       ),
                     ),
-                    child: Center(
-                      child: Text(
-                        '${day.day}',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    child: Center(child: Text('${day.day}')),
                   );
                 },
               ),

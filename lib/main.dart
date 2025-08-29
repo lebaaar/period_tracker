@@ -101,6 +101,8 @@ class PeriodTrackerApp extends StatelessWidget {
       ],
     );
 
+    // disable landscape mode
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return MaterialApp.router(
       title: 'Period Tracker',
       theme: appTheme,

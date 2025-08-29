@@ -11,7 +11,7 @@ final ColorScheme colorScheme = ColorScheme.dark(
   onPrimaryContainer: Colors.white,
 
   // TBD - when creating calendar highlighting...
-  secondary: Color.fromARGB(255, 124, 123, 123),
+  secondary: Color.fromARGB(255, 66, 66, 66),
   onSecondary: Color(0xFF231532),
   secondaryContainer: Color(0xFF3A2C4A),
   onSecondaryContainer: Color(0xFFE5DFF2),
@@ -19,7 +19,7 @@ final ColorScheme colorScheme = ColorScheme.dark(
   // TBD - ?
   tertiary: Color.fromARGB(255, 198, 198, 198),
   onTertiary: Color(0xFF39182A),
-  tertiaryContainer: Color(0xFF542E41),
+  tertiaryContainer: Color.fromARGB(255, 124, 123, 123),
   onTertiaryContainer: Color(0xFFFFD9E7),
 
   // TBD - when displaying errors

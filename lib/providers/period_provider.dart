@@ -131,7 +131,7 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns a widget or data for a specific date (customize as needed)
-  Widget getDataForDate(DateTime date) {
+  Widget getDataForDate(DateTime date, BuildContext context) {
     final period = _periods.firstWhere(
       (p) =>
           !date.isBefore(p.startDate) &&
@@ -143,11 +143,14 @@ class PeriodProvider extends ChangeNotifier {
     if (period.notes != null && period.notes!.isNotEmpty) {
       notes = 'Notes: ${period.notes!}';
     } else {
-      notes = 'No notes';
+      notes = 'No notes about this period';
     }
 
     if (period.id == null) {
-      return Text('Cycle Day: 	${getCurrentCycleDay(date)}');
+      return Text(
+        'Cycle Day: 	${getCurrentCycleDay(date)}',
+        style: Theme.of(context).textTheme.bodyMedium,
+      );
     }
 
     // TODO - make pretty, follow figma
@@ -155,11 +158,16 @@ class PeriodProvider extends ChangeNotifier {
       child: Column(
         children: [
           Text(
+            'Cycle Day: ${getCurrentCycleDay(date)}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          SizedBox(height: 4),
+          Text(
             'Selected period: ${DateTimeHelper.displayDate(period.startDate)} - '
             '${period.endDate != null ? DateTimeHelper.displayDate(period.endDate!) : 'Ongoing'}',
           ),
+          SizedBox(height: 4),
           Text(notes),
-          Text('Cycle Day: ${getCurrentCycleDay(date)}'),
         ],
       ),
     );
