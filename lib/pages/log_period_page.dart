@@ -344,7 +344,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 decoration: InputDecoration(
                   hintText: 'Add notes about this period',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kBorderRadius),
                     borderSide: BorderSide(
                       color: Theme.of(context).colorScheme.primary,
                       width: 1,
@@ -371,7 +371,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(kBorderRadius),
             ),
           ),
           child: const Center(child: Text('Save')),

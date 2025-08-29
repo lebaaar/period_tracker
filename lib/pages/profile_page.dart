@@ -321,7 +321,7 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: InputDecoration(
               hintText: 'Your name',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kBorderRadius),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1,
@@ -364,7 +364,7 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: InputDecoration(
               hintText: 'Average cycle length',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kBorderRadius),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1,
@@ -424,7 +424,7 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: InputDecoration(
               hintText: 'Average period length',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kBorderRadius),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1,

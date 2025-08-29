@@ -1,3 +1,6 @@
+// UI
+final double kBorderRadius = 12;
+
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2020, 1, 1);
 final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31);
@@ -5,7 +8,11 @@ final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31);
 // Default cycle and period lengths
 final int kDefaultCycleLength = 28;
 final int kDefaultPeriodLength = 5;
-final int kMinCycleLength = 10; // TODO - periods cant be too close together
+final int kMinCycleLength = 10;
+final int kMaxCycleLength = 60;
+final int kMinPeriodLength = 1;
+final int kMaxPeriodLength = 15;
+final int kMinDaysBetweenPeriods = 2;
 
 // Default user name
 final String kMysteriousUserName = 'Mysterious User';

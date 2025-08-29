@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
@@ -104,7 +105,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             decoration: InputDecoration(
               hintText: 'Your name',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kBorderRadius),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1,
@@ -150,7 +151,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             decoration: InputDecoration(
               hintText: 'Average period length',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kBorderRadius),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1,
@@ -173,7 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             decoration: InputDecoration(
               hintText: 'Average cycle length',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kBorderRadius),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1,
