@@ -8,6 +8,7 @@ import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/period_service.dart';
+import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -86,12 +87,23 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(height: 34),
-        _buildSectionTitle('Personal Information'),
+        SectionTitle('Personal Information'),
         _buildListTile(user, 'name'),
-        _buildListTile(user, 'cycle_length'),
-        _buildListTile(user, 'period_length'),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Notifications'),
+        Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, child) {
+            if (settingsProvider.settings?.predictionMode == 'static') {
+              return Column(
+                children: [
+                  _buildListTile(user, 'cycle_length'),
+                  _buildListTile(user, 'period_length'),
+                ],
+              );
+            }
+            return SizedBox.shrink();
+          },
+        ),
+        const Divider(),
+        SectionTitle('Notifications'),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
             return _buildSwitchTile(
@@ -111,8 +123,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 : SizedBox.shrink();
           },
         ),
-        const SizedBox(height: 24),
-        _buildSectionTitle('App settings'),
+        const Divider(),
+        SectionTitle('App settings'),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
             return _buildSwitchTile(
@@ -164,14 +176,6 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 16),
       ],
-    );
-  }
-
-  // Widgets
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
     );
   }
 

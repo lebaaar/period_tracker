@@ -4,6 +4,7 @@ import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
+import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -243,7 +244,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       body: SafeArea(
         child: ListView(
           children: [
-            _buildTitle('Period Range'),
+            SectionTitle('Period Range'),
             TableCalendar(
               headerStyle: HeaderStyle(formatButtonVisible: false),
               startingDayOfWeek: StartingDayOfWeek.monday,
@@ -312,7 +313,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 });
               },
             ),
-            _buildTitle('Notes'),
+            SectionTitle('Notes'),
+            SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
@@ -353,13 +355,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
           child: const Center(child: Text('Save')),
         ),
       ),
-    );
-  }
-
-  Widget _buildTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Text(text, style: Theme.of(context).textTheme.titleMedium),
     );
   }
 }

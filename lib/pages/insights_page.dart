@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
+import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 import '../models/period_model.dart';
 
@@ -78,30 +79,35 @@ class _InsightsPageState extends State<InsightsPage> {
                     ],
                   ),
                 ),
+                Align(
+                  child: SectionTitle('Period History'),
+                  alignment: Alignment.centerLeft,
+                ),
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(2),
-                    itemCount: periods.length,
-                    itemBuilder: (context, index) {
-                      final period = periods[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          leading: Icon(
-                            Icons.calendar_month_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          title: Text(
-                            'Start: ${DateTimeHelper.displayDate(period.startDate)}',
-                          ),
-                          subtitle: Text(
-                            period.endDate != null
-                                ? 'End: ${DateTimeHelper.displayDate(period.endDate!)}'
-                                : 'Ongoing',
-                          ),
+                  child: ListView(
+                    children: periods.map((period) {
+                      return ListTile(
+                        leading: Icon(
+                          Icons.calendar_month_rounded,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
+                        title: Text(
+                          'Start: ${DateTimeHelper.displayDate(period.startDate)}',
+                        ),
+                        subtitle: Text(
+                          period.endDate != null
+                              ? 'End: ${DateTimeHelper.displayDate(period.endDate!)}'
+                              : 'Ongoing',
+                        ),
+                        trailing: Icon(Icons.chevron_right_rounded),
+                        onTap: () {
+                          context.go(
+                            '/log?isEditing=true&periodId=${period.id}&focusedDay=${Uri.encodeComponent(period.startDate.toIso8601String())}',
+                          );
+                          return;
+                        },
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
               ],
@@ -112,7 +118,6 @@ class _InsightsPageState extends State<InsightsPage> {
   Widget _statCard({required String title, required String value}) {
     return Card(
       color: Theme.of(context).colorScheme.secondary,
-      shadowColor: Theme.of(context).colorScheme.onSurface,
       margin: const EdgeInsets.all(8),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
