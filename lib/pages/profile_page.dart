@@ -202,7 +202,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }
               final packageInfo = snapshot.data!;
               return Text(
-                'Version ${packageInfo.version} (${packageInfo.buildNumber})',
+                'Version ${packageInfo.version} ${packageInfo.buildNumber == '' ? '' : '(${packageInfo.buildNumber})'}',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(fontSize: 10),
