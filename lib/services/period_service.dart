@@ -43,7 +43,8 @@ class PeriodService {
   }
 
   static bool checkPeriodInFuture(DateTime startDate, DateTime? endDate) {
-    final now = DateTime.now();
+    // TODO - support ongoing periods, UTC!
+    final now = DateTime.now().toUtc();
     if (startDate.isAfter(now)) return true;
     if (endDate != null && endDate.isAfter(now)) return true;
     return false;

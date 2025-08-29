@@ -75,7 +75,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     final isInFuture = PeriodService.checkPeriodInFuture(
       rangeStart!,
       rangeEnd,
-    ); // TODO - support ongoing periods
+    ); // TODO - support ongoing periods, UTC!
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -346,6 +346,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               },
             ),
             SectionTitle('Notes'),
+            Text(period.toString()),
             SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

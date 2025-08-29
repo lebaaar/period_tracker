@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/database_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
+import 'package:period_tracker/utils/period_status_message.dart';
 
 class PeriodProvider extends ChangeNotifier {
   List<Period> _periods = [];
@@ -60,36 +61,47 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns a status message (e.g., late, on track)
-  String getStatusMessage() {
+  PeriodStatusMessage getStatusMessage(Color defaultColor) {
+    PeriodStatusMessage status = PeriodStatusMessage(
+      text: '',
+      color: defaultColor,
+    );
+
     final next = getNextPeriodDate();
-    if (_periods.isEmpty) {
-      return 'No period data available';
+    if (_periods.length < 2 || next == null) {
+      status.text = 'Not enough data to predict next period';
+      return status;
     }
-    if (next == null) {
-      return 'Not enough data to predict next period';
-    }
+    status.color = Colors.green;
+
     final today = DateTime.now();
-    // Check if currently in an ongoing period
     final ongoing = _periods.any(
       (p) =>
           !today.isBefore(p.startDate) &&
           (p.endDate == null || !today.isAfter(p.endDate!)),
     );
     if (ongoing) {
-      return 'Currently in period';
+      status.text = 'Currently in period';
+      return status;
     }
-    if (today.isAfter(next)) {
-      final daysLate = today.difference(next).inDays;
-      return daysLate == 1
-          ? 'Period is 1 day late'
-          : 'Period is $daysLate days late';
-    } else if (today.isAtSameMomentAs(next)) {
-      return 'Period expected today';
+
+    final difference = next
+        .difference(DateTime(today.year, today.month, today.day))
+        .inDays;
+    if (difference > 0) {
+      status.text = 'Next period in $difference days';
+      return status;
+    } else if (difference < 0) {
+      if (difference < -1) {
+        status.text = 'Period is ${-difference} days late';
+      } else {
+        status.text = 'Period is 1 day late';
+      }
+      status.color = Colors.red;
+      return status;
     } else {
-      final daysLeft = next.difference(today).inDays;
-      return daysLeft == 1
-          ? 'Period expected tomorrow'
-          : 'Period expected in $daysLeft days';
+      status.text = 'Period is due today';
+      return status;
     }
   }
 

@@ -35,7 +35,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final nextPeriod = periodProvider.getNextPeriodDate();
     final currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.now());
     final avgCycleLength = periodProvider.getAverageCycleLength();
-    final status = periodProvider.getStatusMessage();
+    final status = periodProvider.getStatusMessage(
+      Theme.of(context).colorScheme.tertiary,
+    );
 
     double progress = 0;
     if (avgCycleLength != null && avgCycleLength > 0) {
@@ -94,9 +96,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    status,
+                    status.text,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.green,
+                      color: status.color,
                     ), // TODO, method to get color based on status, no hardcoded colors
                   ),
                 ],
@@ -163,22 +165,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     );
                     textColor = Theme.of(context).colorScheme.onSurface;
-
-                    if (DateTimeHelper.isFirstDayOfMonth(day) ||
-                        day.weekday == DateTime.monday) {
-                      decoration = decoration.copyWith(
-                        borderRadius: BorderRadius.horizontal(
-                          left: const Radius.circular(4),
-                        ),
-                      );
-                    } else if (DateTimeHelper.isLastDayOfMonth(day) ||
-                        day.weekday == DateTime.sunday) {
-                      decoration = decoration.copyWith(
-                        borderRadius: BorderRadius.horizontal(
-                          right: const Radius.circular(4),
-                        ),
-                      );
-                    }
                   }
 
                   return Container(
