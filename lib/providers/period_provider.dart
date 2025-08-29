@@ -122,6 +122,14 @@ class PeriodProvider extends ChangeNotifier {
     return cycles.reduce((a, b) => a + b) / cycles.length;
   }
 
+  Period? getPeriodById(int id) {
+    try {
+      return _periods.firstWhere((p) => p.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Returns a widget or data for a specific date (customize as needed)
   Widget getDataForDate(DateTime date) {
     final period = _periods.firstWhere(

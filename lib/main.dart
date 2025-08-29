@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
@@ -68,14 +67,18 @@ class PeriodTrackerApp extends StatelessWidget {
             GoRoute(
               path: 'log',
               builder: (context, state) {
-                final bool isEditing =
+                final isEditing =
                     state.uri.queryParameters['isEditing'] == 'true';
-                final Period? period = state.extra as Period?;
-                final DateTime? focusedDay =
+                final periodId = state.uri.queryParameters['periodId'];
+                final period = periodId != null
+                    ? context.read<PeriodProvider>().getPeriodById(
+                        int.parse(periodId),
+                      )
+                    : null;
+                final focusedDay =
                     state.uri.queryParameters['focusedDay'] != null
                     ? DateTime.parse(state.uri.queryParameters['focusedDay']!)
                     : null;
-
                 return LogPeriodPage(
                   isEditing: isEditing,
                   period: period,

@@ -209,14 +209,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   !p.endDate!.isBefore(_selectedDay),
             );
             context.go(
-              '/log?isEditing=$isEditing&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}',
-              extra: period,
+              '/log?isEditing=$isEditing&periodId=${period.id}&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}',
             );
             return;
           }
           context.go(
             '/log?isEditing=false&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}',
-            extra: null,
           );
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
