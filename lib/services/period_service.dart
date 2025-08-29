@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 
 class PeriodService {
   static bool validateCycleLength(int? cycleLength) {
     if (cycleLength == null ||
         cycleLength.isNegative ||
-        cycleLength > 60 ||
-        cycleLength < 15) {
+        cycleLength > kMaxCycleLength ||
+        cycleLength < kMinCycleLength) {
       return false;
     }
     return true;
@@ -15,8 +16,8 @@ class PeriodService {
   static bool validatePeriodLength(int? periodLength) {
     if (periodLength == null ||
         periodLength.isNegative ||
-        periodLength > 10 ||
-        periodLength < 2) {
+        periodLength > kMaxPeriodLength ||
+        periodLength < kMinPeriodLength) {
       return false;
     }
     return true;
