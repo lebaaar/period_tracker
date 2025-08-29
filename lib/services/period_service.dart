@@ -26,11 +26,14 @@ class PeriodService {
     DateTime newStartDate,
     List<Period> periods, {
     DateTime? newEndDate,
+    int? excludeId, // Optional: exclude a period by id (useful for editing)
   }) {
     final endDate = newEndDate ?? newStartDate;
     for (final period in periods) {
+      if (excludeId != null && period.id == excludeId) continue;
       final start = period.startDate;
       final end = period.endDate ?? period.startDate;
+      // Overlap if ranges intersect (inclusive)
       if (!(endDate.isBefore(start) || newStartDate.isAfter(end))) {
         return true;
       }

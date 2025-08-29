@@ -57,6 +57,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       rangeStart!,
       periods,
       newEndDate: rangeEnd,
+      excludeId: isEditing && period != null ? period!.id : null,
     );
     if (hasOverlap) {
       ScaffoldMessenger.of(context).clearSnackBars();
