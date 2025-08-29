@@ -18,6 +18,10 @@ class _InsightsPageState extends State<InsightsPage> {
   Widget build(BuildContext context) {
     final periodProvider = Provider.of<PeriodProvider>(context);
     List<Period> periods = context.watch<PeriodProvider>().periods;
+    // TODO: support sorting from UI
+    periods.sort(
+      (a, b) => b.startDate.compareTo(a.startDate),
+    ); // default soring by date descending
 
     return SafeArea(
       child: periods.isEmpty
