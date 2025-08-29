@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:period_tracker/models/period_model.dart';
 
 class PeriodService {
@@ -41,6 +42,20 @@ class PeriodService {
     final now = DateTime.now();
     if (startDate.isAfter(now)) return true;
     if (endDate != null && endDate.isAfter(now)) return true;
+    return false;
+  }
+
+  static bool isInPeriod(DateTime day, List<Period> periods) {
+    final List<DateTimeRange> periodRanges = periods
+        .where((p) => p.endDate != null)
+        .map((p) => DateTimeRange(start: p.startDate, end: p.endDate!))
+        .toList();
+
+    for (var range in periodRanges) {
+      if (!day.isBefore(range.start) && !day.isAfter(range.end)) {
+        return true;
+      }
+    }
     return false;
   }
 }

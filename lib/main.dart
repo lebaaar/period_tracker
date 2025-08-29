@@ -66,7 +66,7 @@ class PeriodTrackerApp extends StatelessWidget {
           builder: (context, state) => const MainNavigation(),
           routes: [
             GoRoute(
-              path: '/log',
+              path: 'log',
               builder: (context, state) {
                 final bool isEditing =
                     state.uri.queryParameters['isEditing'] == 'true';
@@ -131,7 +131,12 @@ class _MainNavigationState extends State<MainNavigation> {
         backgroundColor: Colors.transparent,
       ),
       extendBodyBehindAppBar: true,
-      body: pages[_selectedIndex],
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: pages[_selectedIndex],
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         destinations: <Widget>[
           NavigationDestination(

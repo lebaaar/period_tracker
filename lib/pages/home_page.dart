@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -40,21 +41,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (avgCycleLength != null && avgCycleLength > 0) {
       progress = currentCycleDay / avgCycleLength;
       if (progress > 1) progress = 1;
-    }
-
-    // Get period ranges from provider
-    final List<DateTimeRange> periodRanges = periods
-        .where((p) => p.endDate != null)
-        .map((p) => DateTimeRange(start: p.startDate, end: p.endDate!))
-        .toList();
-
-    bool isInPeriod(DateTime day) {
-      for (var range in periodRanges) {
-        if (!day.isBefore(range.start) && !day.isAfter(range.end)) {
-          return true;
-        }
-      }
-      return false;
     }
 
     return Scaffold(
@@ -106,8 +92,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     minHeight: 8,
                     backgroundColor: Theme.of(context).colorScheme.secondary,
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(4),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -148,7 +132,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
-                  final isPeriod = isInPeriod(day);
+                  final isPeriod = PeriodService.isInPeriod(day, periods);
                   final isWithinRange =
                       _rangeStart != null &&
                       _rangeEnd != null &&
@@ -214,7 +198,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          bool isEditing = isInPeriod(_selectedDay);
+          bool isEditing = PeriodService.isInPeriod(_selectedDay, periods);
 
           if (isEditing) {
             // Find the period being edited
@@ -239,7 +223,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(99.0),
         ),
-        child: isInPeriod(_selectedDay)
+        child: PeriodService.isInPeriod(_selectedDay, periods)
             ? Icon(
                 Icons.edit_rounded,
                 color: Theme.of(context).colorScheme.onPrimary,

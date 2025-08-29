@@ -141,7 +141,6 @@ class _ProfilePageState extends State<ProfilePage> {
           child: FutureBuilder<PackageInfo>(
             future: _packageInfoFuture,
             builder: (context, snapshot) {
-              ;
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(
                   padding: const EdgeInsets.all(8),
