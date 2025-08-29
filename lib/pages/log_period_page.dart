@@ -87,6 +87,28 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
+    // Check minimum days between periods
+    final sortedPeriods = List<Period>.from(periods)
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
+    for (final p in sortedPeriods) {
+      if (isEditing && period != null && p.id == period!.id) continue;
+      final gapBefore = rangeStart!.difference(p.endDate ?? p.startDate).inDays;
+      final gapAfter = (p.startDate.difference(rangeEnd!).inDays);
+      if (gapBefore >= 0 && gapBefore < kMinDaysBetweenPeriods ||
+          gapAfter >= 0 && gapAfter < kMinDaysBetweenPeriods) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'There must be at least $kMinDaysBetweenPeriods days between periods.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
     // Check if editing an existing period
     if (isEditing && period != null) {
       final updatedPeriod = Period(
