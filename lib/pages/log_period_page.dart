@@ -72,9 +72,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     }
 
     // Check if period is in the future
-    final isInFuture = PeriodService.checkPeriodInFuture(
-      rangeStart!,
-      rangeEnd,
+    final isInFuture = rangeStart!.isAfter(
+      today,
     ); // TODO - support ongoing periods, UTC!
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();

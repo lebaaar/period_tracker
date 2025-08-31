@@ -42,14 +42,6 @@ class PeriodService {
     return false;
   }
 
-  static bool checkPeriodInFuture(DateTime startDate, DateTime? endDate) {
-    // TODO - support ongoing periods, UTC!
-    final now = DateTime.now().toUtc();
-    if (startDate.isAfter(now)) return true;
-    if (endDate != null && endDate.isAfter(now)) return true;
-    return false;
-  }
-
   static bool isInPeriod(DateTime day, List<Period> periods) {
     final List<DateTimeRange> periodRanges = periods
         .where((p) => p.endDate != null)
