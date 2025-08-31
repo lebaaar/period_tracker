@@ -287,9 +287,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 ),
               ),
               calendarStyle: CalendarStyle(
-                rangeHighlightColor: Theme.of(
-                  context,
-                ).colorScheme.primaryContainer,
+                rangeHighlightColor: Theme.of(context).colorScheme.secondary,
                 rangeStartDecoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
@@ -346,7 +344,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               },
             ),
             SectionTitle('Notes'),
-            Text(period.toString()),
             SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

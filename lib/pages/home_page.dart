@@ -134,16 +134,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: Theme.of(context).colorScheme.tertiary,
                 ),
               ),
-              calendarStyle: CalendarStyle(
-                outsideDaysVisible: false,
-                selectedDecoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                selectedTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
+              calendarStyle: CalendarStyle(outsideDaysVisible: false),
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
                   final isInPeriod = PeriodService.isInPeriod(day, periods);
@@ -195,6 +186,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                         ),
+                      ),
+                    ),
+                  );
+                },
+                selectedBuilder: (context, day, focusedDay) {
+                  final isInPeriod = PeriodService.isInPeriod(day, periods);
+                  final isStartDay = PeriodService.isStartDay(day, periods);
+                  final isEndDay = PeriodService.isEndDay(day, periods);
+
+                  BoxDecoration? decoration;
+                  Color? textColor;
+                  if (isInPeriod) {
+                    decoration = BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.horizontal(
+                        left: isStartDay
+                            ? const Radius.circular(99)
+                            : Radius.zero,
+                        right: isEndDay
+                            ? const Radius.circular(99)
+                            : Radius.zero,
+                      ),
+                    );
+                    textColor = Theme.of(context).colorScheme.surface;
+                  } else {
+                    decoration = BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: BoxShape.circle,
+                    );
+                    textColor = Theme.of(context).colorScheme.onPrimary;
+                  }
+
+                  return Container(
+                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                    decoration: decoration,
+                    child: Center(
+                      child: Text(
+                        '${day.day}',
+                        style: TextStyle(color: textColor),
                       ),
                     ),
                   );
