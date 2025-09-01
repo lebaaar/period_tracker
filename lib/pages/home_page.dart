@@ -3,10 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,6 +27,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
+
+    // Test notification
+    NotificationService().scheduleNotification(
+      0,
+      'Period soon',
+      'Your period is expected in n days.',
+      tz.TZDateTime.now(tz.local).add(const Duration(seconds: 3)),
+    );
   }
 
   @override
@@ -170,6 +180,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   );
                 },
                 todayBuilder: (context, day, focusedDay) {
+                  final isInPeriod = PeriodService.isInPeriod(day, periods);
+                  if (!isInPeriod) {}
                   return Container(
                     margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                     decoration: BoxDecoration(
@@ -184,7 +196,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         '${day.day}',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

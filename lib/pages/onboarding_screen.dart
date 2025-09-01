@@ -6,6 +6,7 @@ import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
@@ -376,6 +377,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
                     await context.read<SettingsProvider>().loadSettings();
+
+                    // Request notification permission
+                    await NotificationService().requestPermissions();
+                    // TODO: handle permission denied
 
                     // Navigate to home screen
                     if (context.mounted) {
