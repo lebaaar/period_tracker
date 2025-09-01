@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
+import 'package:path/path.dart' as p;
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart' as p;
 
 class DatabaseService {
   static Database? _database;

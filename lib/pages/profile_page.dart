@@ -336,7 +336,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       value: value,
       onChanged: onChanged,
-      activeColor: Theme.of(context).colorScheme.primary,
+      activeThumbColor: Theme.of(context).colorScheme.primary,
       inactiveTrackColor: Colors.grey[800],
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );

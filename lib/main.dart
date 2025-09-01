@@ -11,10 +11,11 @@ import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'pages/home_page.dart';
 import 'pages/insights_page.dart';
-import 'pages/profile_page.dart';
 import 'pages/log_period_page.dart';
+import 'pages/profile_page.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();

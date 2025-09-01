@@ -84,8 +84,8 @@ class _InsightsPageState extends State<InsightsPage> {
                   ),
                 ),
                 Align(
-                  child: SectionTitle('Period History'),
                   alignment: Alignment.centerLeft,
+                  child: SectionTitle('Period History'),
                 ),
                 Expanded(
                   child: ListView(
