@@ -32,3 +32,4 @@ final String kNotificationChannelDescription =
     'Notifications for Period Tracker';
 final int kDefaultNotificationsDaysBefore = 3;
 final int kMaxNotificationsDaysBefore = 10;
+final int kDefaultNotificationHour = 8;

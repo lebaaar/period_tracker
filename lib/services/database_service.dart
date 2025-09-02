@@ -90,7 +90,7 @@ class DatabaseService {
         $_settingsDarkModeColumnName INTEGER NOT NULL DEFAULT 1,
         $_settingsNotificationEnabledColumnName INTEGER NOT NULL DEFAULT 1,
         $_settingsNotificationDaysBeforeColumnName INTEGER NOT NULL DEFAULT $kDefaultNotificationsDaysBefore,
-        $_settingsNotificationTimeColumnName TEXT NOT NULL DEFAULT '08:00'
+        $_settingsNotificationTimeColumnName TEXT NOT NULL DEFAULT '$kDefaultNotificationHour:00'
       )
     ''');
 
