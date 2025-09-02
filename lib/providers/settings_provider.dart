@@ -25,7 +25,6 @@ class SettingsProvider extends ChangeNotifier {
       id: _settings!.id,
       predictionMode: _settings!.predictionMode,
       darkMode: _settings!.darkMode,
-      notificationEnabled: enabled,
       notificationDaysBefore: _settings!.notificationDaysBefore,
       notificationTime: _settings!.notificationTime,
     );
@@ -40,7 +39,6 @@ class SettingsProvider extends ChangeNotifier {
       id: _settings!.id,
       predictionMode: mode,
       darkMode: _settings!.darkMode,
-      notificationEnabled: _settings!.notificationEnabled,
       notificationDaysBefore: _settings!.notificationDaysBefore,
       notificationTime: _settings!.notificationTime,
     );
@@ -60,7 +58,6 @@ class SettingsProvider extends ChangeNotifier {
       id: _settings!.id,
       predictionMode: predictionMode ?? _settings!.predictionMode,
       darkMode: darkMode ?? _settings!.darkMode,
-      notificationEnabled: _settings!.notificationEnabled,
       notificationDaysBefore:
           notificationDaysBefore ?? _settings!.notificationDaysBefore,
       notificationTime: notificationTime ?? _settings!.notificationTime,

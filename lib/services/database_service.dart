@@ -40,13 +40,6 @@ class DatabaseService {
       'notificationDaysBefore';
   final String _settingsNotificationTimeColumnName = 'notificationTime';
 
-  final String _notificationTableName = kNotificationsTableName;
-  final String _notificationIdColumnName = 'id';
-  final String _notificationTitleColumnName = 'title';
-  final String _notificationBodyColumnName = 'body';
-  final String _notificationScheduledDateColumnName = 'scheduledDate';
-  final String _notificationStatusColumnName = 'status';
-
   DatabaseService._constructor();
 
   Future<Database> get database async {
@@ -100,17 +93,6 @@ class DatabaseService {
         $_settingsNotificationTimeColumnName TEXT NOT NULL DEFAULT '08:00'
       )
     ''');
-
-    // notifications table
-    await db.execute(
-      '''
-      CREATE TABLE $_notificationTableName (
-        $_notificationIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
-        $_notificationTitleColumnName TEXT NOT NULL,
-        $_notificationBodyColumnName TEXT NOT NULL,
-        $_notificationScheduledDateColumnName TEXT NOT NULL,
-        $_notificationStatusColumnName TEXT NOT NULL CHECK (status IN ('scheduled', 'sent', 'cancelled')) DEFAULT 'scheduled')''',
-    );
 
     // insert default settings
     await insertDefaultSettings(db);
@@ -240,9 +222,6 @@ class DatabaseService {
       {
         _settingsPredictionModeColumnName: settings.predictionMode,
         _settingsDarkModeColumnName: settings.darkMode ? 1 : 0,
-        _settingsNotificationEnabledColumnName: settings.notificationEnabled
-            ? 1
-            : 0,
         _settingsNotificationDaysBeforeColumnName:
             settings.notificationDaysBefore,
         _settingsNotificationTimeColumnName:
@@ -259,7 +238,6 @@ class DatabaseService {
       await db.execute('DELETE FROM $_periodsTableName');
       await db.execute('DELETE FROM $_userTableName');
       await db.execute('DELETE FROM $_settingsTableName');
-      await db.execute('DELETE FROM $_notificationTableName');
     } catch (e) {
       debugPrint('Error truncating tables: $e');
     }

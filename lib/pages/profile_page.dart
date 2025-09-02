@@ -8,6 +8,7 @@ import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/period_service.dart';
+import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 
@@ -104,21 +105,26 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const Divider(),
         SectionTitle('Notifications'),
-        Consumer<SettingsProvider>(
-          builder: (context, settingsProvider, child) {
+        FutureBuilder<bool>(
+          future: getNotificationEnabled(),
+          builder: (context, snapshot) {
+            final enabled = snapshot.data ?? false;
             return _buildSwitchTile(
               'Enable notifications',
               'Receive reminders for your next period',
-              settingsProvider.settings?.notificationEnabled ?? false,
-              (value) {
-                settingsProvider.setNotificationEnabled(value);
+              enabled,
+              (value) async {
+                setNotificationsValue(value);
+                setState(() {}); // Refresh the switch
               },
             );
           },
         ),
-        Consumer<SettingsProvider>(
-          builder: (context, settingsProvider, child) {
-            return settingsProvider.settings?.notificationEnabled == true
+        FutureBuilder(
+          future: getNotificationEnabled(),
+          builder: (context, snapshot) {
+            final enabled = snapshot.data ?? false;
+            return enabled
                 ? _buildListTile(user, 'notifications')
                 : SizedBox.shrink();
           },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/main.dart';
+import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -26,8 +27,7 @@ class NotificationService {
         enableVibration: true,
         visibility: NotificationVisibility.public,
         actions: <AndroidNotificationAction>[
-          const AndroidNotificationAction('snooze', 'Snooze'),
-          const AndroidNotificationAction('dismiss', 'Dismiss'),
+          const AndroidNotificationAction('log', 'Log period'),
         ],
       );
 
@@ -47,12 +47,9 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.initialize(
       initSettings,
-      onDidReceiveBackgroundNotificationResponse: (details) {
-        // Handle background notification response
-        if (details.actionId == 'snooze') {
-          // Handle snooze action
-        } else if (details.actionId == 'dismiss') {
-          // Handle dismiss action
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (response.actionId == 'log') {
+          print('log clicked');
         }
       },
     );
@@ -88,5 +85,10 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
+    setNotificationsValue(false);
   }
 }

@@ -8,9 +8,9 @@ import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/notification_service.dart';
+import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'pages/home_page.dart';
 import 'pages/insights_page.dart';
@@ -44,8 +44,7 @@ Future<void> main() async {
     ),
   );
 
-  final prefs = await SharedPreferences.getInstance();
-  bool onBoardingComplete = prefs.getBool('onboarding_complete') ?? false;
+  final bool onBoardingComplete = await getOnboardingComplete();
 
   runApp(
     MultiProvider(
