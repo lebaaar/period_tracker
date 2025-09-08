@@ -286,7 +286,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       break;
                   }
                 },
-                child: const Text('Back'),
+                child: Text(
+                  'Back',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
+                ),
               ),
             Row(
               children: List.generate(
