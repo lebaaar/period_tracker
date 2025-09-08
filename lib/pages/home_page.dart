@@ -137,41 +137,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               calendarStyle: CalendarStyle(outsideDaysVisible: false),
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
-                  final isInPeriod = PeriodService.isInPeriod(day, periods);
-                  final isStartDay = PeriodService.isStartDay(day, periods);
-                  final isEndDay = PeriodService.isEndDay(day, periods);
-
-                  BoxDecoration? decoration;
-                  Color? textColor;
-                  if (isInPeriod) {
-                    decoration = BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: BorderRadius.horizontal(
-                        left: isStartDay
-                            ? const Radius.circular(99)
-                            : Radius.zero,
-                        right: isEndDay
-                            ? const Radius.circular(99)
-                            : Radius.zero,
-                      ),
-                    );
-                    textColor = Theme.of(context).colorScheme.onSurface;
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                    decoration: decoration,
-                    child: Center(
-                      child: Text(
-                        '${day.day}',
-                        style: TextStyle(color: textColor),
-                      ),
-                    ),
-                  );
+                  return _defaultBuilder(context, day, focusedDay, periods);
                 },
                 todayBuilder: (context, day, focusedDay) {
                   final isInPeriod = PeriodService.isInPeriod(day, periods);
-                  if (!isInPeriod) {}
+                  if (isInPeriod) {
+                    return _defaultBuilder(context, day, focusedDay, periods);
+                  }
                   return Container(
                     margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                     decoration: BoxDecoration(
@@ -275,6 +247,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Icons.add_rounded,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
+      ),
+    );
+  }
+
+  Widget _defaultBuilder(context, day, focusedDay, periods) {
+    final isInPeriod = PeriodService.isInPeriod(day, periods);
+    final isStartDay = PeriodService.isStartDay(day, periods);
+    final isEndDay = PeriodService.isEndDay(day, periods);
+
+    BoxDecoration? decoration;
+    Color? textColor;
+    if (isInPeriod) {
+      decoration = BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary,
+        borderRadius: BorderRadius.horizontal(
+          left: isStartDay ? const Radius.circular(99) : Radius.zero,
+          right: isEndDay ? const Radius.circular(99) : Radius.zero,
+        ),
+      );
+      textColor = Theme.of(context).colorScheme.onSurface;
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+      decoration: decoration,
+      child: Center(
+        child: Text('${day.day}', style: TextStyle(color: textColor)),
       ),
     );
   }
