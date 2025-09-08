@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
         FutureBuilder<bool>(
           future: getNotificationEnabled(),
           builder: (context, snapshot) {
-            final enabled = snapshot.data ?? false;
+            final enabled = snapshot.data ?? true;
             return _buildSwitchTile(
               'Enable notifications',
               'Receive reminders for your next period',
