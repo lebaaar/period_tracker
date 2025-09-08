@@ -112,8 +112,12 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     if (isEditing && period != null) {
       final updatedPeriod = Period(
         id: period!.id,
-        startDate: rangeStart!,
-        endDate: rangeEnd!,
+        startDate: DateTime.utc(
+          rangeStart!.year,
+          rangeStart!.month,
+          rangeStart!.day,
+        ),
+        endDate: DateTime.utc(rangeEnd!.year, rangeEnd!.month, rangeEnd!.day),
         notes: _notesController.text,
       );
       context.read<PeriodProvider>().updatePeriod(updatedPeriod);

@@ -37,12 +37,22 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns the next expected period start date based on average cycle length
-  DateTime? getNextPeriodDate() {
+  DateTime? getNextPeriodDate(
+    bool dynamicPeriodPrediction,
+    int? userCycleLength,
+  ) {
     if (_periods.length < 2) return null;
-    final avgCycle = getAverageCycleLength();
-    if (avgCycle == null) return null;
-    // _periods is sorted descending by startDate, so _periods.first is the most recent
-    return _periods.first.startDate.add(Duration(days: avgCycle.round()));
+    periods.sort((a, b) => a.startDate.compareTo(b.startDate));
+    if (dynamicPeriodPrediction) {
+      // dynamic prediction based on average cycle length
+      final avgCycle = getAverageCycleLength();
+      if (avgCycle == null) return null;
+      return _periods.last.startDate.add(Duration(days: avgCycle.round()));
+    } else {
+      // static prediction based on last period and user's cycle length
+      if (userCycleLength == null) return null;
+      return _periods.last.startDate.add(Duration(days: userCycleLength));
+    }
   }
 
   // Returns the current cycle day for a given date
@@ -61,52 +71,63 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns a status message (e.g., late, on track)
-  PeriodStatusMessage getStatusMessage(Color defaultColor) {
+  PeriodStatusMessage getStatusMessage(
+    Color defaultColor,
+    DateTime? nextPeriodDate,
+  ) {
     PeriodStatusMessage status = PeriodStatusMessage(
       text: '',
       color: defaultColor,
     );
 
-    final next = getNextPeriodDate();
-    if (_periods.length < 2 || next == null) {
+    if (_periods.length < 2 || nextPeriodDate == null) {
       status.text = 'Not enough data to predict next period';
       return status;
     }
     status.color = Colors.green;
 
-    final today = DateTime.now();
-    final ongoing = _periods.any(
-      (p) =>
-          !today.isBefore(p.startDate) &&
-          (p.endDate == null || !today.isAfter(p.endDate!)),
+    _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
+    final lastPeriod = _periods.last;
+    final lastStart = DateTime(
+      lastPeriod.startDate.year,
+      lastPeriod.startDate.month,
+      lastPeriod.startDate.day,
     );
-    if (ongoing) {
+    final lastEnd = DateTime(
+      lastPeriod.endDate!.year,
+      lastPeriod.endDate!.month,
+      lastPeriod.endDate!.day,
+    );
+    final now = DateTime.now();
+    final DateTime today = DateTime.utc(now.year, now.month, now.day);
+
+    // Check if currently in period
+    if (today.isAfter(lastStart.subtract(Duration(days: 1))) &&
+        today.isBefore(lastEnd.add(Duration(days: 1)))) {
       status.text = 'Currently in period';
       return status;
     }
 
-    final difference = next
-        .difference(DateTime(today.year, today.month, today.day))
-        .inDays;
-    if (difference > 0) {
-      status.text = 'Next period in $difference days';
-      return status;
-    } else if (difference < 0) {
-      if (difference < -1) {
-        status.text = 'Period is ${-difference} days late';
-      } else {
-        status.text = 'Period is 1 day late';
-      }
+    final daysUntilNext = nextPeriodDate.difference(today).inDays;
+
+    if (daysUntilNext < 0) {
+      status.text =
+          "Period is ${-daysUntilNext} day${-daysUntilNext != 1 ? 's' : ''} late";
       status.color = Colors.red;
       return status;
+    } else if (daysUntilNext == 0) {
+      status.text = "Period is due today";
+      return status;
+    } else if (daysUntilNext == 1) {
+      status.text = "Period expected tomorrow";
+      return status;
     } else {
-      status.text = 'Period is due today';
+      status.text = "Period expected in $daysUntilNext days";
       return status;
     }
   }
 
   // Returns average period length in days
-  // TODO - fix logic
   double? getAveragePeriodLength() {
     // Only consider periods with both start and end dates
     final completed = _periods.where((p) => p.endDate != null).toList();
