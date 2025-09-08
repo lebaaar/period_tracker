@@ -261,111 +261,113 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
             ),
         ],
       ),
-
       body: SafeArea(
-        child: ListView(
-          children: [
-            SectionTitle('Period Range'),
-            TableCalendar(
-              headerStyle: HeaderStyle(formatButtonVisible: false),
-              startingDayOfWeek: StartingDayOfWeek.monday,
-              firstDay: kFirstCalendarDay,
-              lastDay: kLastCalendarDay,
-              focusedDay: focusedDay,
-              calendarFormat: CalendarFormat.month,
-              rangeSelectionMode: RangeSelectionMode.toggledOn,
-              rangeStartDay: rangeStart,
-              rangeEndDay: rangeEnd,
-              daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
-              daysOfWeekStyle: DaysOfWeekStyle(
-                weekdayStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-                weekendStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-              ),
-              calendarStyle: CalendarStyle(
-                rangeHighlightColor: Theme.of(context).colorScheme.secondary,
-                rangeStartDecoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                rangeStartTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-                rangeEndDecoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                rangeEndTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-                withinRangeTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                todayDecoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                weekendTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              calendarBuilders: CalendarBuilders(
-                todayBuilder: (context, day, focusedDay) {
-                  return Container(
-                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(child: Text('${day.day}')),
-                  );
-                },
-              ),
-
-              onRangeSelected: (start, end, newFocusedDay) {
-                setState(() {
-                  rangeStart = start;
-                  rangeEnd = end;
-                  focusedDay = newFocusedDay;
-                });
-              },
-              onDaySelected: (selectedDay, newFocusedDay) {
-                setState(() {
-                  today = selectedDay;
-                  focusedDay = newFocusedDay;
-                });
-              },
-            ),
-            SectionTitle('Notes'),
-            SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: _notesController,
-                decoration: InputDecoration(
-                  hintText: 'Add notes about this period',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(kBorderRadius),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 1,
-                    ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 90),
+          child: ListView(
+            children: [
+              SectionTitle('Period Range'),
+              TableCalendar(
+                headerStyle: HeaderStyle(formatButtonVisible: false),
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                firstDay: kFirstCalendarDay,
+                lastDay: kLastCalendarDay,
+                focusedDay: focusedDay,
+                calendarFormat: CalendarFormat.month,
+                rangeSelectionMode: RangeSelectionMode.toggledOn,
+                rangeStartDay: rangeStart,
+                rangeEndDay: rangeEnd,
+                daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
+                daysOfWeekStyle: DaysOfWeekStyle(
+                  weekdayStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
+                  weekendStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiary,
                   ),
                 ),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
+                calendarStyle: CalendarStyle(
+                  rangeHighlightColor: Theme.of(context).colorScheme.secondary,
+                  rangeStartDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  rangeStartTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  rangeEndDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  rangeEndTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  withinRangeTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  weekendTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
-                onChanged: (value) {},
+                calendarBuilders: CalendarBuilders(
+                  todayBuilder: (context, day, focusedDay) {
+                    return Container(
+                      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(child: Text('${day.day}')),
+                    );
+                  },
+                ),
+
+                onRangeSelected: (start, end, newFocusedDay) {
+                  setState(() {
+                    rangeStart = start;
+                    rangeEnd = end;
+                    focusedDay = newFocusedDay;
+                  });
+                },
+                onDaySelected: (selectedDay, newFocusedDay) {
+                  setState(() {
+                    today = selectedDay;
+                    focusedDay = newFocusedDay;
+                  });
+                },
               ),
-            ),
-          ],
+              SectionTitle('Notes'),
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _notesController,
+                  decoration: InputDecoration(
+                    hintText: 'Add notes about this period',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(kBorderRadius),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
+                  ),
+                  onChanged: (value) {},
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
