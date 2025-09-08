@@ -79,7 +79,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       onTap: () {
         switch (tileType) {
           case 'notifications_days_before':
-            _showEditNotificationDaysBeforeDialog(settings, (newDays) {
+            _showEditNotificationDaysBeforeDialog(settings, (newDays) async {
               // Validate input
               if (newDays.isEmpty || int.tryParse(newDays) == null) {
                 ScaffoldMessenger.of(context).clearSnackBars();
@@ -104,19 +104,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 return;
               }
 
-              context.read<SettingsProvider>().updateSettings(
+              await context.read<SettingsProvider>().updateSettings(
                 notificationDaysBefore: int.parse(newDays),
               );
+
+              // TODO
+              // NotificationService().rescheduleAllNotifications();
             });
             break;
           case 'notifications_time':
-            _showEditCycleLengthDialog(settings, (newLength) {
-              context.read<SettingsProvider>().updateSettings(
+            _showEditCycleLengthDialog(settings, (newLength) async {
+              await context.read<SettingsProvider>().updateSettings(
                 notificationTime: TimeOfDay(
                   hour: int.parse(newLength.split(':')[0]),
                   minute: int.parse(newLength.split(':')[1]),
                 ),
               );
+
+              // TODO
+              // NotificationService().rescheduleAllNotifications();
             });
             break;
           default:

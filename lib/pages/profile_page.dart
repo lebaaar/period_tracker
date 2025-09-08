@@ -7,6 +7,7 @@ import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/widgets/section_title.dart';
@@ -43,8 +44,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<UserProvider>().user;
-    final settings = context.watch<SettingsProvider>().settings;
+    final User? user = context.watch<UserProvider>().user;
+    final Settings? settings = context.watch<SettingsProvider>().settings;
     return SafeArea(
       child: user == null || settings == null
           ? const Center(child: CircularProgressIndicator())
@@ -115,7 +116,18 @@ class _ProfilePageState extends State<ProfilePage> {
               enabled,
               (value) async {
                 setNotificationsValue(value);
-                setState(() {}); // Refresh the switch
+                setState(() {});
+                if (value) {
+                  // reschedule notifications
+                  NotificationService().scheduleNotificationsForNextPeriod(
+                    DateTime.now(),
+                    settings.notificationDaysBefore,
+                    settings.notificationTime,
+                  );
+                } else {
+                  // cancel all notifications
+                  NotificationService().cancelAllNotifications();
+                }
               },
             );
           },
