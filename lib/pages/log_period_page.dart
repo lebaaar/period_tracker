@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
@@ -258,7 +259,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   await context.read<PeriodProvider>().deletePeriod(
                     period!.id!,
                   );
-                  Navigator.of(context).pop();
+                  context.go('/');
                 }
               },
             ),
