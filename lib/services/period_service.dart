@@ -27,7 +27,7 @@ class PeriodService {
     DateTime newStartDate,
     List<Period> periods, {
     DateTime? newEndDate,
-    int? excludeId, // Optional: exclude a period by id (useful for editing)
+    int? excludeId,
   }) {
     final endDate = newEndDate ?? newStartDate;
     for (final period in periods) {

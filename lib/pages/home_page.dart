@@ -107,9 +107,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SizedBox(height: 16),
                   Text(
                     status.text,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: status.color,
-                    ), // TODO, method to get color based on status, no hardcoded colors
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: status.color),
                   ),
                 ],
               ),

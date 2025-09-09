@@ -40,7 +40,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   void _onSave(BuildContext context) {
     // Check if range is selected
-    // TODO - support on going periods
     if (rangeStart == null || rangeEnd == null) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -72,9 +71,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     }
 
     // Check if period is in the future
-    final isInFuture = rangeStart!.isAfter(
-      today,
-    ); // TODO - support ongoing periods?
+    final isInFuture = rangeStart!.isAfter(today);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,6 +129,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     );
     context.read<PeriodProvider>().insertPeriod(newPeriod);
     context.read<PeriodProvider>().fetchPeriods();
+    // TODO - notifications
     Navigator.of(context).pop();
   }
 
@@ -148,7 +146,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   @override
   void initState() {
-    // TODO set ranges
     super.initState();
     _notesController = TextEditingController();
     focusedDay = widget.focusedDay ?? today;
@@ -256,17 +253,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   ),
                 );
 
-                // Check if widget is still mounted before using context
-                if (!context.mounted) return;
-
                 if (confirm == true) {
                   Navigator.of(context).pop();
                   await context.read<PeriodProvider>().deletePeriod(
                     period!.id!,
                   );
-
-                  // Check again after another async gap
-                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }
               },
