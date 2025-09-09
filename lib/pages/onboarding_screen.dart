@@ -303,7 +303,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   decoration: BoxDecoration(
                     color: _currentPage == index
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey,
+                        : Theme.of(context).colorScheme.secondary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -378,11 +378,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       notes: '',
                     );
 
-                    if (!context.mounted) return;
                     await context.read<PeriodProvider>().insertPeriod(period);
-                    if (!context.mounted) return;
                     await context.read<PeriodProvider>().fetchPeriods();
-                    if (!context.mounted) return;
                     await context.read<SettingsProvider>().loadSettings();
 
                     // Request notification permission
