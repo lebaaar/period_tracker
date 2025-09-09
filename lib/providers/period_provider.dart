@@ -186,7 +186,6 @@ class PeriodProvider extends ChangeNotifier {
       );
     }
 
-    // TODO - make pretty, follow figma
     return Center(
       child: Column(
         children: [

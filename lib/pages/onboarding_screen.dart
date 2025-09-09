@@ -378,9 +378,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       notes: '',
                     );
 
-                    // TODO: handle errors
+                    if (!context.mounted) return;
                     await context.read<PeriodProvider>().insertPeriod(period);
+                    if (!context.mounted) return;
                     await context.read<PeriodProvider>().fetchPeriods();
+                    if (!context.mounted) return;
                     await context.read<SettingsProvider>().loadSettings();
 
                     // Request notification permission

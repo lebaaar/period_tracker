@@ -261,7 +261,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _defaultBuilder(context, day, focusedDay, periods) {
+  Widget _defaultBuilder(BuildContext context, day, focusedDay, periods) {
     final isInPeriod = PeriodService.isInPeriod(day, periods);
     final isStartDay = PeriodService.isStartDay(day, periods);
     final isEndDay = PeriodService.isEndDay(day, periods);

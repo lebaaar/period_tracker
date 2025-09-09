@@ -25,7 +25,7 @@ final String kUserTableName = 'user';
 final String kSettingsTableName = 'settings';
 final String kNotificationsTableName = 'notifications';
 
-// Notifcation constants
+// Notification constants
 final String kNotificationChannelId = 'period_tracker_channel';
 final String kNotificationChannelName = 'Period Tracker Notifications';
 final String kNotificationChannelDescription =

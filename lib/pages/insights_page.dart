@@ -21,7 +21,7 @@ class _InsightsPageState extends State<InsightsPage> {
     // TODO: support sorting from UI
     periods.sort(
       (a, b) => b.startDate.compareTo(a.startDate),
-    ); // default soring by date descending
+    ); // default sorting by date descending
 
     return SafeArea(
       child: periods.isEmpty

@@ -74,7 +74,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     // Check if period is in the future
     final isInFuture = rangeStart!.isAfter(
       today,
-    ); // TODO - support ongoing periods, UTC!
+    ); // TODO - support ongoing periods?
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -255,10 +255,18 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     ).colorScheme.primaryContainer,
                   ),
                 );
+
+                // Check if widget is still mounted before using context
+                if (!context.mounted) return;
+
                 if (confirm == true) {
+                  Navigator.of(context).pop();
                   await context.read<PeriodProvider>().deletePeriod(
                     period!.id!,
                   );
+
+                  // Check again after another async gap
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }
               },
