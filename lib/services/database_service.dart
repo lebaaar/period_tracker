@@ -134,17 +134,17 @@ class DatabaseService {
   }
 
   // User methods
-  Future<User> getUser() async {
+  Future<User?> getUser() async {
     final db = await database;
     final rows = await db.query(
       _userTableName,
       where: '$_userIdColumnName = ?',
       whereArgs: [1],
     );
-    if (rows.isEmpty) {
-      throw Exception('User with id=1 not found');
+    if (rows.isNotEmpty) {
+      return User.fromMap(rows.first);
     }
-    return User.fromMap(rows.first);
+    return null;
   }
 
   Future<int> insertUser(User user) async {
