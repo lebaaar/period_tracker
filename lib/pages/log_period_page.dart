@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
@@ -166,8 +167,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = context.watch<UserProvider>();
-    final user = userProvider.user;
+    final User? user = context.watch<UserProvider>().user;
 
     if (_initialLoad && !isEditing && user != null && rangeStart != null) {
       _initialLoad = false;
