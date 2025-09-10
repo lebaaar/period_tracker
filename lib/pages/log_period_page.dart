@@ -71,8 +71,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
+    DateTime now = DateTime.now();
+    DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
+
     // Check if period is in the future
-    final isInFuture = rangeStart!.isAfter(today);
+    final isInFuture = rangeStart!.isAfter(checkDate);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
