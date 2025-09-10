@@ -188,7 +188,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           onPressed: () {
             if (isPageDirty()) {
               showDialog(
@@ -226,7 +226,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
           if (isEditing && period != null)
             IconButton(
               icon: const Icon(Icons.delete_rounded),
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               tooltip: 'Delete Period',
               onPressed: () async {
                 final confirm = await showDialog<bool>(

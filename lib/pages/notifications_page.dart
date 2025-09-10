@@ -29,7 +29,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
