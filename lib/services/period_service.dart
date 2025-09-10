@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 
@@ -43,16 +42,9 @@ class PeriodService {
   }
 
   static bool isInPeriod(DateTime day, List<Period> periods) {
-    final List<DateTimeRange> periodRanges = periods
-        .where((p) => p.endDate != null)
-        .map((p) => DateTimeRange(start: p.startDate, end: p.endDate!))
-        .toList();
-
-    for (var range in periodRanges) {
-      if (!day.isBefore(range.start) && !day.isAfter(range.end)) {
-        return true;
-      }
-    }
+    final checkDay = DateTime.utc(day.year, day.month, day.day);
+    Period? period = getPeriodInDate(checkDay, periods);
+    if (period != null) return true;
     return false;
   }
 
@@ -73,5 +65,31 @@ class PeriodService {
           p.endDate!.month == day.month &&
           p.endDate!.day == day.day,
     );
+  }
+
+  static Period? getPeriodInDate(DateTime date, List<Period> periods) {
+    final checkDate = DateTime.utc(date.year, date.month, date.day);
+    Period? period;
+    for (var p in periods) {
+      final periodStart = DateTime.utc(
+        p.startDate.year,
+        p.startDate.month,
+        p.startDate.day,
+      );
+      // hardcoded period.endDate! - no support for ongoing periods in v1
+      final periodEnd = DateTime.utc(
+        p.endDate!.year,
+        p.endDate!.month,
+        p.endDate!.day,
+      );
+
+      if (checkDate.isAtSameMomentAs(periodStart) ||
+          checkDate.isAtSameMomentAs(periodEnd) ||
+          (checkDate.isAfter(periodStart) && checkDate.isBefore(periodEnd))) {
+        period = p;
+        break;
+      }
+    }
+    return period;
   }
 }
