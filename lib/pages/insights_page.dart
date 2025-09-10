@@ -21,7 +21,7 @@ class _InsightsPageState extends State<InsightsPage> {
     // TODO: support sorting from UI
     periods.sort(
       (a, b) => b.startDate.compareTo(a.startDate),
-    ); // default soring by date descending
+    ); // default sorting by date descending
 
     return SafeArea(
       child: periods.isEmpty
@@ -53,36 +53,34 @@ class _InsightsPageState extends State<InsightsPage> {
             )
           : Column(
               children: [
-                SizedBox(
-                  height: 130,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: _statCard(
-                          title: "Average Cycle Length",
-                          value:
-                              periodProvider
-                                  .getAverageCycleLength()
-                                  ?.toStringAsFixed(1) ??
-                              'N/A days',
+                if (periodProvider.getAverageCycleLength() != null &&
+                    periodProvider.getAveragePeriodLength() != null)
+                  SizedBox(
+                    height: 130,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: _statCard(
+                            title: "Average Cycle Length",
+                            value: periodProvider
+                                .getAverageCycleLength()!
+                                .toStringAsFixed(1),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _statCard(
-                          title: "Average Period Length",
-                          value:
-                              periodProvider
-                                  .getAveragePeriodLength()
-                                  ?.toStringAsFixed(1) ??
-                              'N/A days',
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _statCard(
+                            title: "Average Period Length",
+                            value: periodProvider
+                                .getAveragePeriodLength()!
+                                .toStringAsFixed(1),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: SectionTitle('Period History'),

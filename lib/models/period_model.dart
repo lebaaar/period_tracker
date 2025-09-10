@@ -8,15 +8,6 @@ class Period {
 
   bool get isOngoing => endDate == null;
   bool get isCompleted => endDate != null;
-  Duration get duration => isOngoing
-      ? DateTime.now().difference(startDate)
-      : endDate!.difference(startDate);
-
-  int lengthInDays() {
-    return isOngoing
-        ? DateTime.now().difference(startDate).inDays
-        : endDate!.difference(startDate).inDays;
-  }
 
   factory Period.fromMap(Map<String, dynamic> map) {
     return Period(
@@ -40,6 +31,6 @@ class Period {
 
   @override
   String toString() {
-    return 'Period(startDate: $startDate, endDate: $endDate, duration: $duration, notes: $notes)';
+    return 'Period(startDate: $startDate, endDate: $endDate, notes: $notes)';
   }
 }

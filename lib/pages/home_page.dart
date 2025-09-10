@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
+import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
+import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +35,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final periodProvider = Provider.of<PeriodProvider>(context);
     List<Period> periods = context.watch<PeriodProvider>().periods;
+    final Settings? settings = context.watch<SettingsProvider>().settings;
+    final User? user = context.watch<UserProvider>().user;
 
-    final nextPeriod = periodProvider.getNextPeriodDate();
-    final currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.now());
+    final nextPeriodDate = periodProvider.getNextPeriodDate(
+      settings?.predictionMode == 'dynamic',
+      user?.cycleLength,
+    );
+    DateTime tempDate = DateTime.now();
+    final currentCycleDay = periodProvider.getCurrentCycleDay(
+      DateTime.utc(tempDate.year, tempDate.month, tempDate.day),
+    );
     final avgCycleLength = periodProvider.getAverageCycleLength();
     final status = periodProvider.getStatusMessage(
       Theme.of(context).colorScheme.tertiary,
+      nextPeriodDate,
     );
 
     double progress = 0;
@@ -70,9 +83,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           Text(
-                            nextPeriod != null
-                                ? DateTimeHelper.displayDate(nextPeriod)
-                                : 'Unknown',
+                            nextPeriodDate != null
+                                ? DateTimeHelper.displayDate(nextPeriodDate)
+                                : 'Not enough data',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],
@@ -97,9 +110,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SizedBox(height: 16),
                   Text(
                     status.text,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: status.color,
-                    ), // TODO, method to get color based on status, no hardcoded colors
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: status.color),
                   ),
                 ],
               ),
@@ -251,7 +264,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _defaultBuilder(context, day, focusedDay, periods) {
+  Widget _defaultBuilder(BuildContext context, day, focusedDay, periods) {
     final isInPeriod = PeriodService.isInPeriod(day, periods);
     final isStartDay = PeriodService.isStartDay(day, periods);
     final isEndDay = PeriodService.isEndDay(day, periods);

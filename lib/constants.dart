@@ -9,8 +9,8 @@ final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31);
 // Default cycle and period lengths
 final int kDefaultCycleLength = 28;
 final int kDefaultPeriodLength = 5;
-final int kMinCycleLength = 10;
-final int kMaxCycleLength = 60;
+final int kMinCycleLength = 7;
+final int kMaxCycleLength = 90;
 final int kMinPeriodLength = 1;
 final int kMaxPeriodLength = 15;
 final int kMinDaysBetweenPeriods = 2;
@@ -25,11 +25,11 @@ final String kUserTableName = 'user';
 final String kSettingsTableName = 'settings';
 final String kNotificationsTableName = 'notifications';
 
-// Notifcation constants
+// Notification constants
 final String kNotificationChannelId = 'period_tracker_channel';
 final String kNotificationChannelName = 'Period Tracker Notifications';
 final String kNotificationChannelDescription =
     'Notifications for Period Tracker';
 final int kDefaultNotificationsDaysBefore = 3;
-final int kMaxNotificationsDaysBefore = 10;
+final int kMaxNotificationsDaysBefore = 14;
 final int kDefaultNotificationHour = 8;

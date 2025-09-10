@@ -303,7 +303,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   decoration: BoxDecoration(
                     color: _currentPage == index
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey,
+                        : Theme.of(context).colorScheme.secondary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -378,7 +378,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       notes: '',
                     );
 
-                    // TODO: handle errors
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
                     await context.read<SettingsProvider>().loadSettings();

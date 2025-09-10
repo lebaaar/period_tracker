@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
@@ -40,7 +41,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   void _onSave(BuildContext context) {
     // Check if range is selected
-    // TODO - support on going periods
     if (rangeStart == null || rangeEnd == null) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,10 +71,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
+    DateTime now = DateTime.now();
+    DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
+
     // Check if period is in the future
-    final isInFuture = rangeStart!.isAfter(
-      today,
-    ); // TODO - support ongoing periods, UTC!
+    final isInFuture = rangeStart!.isAfter(checkDate);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,8 +113,12 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     if (isEditing && period != null) {
       final updatedPeriod = Period(
         id: period!.id,
-        startDate: rangeStart!,
-        endDate: rangeEnd!,
+        startDate: DateTime.utc(
+          rangeStart!.year,
+          rangeStart!.month,
+          rangeStart!.day,
+        ),
+        endDate: DateTime.utc(rangeEnd!.year, rangeEnd!.month, rangeEnd!.day),
         notes: _notesController.text,
       );
       context.read<PeriodProvider>().updatePeriod(updatedPeriod);
@@ -128,6 +133,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     );
     context.read<PeriodProvider>().insertPeriod(newPeriod);
     context.read<PeriodProvider>().fetchPeriods();
+    // TODO - notifications
     Navigator.of(context).pop();
   }
 
@@ -144,7 +150,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   @override
   void initState() {
-    // TODO set ranges
     super.initState();
     _notesController = TextEditingController();
     focusedDay = widget.focusedDay ?? today;
@@ -183,7 +188,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onSurface,
           onPressed: () {
             if (isPageDirty()) {
               showDialog(
@@ -221,7 +226,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
           if (isEditing && period != null)
             IconButton(
               icon: const Icon(Icons.delete_rounded),
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               tooltip: 'Delete Period',
               onPressed: () async {
                 final confirm = await showDialog<bool>(
@@ -251,11 +256,13 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     ).colorScheme.primaryContainer,
                   ),
                 );
+
                 if (confirm == true) {
+                  Navigator.of(context).pop();
                   await context.read<PeriodProvider>().deletePeriod(
                     period!.id!,
                   );
-                  Navigator.of(context).pop();
+                  context.go('/');
                 }
               },
             ),
