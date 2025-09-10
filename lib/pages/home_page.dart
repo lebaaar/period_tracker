@@ -42,7 +42,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       settings?.predictionMode == 'dynamic',
       user?.cycleLength,
     );
-    final currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.now());
+    DateTime tempDate = DateTime.now();
+    final currentCycleDay = periodProvider.getCurrentCycleDay(
+      DateTime.utc(tempDate.year, tempDate.month, tempDate.day),
+    );
     final avgCycleLength = periodProvider.getAverageCycleLength();
     final status = periodProvider.getStatusMessage(
       Theme.of(context).colorScheme.tertiary,

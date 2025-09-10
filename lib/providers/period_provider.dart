@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/database_service.dart';
+import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:period_tracker/utils/period_status_message.dart';
 
@@ -55,19 +56,40 @@ class PeriodProvider extends ChangeNotifier {
     }
   }
 
-  // Returns the current cycle day for a given date
   int getCurrentCycleDay([DateTime? date]) {
     if (_periods.isEmpty) return 0;
+
+    // Normalize to local
     date ??= DateTime.now();
-    final lastPeriod = _periods
-        .where((p) => !p.startDate.isAfter(date!))
-        .fold<Period?>(
-          null,
-          (prev, p) =>
-              prev == null || p.startDate.isAfter(prev.startDate) ? p : prev,
-        );
+    date = date.toLocal();
+
+    _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
+
+    if (date.isBefore(_periods.first.startDate.toLocal())) {
+      return 0;
+    }
+
+    // Find the most recent period that started before or on this date
+    Period? lastPeriod;
+    for (var p in _periods) {
+      if (!date.isBefore(p.startDate.toLocal())) {
+        lastPeriod = p;
+      } else {
+        break;
+      }
+    }
+
     if (lastPeriod == null) return 0;
-    return date.difference(lastPeriod.startDate).inDays + 1;
+
+    // If within that period
+    final start = lastPeriod.startDate.toLocal();
+    final end = lastPeriod.endDate?.toLocal();
+    if (end == null || !date.isAfter(end)) {
+      return date.difference(start).inDays + 1;
+    }
+
+    // If after that period ended count from start
+    return date.difference(start).inDays + 1;
   }
 
   // Returns a status message (e.g., late, on track)
@@ -81,7 +103,7 @@ class PeriodProvider extends ChangeNotifier {
     );
 
     if (_periods.length < 2 || nextPeriodDate == null) {
-      status.text = 'Not enough data to predict next period';
+      status.text = 'Not enough data to predict the next period';
       return status;
     }
     status.color = Colors.green;
@@ -165,12 +187,19 @@ class PeriodProvider extends ChangeNotifier {
 
   // Returns a widget or data for a specific date (customize as needed)
   Widget getDataForDate(DateTime date, BuildContext context) {
-    final period = _periods.firstWhere(
-      (p) =>
-          !date.isBefore(p.startDate) &&
-          (p.endDate == null || !date.isAfter(p.endDate!)),
-      orElse: () => Period(startDate: date),
-    );
+    // find period for the date
+    final checkDate = DateTime.utc(date.year, date.month, date.day);
+    int cycleDay = getCurrentCycleDay(checkDate);
+    // Selected date is before first period
+    if (cycleDay <= 0) return Container();
+
+    Period? period = PeriodService.getPeriodInDate(checkDate, periods);
+    if (period == null) {
+      return Text(
+        'Cycle Day: ${getCurrentCycleDay(checkDate)}',
+        style: Theme.of(context).textTheme.bodyMedium,
+      );
+    }
 
     final String notes;
     if (period.notes != null && period.notes!.isNotEmpty) {
@@ -179,18 +208,11 @@ class PeriodProvider extends ChangeNotifier {
       notes = 'No notes about this period';
     }
 
-    if (period.id == null) {
-      return Text(
-        'Cycle Day: 	${getCurrentCycleDay(date)}',
-        style: Theme.of(context).textTheme.bodyMedium,
-      );
-    }
-
     return Center(
       child: Column(
         children: [
           Text(
-            'Cycle Day: ${getCurrentCycleDay(date)}',
+            'Cycle Day: ${getCurrentCycleDay(checkDate)}',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           SizedBox(height: 4),
