@@ -269,9 +269,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 90),
-          child: ListView(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 1000),
+          child: Column(
             children: [
               SectionTitle('Period Range'),
               TableCalendar(
@@ -377,20 +377,23 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Container(
-        height: 50,
-        margin: const EdgeInsets.all(10),
-        child: TextButton(
-          onPressed: () => _onSave(context),
-          style: TextButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(kBorderRadius),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _onSave(context),
+              style: TextButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(kBorderRadius),
+                ),
+              ),
+              child: const Text('Save'),
             ),
           ),
-          child: const Center(child: Text('Save')),
         ),
       ),
     );
