@@ -5,6 +5,7 @@ import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/cat_image_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,11 @@ class LogPeriodPage extends StatefulWidget {
 }
 
 class _LogPeriodPageState extends State<LogPeriodPage> {
+  bool _catImageTapReady = false;
+  late final ScrollController _scrollController;
   late final TextEditingController _notesController;
+  late final FocusNode _notesFocusNode;
+
   DateTime today = DateTime.now();
   DateTime? rangeStart;
   DateTime? rangeEnd;
@@ -36,6 +41,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   DateTime? _initialRangeStart;
   DateTime? _initialRangeEnd;
   String? _initialNotes;
+
+  String? catImageUrl;
+  bool isLoadingCatImage = false;
 
   bool get isEditing => widget.isEditing;
   Period? get period => widget.period;
@@ -149,10 +157,59 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         (_notesController.text.isNotEmpty || _notesController.text != '');
   }
 
+  Future<void> fetchCatImage() async {
+    setState(() => isLoadingCatImage = true);
+    try {
+      final url = await CatImageService().getRandomCatImage();
+      setState(() {
+        catImageUrl = url;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() => isLoadingCatImage = false);
+    }
+  }
+
+  void _scrollTo(ScrollDirection direction) {
+    if (direction == ScrollDirection.toTop) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.minScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _notesController = TextEditingController();
+    _scrollController = ScrollController();
+    _notesFocusNode = FocusNode();
+
+    _notesFocusNode.addListener(() {
+      if (!_notesFocusNode.hasFocus) {
+        _scrollTo(ScrollDirection.toTop);
+      }
+    });
+
     focusedDay = widget.focusedDay ?? today;
     rangeStart = widget.focusedDay ?? today;
     if (isEditing && period != null) {
@@ -163,6 +220,13 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     _initialRangeStart = rangeStart;
     _initialRangeEnd = rangeEnd;
     _initialNotes = _notesController.text;
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    _notesFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -178,6 +242,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -270,7 +335,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 1000),
+          controller: _scrollController,
           child: Column(
             children: [
               SectionTitle('Period Range'),
@@ -335,7 +400,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     );
                   },
                 ),
-
                 onRangeSelected: (start, end, newFocusedDay) {
                   setState(() {
                     rangeStart = start;
@@ -356,6 +420,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   controller: _notesController,
+                  focusNode: _notesFocusNode,
                   decoration: InputDecoration(
                     hintText: 'Add notes about this period',
                     border: OutlineInputBorder(
@@ -372,6 +437,68 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   ),
                   onChanged: (value) {},
                 ),
+              ),
+              SizedBox(height: 100),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isLoadingCatImage)
+                    const CircularProgressIndicator()
+                  else if (catImageUrl != null)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (!_catImageTapReady) {
+                            setState(() => _catImageTapReady = true);
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Tap again to scroll back to top',
+                                ),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          } else {
+                            _catImageTapReady = false;
+                            _scrollController.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        },
+                        child: Image.network(
+                          catImageUrl!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              // Image is fully loaded, scroll to bottom
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _scrollTo(ScrollDirection.toBottom);
+                              });
+                              return child;
+                            }
+                            return const CircularProgressIndicator();
+                          },
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: [
+                        const Text(
+                          'You need a cat break from all that scrolling! 🐱',
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: fetchCatImage,
+                    child: const Text("Show me a random cat image!"),
+                  ),
+                ],
               ),
             ],
           ),
@@ -399,3 +526,5 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     );
   }
 }
+
+enum ScrollDirection { toTop, toBottom }
