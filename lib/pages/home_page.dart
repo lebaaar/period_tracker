@@ -232,12 +232,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
           if (isEditing) {
             // Find the period being edited
-            final Period period = periods.firstWhere(
-              (p) =>
-                  !p.startDate.isAfter(_selectedDay) &&
-                  p.endDate != null &&
-                  !p.endDate!.isBefore(_selectedDay),
+            // TODO - bug bad state
+            final Period? period = PeriodService.getPeriodInDate(
+              _selectedDay,
+              periods,
             );
+            if (period == null) {
+              // This should never happen, just in case
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Error: Could not find period to edit, please try again later',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              return;
+            }
             context.go(
               '/log?isEditing=$isEditing&periodId=${period.id}&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}',
             );
