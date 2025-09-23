@@ -232,7 +232,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
           if (isEditing) {
             // Find the period being edited
-            // TODO - bug bad state
             final Period? period = PeriodService.getPeriodInDate(
               _selectedDay,
               periods,

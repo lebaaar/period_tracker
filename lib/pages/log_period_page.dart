@@ -27,7 +27,6 @@ class LogPeriodPage extends StatefulWidget {
 }
 
 class _LogPeriodPageState extends State<LogPeriodPage> {
-  bool _catImageTapReady = false;
   late final ScrollController _scrollController;
   late final TextEditingController _notesController;
   late final FocusNode _notesFocusNode;
@@ -41,9 +40,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   DateTime? _initialRangeStart;
   DateTime? _initialRangeEnd;
   String? _initialNotes;
-
-  String? catImageUrl;
-  bool isLoadingCatImage = false;
 
   bool get isEditing => widget.isEditing;
   Period? get period => widget.period;
@@ -82,9 +78,14 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
     DateTime now = DateTime.now();
     DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
+    DateTime rangeStartCheck = DateTime.utc(
+      rangeStart!.year,
+      rangeStart!.month,
+      rangeStart!.day,
+    );
 
     // Check if period is in the future
-    final isInFuture = rangeStart!.isAfter(checkDate);
+    final isInFuture = rangeStartCheck.isAfter(checkDate);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -157,24 +158,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         (_notesController.text.isNotEmpty || _notesController.text != '');
   }
 
-  Future<void> fetchCatImage() async {
-    setState(() => isLoadingCatImage = true);
-    try {
-      final url = await CatImageService().getRandomCatImage();
-      setState(() {
-        catImageUrl = url;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-    } finally {
-      setState(() => isLoadingCatImage = false);
-    }
-  }
-
-  void _scrollTo(ScrollDirection direction) {
-    if (direction == ScrollDirection.toTop) {
+  void _scrollToTop() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -184,17 +168,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
           );
         }
       });
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    }
   }
 
   @override
@@ -206,7 +179,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
     _notesFocusNode.addListener(() {
       if (!_notesFocusNode.hasFocus) {
-        _scrollTo(ScrollDirection.toTop);
+        _scrollToTop();
       }
     });
 
@@ -438,54 +411,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   onChanged: (value) {},
                 ),
               ),
-              SizedBox(height: 100),
+              SizedBox(height: 25000),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (isLoadingCatImage)
-                    const CircularProgressIndicator()
-                  else if (catImageUrl != null)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          if (!_catImageTapReady) {
-                            setState(() => _catImageTapReady = true);
-                            ScaffoldMessenger.of(context).clearSnackBars();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Tap again to scroll back to top',
-                                ),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          } else {
-                            _catImageTapReady = false;
-                            _scrollController.animateTo(
-                              0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut,
-                            );
-                          }
-                        },
-                        child: Image.network(
-                          catImageUrl!,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) {
-                              // Image is fully loaded, scroll to bottom
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                _scrollTo(ScrollDirection.toBottom);
-                              });
-                              return child;
-                            }
-                            return const CircularProgressIndicator();
-                          },
-                        ),
-                      ),
-                    )
-                  else
                     Column(
                       children: [
                         const Text(
@@ -495,8 +424,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: fetchCatImage,
-                    child: const Text("Show me a random cat image!"),
+                    onPressed: () => context.push('/cat'),
+                    child: const Text("To the cat generator!"),
                   ),
                 ],
               ),
@@ -508,6 +437,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: SizedBox(
+            height: 50,
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => _onSave(context),
@@ -526,5 +456,3 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     );
   }
 }
-
-enum ScrollDirection { toTop, toBottom }
