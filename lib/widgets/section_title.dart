@@ -6,12 +6,15 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium,
-        textAlign: TextAlign.left,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium,
+          textAlign: TextAlign.left,
+        ),
       ),
     );
   }
