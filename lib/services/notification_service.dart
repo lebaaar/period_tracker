@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/notification_type.dart';
-import 'package:period_tracker/main.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
+import 'package:period_tracker/theme.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -24,13 +24,12 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  // TODO: customize notification details
   final AndroidNotificationDetails _androidNotificationDetails =
       AndroidNotificationDetails(
         kNotificationChannelId,
         kNotificationChannelName,
         channelDescription: kNotificationChannelDescription,
-        color: Color(0xFFFF91C5),
+        color: colorScheme.primary,
         importance: Importance.high,
         priority: Priority.high,
         playSound: true,
@@ -48,9 +47,8 @@ class NotificationService {
   Future<void> init() async {
     // Init timezones
     tz.initializeTimeZones();
-    tz.setLocalLocation(
-      tz.getLocation('Europe/Ljubljana'),
-    ); // TODO: device zone
+    // final String name = DateTime.now().timeZoneName;
+    tz.setLocalLocation(tz.getLocation('Europe/Ljubljana')); // TODO
 
     const AndroidInitializationSettings androidInit =
         AndroidInitializationSettings('@drawable/ic_stat_notify');
@@ -92,40 +90,47 @@ class NotificationService {
       payload = '/log';
     }
 
-    await flutterLocalNotificationsPlugin.zonedSchedule(
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       title,
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
       NotificationDetails(android: _androidNotificationDetails),
-      androidScheduleMode: AndroidScheduleMode.alarmClock,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: payload,
     );
   }
 
   Future<void> scheduleNotificationsForNextPeriod(
-    DateTime nextPeriodDate,
+    DateTime? nextPeriodStartDate,
     int sendNotificationsDaysBefore,
     TimeOfDay notificationTime,
   ) async {
     // Cancel existing notifications
     await cancelAllNotifications();
 
+    if (nextPeriodStartDate == null) {
+      NotificationService().cancelAllNotifications();
+      return;
+    }
+
+    if (nextPeriodStartDate.isBefore(DateTime.now())) return;
+
     // Schedule new notifications
     for (var i = 0; i <= sendNotificationsDaysBefore; i++) {
       final DateTime scheduledDate = DateTime(
-        nextPeriodDate.year,
-        nextPeriodDate.month,
-        nextPeriodDate.day - i,
+        nextPeriodStartDate.year,
+        nextPeriodStartDate.month,
+        nextPeriodStartDate.day - i,
         notificationTime.hour,
         notificationTime.minute,
       );
 
-      if (!scheduledDate.isAfter(DateTime.now())) continue;
+      if (scheduledDate.isBefore(DateTime.now())) continue;
 
       await scheduleNotification(
         i,
-        i == 0 ? 'Period Today' : 'Upcoming Period',
+        i == 0 ? 'Period expected today' : 'Upcoming period',
         i == 0
             ? 'Your period is expected to start today.'
             : 'Your period is expected to start in $i days',

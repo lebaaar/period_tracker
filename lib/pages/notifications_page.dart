@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
+import 'package:period_tracker/models/user_model.dart';
+import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +19,12 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
+    final User? user = context.watch<UserProvider>().user;
     final settings = context.watch<SettingsProvider>().settings;
+    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+      settings?.predictionMode == 'dynamic',
+      user?.cycleLength,
+    );
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -39,15 +48,27 @@ class _NotificationsPageState extends State<NotificationsPage> {
             : ListView(
                 padding: const EdgeInsets.all(8),
                 children: [
-                  _buildListTile(settings, 'notifications_days_before'),
-                  _buildListTile(settings, 'notifications_time'),
+                  _buildListTile(
+                    settings,
+                    'notifications_days_before',
+                    nextPeriodDate,
+                  ),
+                  _buildListTile(
+                    settings,
+                    'notifications_time',
+                    nextPeriodDate,
+                  ),
                 ],
               ),
       ),
     );
   }
 
-  Widget _buildListTile(Settings settings, String tileType) {
+  Widget _buildListTile(
+    Settings settings,
+    String tileType,
+    DateTime? nextPeriodDate,
+  ) {
     String title;
     String subtitle;
 
@@ -107,9 +128,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
               await context.read<SettingsProvider>().updateSettings(
                 notificationDaysBefore: int.parse(newDays),
               );
-
-              // TODO
-              // NotificationService().rescheduleAllNotifications();
+              // schedule notifications for next period
+              NotificationService().scheduleNotificationsForNextPeriod(
+                nextPeriodDate,
+                int.parse(newDays),
+                settings.notificationTime,
+              );
             });
             break;
           case 'notifications_time':
@@ -121,8 +145,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ),
               );
 
-              // TODO
-              // NotificationService().rescheduleAllNotifications();
+              // schedule notifications for next period
+              NotificationService().scheduleNotificationsForNextPeriod(
+                nextPeriodDate,
+                settings.notificationDaysBefore,
+                TimeOfDay(
+                  hour: int.parse(newLength.split(':')[0]),
+                  minute: int.parse(newLength.split(':')[1]),
+                ),
+              );
             });
             break;
           default:

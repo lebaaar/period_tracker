@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
+import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
-import 'package:period_tracker/services/cat_image_service.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +46,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   bool get isEditing => widget.isEditing;
   Period? get period => widget.period;
 
-  void _onSave(BuildContext context) {
+  void _onSave(BuildContext context, Settings? settings) async {
     // Check if range is selected
     if (rangeStart == null || rangeEnd == null) {
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -131,7 +133,22 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         endDate: DateTime.utc(rangeEnd!.year, rangeEnd!.month, rangeEnd!.day),
         notes: _notesController.text,
       );
-      context.read<PeriodProvider>().updatePeriod(updatedPeriod);
+      await context.read<PeriodProvider>().updatePeriod(updatedPeriod);
+
+      // nextPeriodDate changes here because an existing period is updated
+      // schedule notifications for next period
+      DateTime? nextPeriodDate = context
+          .read<PeriodProvider>()
+          .getNextPeriodDate(
+            settings?.predictionMode == 'dynamic',
+            context.read<UserProvider>().user?.cycleLength,
+          );
+      NotificationService().scheduleNotificationsForNextPeriod(
+        nextPeriodDate,
+        settings!.notificationDaysBefore,
+        settings.notificationTime,
+      );
+
       Navigator.of(context).pop();
       return;
     }
@@ -141,9 +158,21 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       endDate: rangeEnd!,
       notes: _notesController.text,
     );
-    context.read<PeriodProvider>().insertPeriod(newPeriod);
-    context.read<PeriodProvider>().fetchPeriods();
-    // TODO - notifications
+    await context.read<PeriodProvider>().insertPeriod(newPeriod);
+    await context.read<PeriodProvider>().fetchPeriods();
+
+    // nextPeriodDate changes here because a new period is added
+    // schedule notifications for next period
+    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+      settings?.predictionMode == 'dynamic',
+      context.read<UserProvider>().user?.cycleLength,
+    );
+    NotificationService().scheduleNotificationsForNextPeriod(
+      nextPeriodDate,
+      settings!.notificationDaysBefore,
+      settings.notificationTime,
+    );
+
     Navigator.of(context).pop();
   }
 
@@ -159,15 +188,15 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   }
 
   void _scrollToTop() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.minScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.minScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -205,6 +234,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   @override
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
+    final Settings? settings = context.watch<SettingsProvider>().settings;
+    final periodProvider = Provider.of<PeriodProvider>(context);
 
     if (_initialLoad && !isEditing && user != null && rangeStart != null) {
       _initialLoad = false;
@@ -300,6 +331,19 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   await context.read<PeriodProvider>().deletePeriod(
                     period!.id!,
                   );
+
+                  // nextPeriodDate changes here because period was removed
+                  // update nextPeriodDate
+                  DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(
+                    settings?.predictionMode == 'dynamic',
+                    user?.cycleLength,
+                  );
+                  NotificationService().scheduleNotificationsForNextPeriod(
+                    nextPeriodDate,
+                    settings!.notificationDaysBefore,
+                    settings.notificationTime,
+                  );
+
                   context.go('/');
                 }
               },
@@ -415,13 +459,13 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                    Column(
-                      children: [
-                        const Text(
+                  Column(
+                    children: [
+                      const Text(
                         'You need a break from all that scrolling... 🐶',
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () => context.push('/animal'),
@@ -440,7 +484,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
             height: 50,
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _onSave(context),
+              onPressed: () => _onSave(context, settings),
               style: TextButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
