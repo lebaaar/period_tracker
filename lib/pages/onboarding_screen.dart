@@ -383,8 +383,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     await context.read<SettingsProvider>().loadSettings();
 
                     // Request notification permission
-                    await NotificationService().requestPermissions();
-                    // TODO: handle permission denied
+                    final bool result = await NotificationService()
+                        .requestPermissions();
+                    if (!result) setNotificationsValue(false);
 
                     // Navigate to home screen
                     if (context.mounted) {

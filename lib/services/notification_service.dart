@@ -66,13 +66,17 @@ class NotificationService {
     );
   }
 
-  Future<void> requestPermissions() async {
+  Future<bool> requestPermissions() async {
     // Android 13+
     final androidPlugin = NotificationService()._flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
-    await androidPlugin?.requestNotificationsPermission();
+    final granted = await androidPlugin?.requestNotificationsPermission();
+    if (granted != true) {
+      return false;
+    }
+    return true; // permission granted or older Android version (granted == null)
   }
 
   Future<void> scheduleNotification(
