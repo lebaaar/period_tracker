@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
-import 'package:period_tracker/pages/cat_generator_page.dart';
+import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
 import 'package:period_tracker/providers/period_provider.dart';
@@ -101,9 +101,9 @@ class PeriodTrackerApp extends StatelessWidget {
               },
             ),
             GoRoute(
-              path: 'cat',
+              path: 'animal',
               builder: (context, state) {
-                return CatGeneratorPage();
+                return AnimalGeneratorPage();
               },
             ),
           ],

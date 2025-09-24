@@ -418,14 +418,14 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     Column(
                       children: [
                         const Text(
-                          'You need a cat break from all that scrolling! 🐱',
+                        'You need a break from all that scrolling... 🐶',
                         ),
                       ],
                     ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () => context.push('/cat'),
-                    child: const Text("To the cat generator!"),
+                    onPressed: () => context.push('/animal'),
+                    child: const Text("To the doggy generator!"),
                   ),
                 ],
               ),
