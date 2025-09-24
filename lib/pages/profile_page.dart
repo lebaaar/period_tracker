@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
+import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
@@ -46,14 +47,23 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
+    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+      settings?.predictionMode == 'dynamic',
+      user?.cycleLength,
+    );
+
     return SafeArea(
       child: user == null || settings == null
           ? const Center(child: CircularProgressIndicator())
-          : _buildProfileContent(user, settings),
+          : _buildProfileContent(user, settings, nextPeriodDate),
     );
   }
 
-  Widget _buildProfileContent(User user, Settings settings) {
+  Widget _buildProfileContent(
+    User user,
+    Settings settings,
+    DateTime? nextPeriodDate,
+  ) {
     return ListView(
       children: [
         const SizedBox(height: 16),
@@ -120,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (value) {
                   // reschedule notifications
                   NotificationService().scheduleNotificationsForNextPeriod(
-                    DateTime.now(),
+                    nextPeriodDate,
                     settings.notificationDaysBefore,
                     settings.notificationTime,
                   );

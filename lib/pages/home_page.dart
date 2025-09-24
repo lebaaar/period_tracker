@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final Settings? settings = context.watch<SettingsProvider>().settings;
     final User? user = context.watch<UserProvider>().user;
 
-    final nextPeriodDate = periodProvider.getNextPeriodDate(
+    final DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(
       settings?.predictionMode == 'dynamic',
       user?.cycleLength,
     );
