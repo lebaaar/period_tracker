@@ -218,9 +218,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: periodProvider.getDataForDate(_selectedDay, context),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: periodProvider.getDataForDate(_selectedDay, context),
+                ),
               ),
             ),
           ],

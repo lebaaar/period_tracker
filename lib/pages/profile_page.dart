@@ -597,7 +597,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('App data cleared!'),
+                      content: Text('Account deleted successfully.'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
