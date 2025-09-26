@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 final ColorScheme colorScheme = ColorScheme.dark(
   brightness: Brightness.dark,
 
-  primary: Color(0xFFFF91C5),
+  primary: Color(0xFFFF91C5), // #ff91c5
   onPrimary: Colors.black,
   primaryContainer: Color(0xFF121212),
   onPrimaryContainer: Colors.white,
