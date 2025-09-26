@@ -132,12 +132,15 @@ class NotificationService {
 
       if (scheduledDate.isBefore(DateTime.now())) continue;
 
+      String notificationTitle =
+          PeriodStatusMessageHelper.getNotificationTitleMessage(i);
+      String notificationBody =
+          PeriodStatusMessageHelper.getNotificationBodyMessage(i);
+
       await scheduleNotification(
         i,
-        i == 0 ? 'Period expected today' : 'Upcoming period',
-        i == 0
-            ? 'Your period is expected to start today.'
-            : 'Your period is expected to start in $i days',
+        notificationTitle,
+        notificationBody,
         scheduledDate,
         i == 0 ? NotificationType.periodToday : NotificationType.upcomingPeriod,
       );

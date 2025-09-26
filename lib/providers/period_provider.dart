@@ -4,6 +4,7 @@ import 'package:period_tracker/services/database_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:period_tracker/utils/period_status_message.dart';
+import 'package:period_tracker/utils/period_status_message_helper.dart';
 
 class PeriodProvider extends ChangeNotifier {
   List<Period> _periods = [];
@@ -132,21 +133,7 @@ class PeriodProvider extends ChangeNotifier {
 
     final daysUntilNext = nextPeriodDate.difference(today).inDays;
 
-    if (daysUntilNext < 0) {
-      status.text =
-          "Period is ${-daysUntilNext} day${-daysUntilNext != 1 ? 's' : ''} late";
-      status.color = Colors.red;
-      return status;
-    } else if (daysUntilNext == 0) {
-      status.text = "Period is due today";
-      return status;
-    } else if (daysUntilNext == 1) {
-      status.text = "Period expected tomorrow";
-      return status;
-    } else {
-      status.text = "Period expected in $daysUntilNext days";
-      return status;
-    }
+    return PeriodStatusMessageHelper.getPeriodStatusMessage(daysUntilNext);
   }
 
   // Returns average period length in days
