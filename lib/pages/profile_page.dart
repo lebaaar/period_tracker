@@ -100,14 +100,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 34),
         SectionTitle('Personal Information'),
-        _buildListTile(user, 'name'),
+        _buildListTile(user, settings, 'name'),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
             if (settingsProvider.settings?.predictionMode == 'static') {
               return Column(
                 children: [
-                  _buildListTile(user, 'cycle_length'),
-                  _buildListTile(user, 'period_length'),
+                  _buildListTile(user, settings, 'cycle_length'),
+                  _buildListTile(user, settings, 'period_length'),
                 ],
               );
             }
@@ -147,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, snapshot) {
             final enabled = snapshot.data ?? false;
             return enabled
-                ? _buildListTile(user, 'notifications')
+                ? _buildListTile(user, settings, 'notifications')
                 : SizedBox.shrink();
           },
         ),
@@ -185,9 +185,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            settingsProvider.setPredictionMode(
-                              value ? 'dynamic' : 'static',
-                            );
+                            String mode = value ? 'dynamic' : 'static';
+                            settingsProvider.setPredictionMode(mode);
+
+                            // nextPeriodDate changes here, reschedule notifications
+                            nextPeriodDate = context
+                                .read<PeriodProvider>()
+                                .getNextPeriodDate(
+                                  mode == 'dynamic',
+                                  user.cycleLength,
+                                );
+                            NotificationService()
+                                .scheduleNotificationsForNextPeriod(
+                                  nextPeriodDate,
+                                  settings.notificationDaysBefore,
+                                  settings.notificationTime,
+                                );
                             Navigator.of(context).pop();
                           },
                           child: const Text('Confirm'),
@@ -203,9 +216,9 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           },
         ),
-        _buildListTile(user, 'backup'),
-        _buildListTile(user, 'restore'),
-        _buildListTile(user, 'delete'),
+        _buildListTile(user, settings, 'backup'),
+        _buildListTile(user, settings, 'restore'),
+        _buildListTile(user, settings, 'delete'),
         const SizedBox(height: 24),
         Center(
           child: Text(
@@ -243,7 +256,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildListTile(User user, String tileType) {
+  Widget _buildListTile(User user, Settings? settings, String tileType) {
     String title;
     String subtitle;
 
@@ -312,6 +325,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 periodLength: user.periodLength,
                 lastPeriodDate: user.lastPeriodDate,
               );
+
+              // update nextPeriodDate if prediction mode is static
+              DateTime? nextPeriodDate = context
+                  .read<PeriodProvider>()
+                  .getNextPeriodDate(
+                    settings?.predictionMode == 'dynamic',
+                    int.parse(newLength),
+                  );
+              NotificationService().scheduleNotificationsForNextPeriod(
+                nextPeriodDate,
+                settings!.notificationDaysBefore,
+                settings.notificationTime,
+              );
             });
             break;
           case 'period_length':
@@ -322,6 +348,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 cycleLength: user.cycleLength,
                 lastPeriodDate: user.lastPeriodDate,
               );
+
+              // periodLength change does not affect nextPeriodDate, no notification reschedule needed
+              // periodLength is only used for auto-logging period end date
+              // possible TODO: if user is currently on period, update the end date based on new period length
             });
             break;
           case 'notifications':
