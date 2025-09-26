@@ -115,6 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             textInputAction: TextInputAction.next,
             onSubmitted: (_) {
+              // Close keyboard before navigating
               FocusScope.of(context).unfocus();
               _controller.nextPage(
                 duration: const Duration(milliseconds: 300),
@@ -191,11 +192,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 SystemChannels.textInput.invokeMethod('TextInput.show');
                 return;
               }
+              // kle
               FocusScope.of(context).unfocus();
-              _controller.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _controller.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeIn,
+                );
+              });
             },
           ),
         ],
@@ -272,15 +276,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPressed: () {
                   switch (_currentPage) {
                     case 1:
-                      FocusScope.of(context).requestFocus(_nameFocusNode);
                       _controller.previousPage(
-                        duration: const Duration(milliseconds: 150),
+                        duration: const Duration(milliseconds: 300),
                         curve: Curves.easeIn,
                       );
                       break;
                     case 2:
                       _controller.previousPage(
-                        duration: const Duration(milliseconds: 150),
+                        duration: const Duration(milliseconds: 300),
                         curve: Curves.easeIn,
                       );
                       break;
@@ -314,18 +317,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 switch (_currentPage) {
                   case 0:
                     FocusScope.of(context).requestFocus(_periodLengthFocusNode);
-                    _controller.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
-                    );
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _controller.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeIn,
+                      );
+                    });
                     break;
                   case 1:
                     if (!validateInput()) return;
+                    // Dismiss keyboard
+                    FocusScope.of(context).unfocus();
 
-                    _controller.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
-                    );
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _controller.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeIn,
+                      );
+                    });
                     break;
                   case 2:
                     // Validate input
