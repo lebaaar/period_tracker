@@ -6,24 +6,24 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
 
 
 ## Features
-- Track period cycles  
-Intuitive, simple, beautiful UI
-- Insights page  
-Stay on track average with period and cycle length
-- Dynamic period prediction  
-App can either work in *Dynamic period prediction* mode where app tries to predict the next period date based on previous entries or in *Static mode*, where user inputs her period duration.
-- Notifications n days prior to period start  
-Configurable in settings
+- Effortless cycle logging with a clean, easy-to-use design
+- Personalized insights on average cycle and period length
+- Dynamic period prediction: smartly adjusts based on past cycles
+- Static mode: set a fixed period & cycle duration for consistent tracking
+- Customizable reminders: get notified n days before your period starts
+
+- Easter eggs :)
 
 
-## TODO - Download
+## Download
 
 
 
 <p align="center">
-  <a href="https://play.google.com/store/apps/details?id=com.lebaaar.app">
-    <img src="https://cdn.rawgit.com/steverichey/google-play-badge-svg/master/img/en_get.svg" width="200" alt="Get it on Google Play">
+  <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="33%" alt="Get it on Google Play">
   </a>
+  <br>
   <br>
   <a href="downloads/period_tracker.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="33%" alt="Download APK">
@@ -44,6 +44,9 @@ Built fully in Flutter. Packages used: `provider`...
 
 ## License
 Distributed under the MIT License. See [LICENSE.txt](TODO).
+
+## Privacy Policy
+Available  [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
 
 
 ## Contributing
