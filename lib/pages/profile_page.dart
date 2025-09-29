@@ -29,11 +29,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   int _versionTapCount = 0;
   bool _showVersionDetails = false;
+  bool _showAnimalGeneratorLink = false;
 
   @override
   void initState() {
     super.initState();
     _loadDisplayVersionPreference();
+    _loadAnimalGeneratorUnlocked();
 
     _nameController = TextEditingController();
     _cycleLengthController = TextEditingController();
@@ -52,6 +54,13 @@ class _ProfilePageState extends State<ProfilePage> {
     final saved = await getDisplayVersionDetails();
     setState(() {
       _showVersionDetails = saved;
+    });
+  }
+
+  Future<void> _loadAnimalGeneratorUnlocked() async {
+    final saved = await getAnimalGeneratorUnlocked();
+    setState(() {
+      _showAnimalGeneratorLink = saved;
     });
   }
 
@@ -128,19 +137,6 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(height: 34),
         SectionTitle('Personal Information'),
         _buildListTile(user, settings, 'name'),
-        Consumer<SettingsProvider>(
-          builder: (context, settingsProvider, child) {
-            if (settingsProvider.settings?.predictionMode == 'static') {
-              return Column(
-                children: [
-                  _buildListTile(user, settings, 'cycle_length'),
-                  _buildListTile(user, settings, 'period_length'),
-                ],
-              );
-            }
-            return SizedBox.shrink();
-          },
-        ),
         const Divider(),
         SectionTitle('Notifications'),
         FutureBuilder<bool>(
@@ -182,67 +178,79 @@ class _ProfilePageState extends State<ProfilePage> {
         SectionTitle('App settings'),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
-            return _buildSwitchTile(
-              'Dynamic period prediction',
-              settingsProvider.settings?.predictionMode == 'dynamic'
-                  ? 'Next period date is based on your cycle history'
-                  : 'Next period date is based on your cycle length you specify',
-              settingsProvider.settings?.predictionMode == 'dynamic',
-              (value) {
-                // show conformation dialog
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Change Prediction Mode'),
-                      content: Text(
-                        value
-                            ? 'Are you sure you want to switch to dynamic prediction? This will adjust your future period predictions based on your cycle history.'
-                            : 'Are you sure you want to switch to static prediction? This will use the cycle length you specify in settings for future period predictions.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(
-                              context,
-                            ).colorScheme.tertiary,
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            String mode = value ? 'dynamic' : 'static';
-                            settingsProvider.setPredictionMode(mode);
+            final predictionMode = settingsProvider.settings?.predictionMode;
 
-                            // nextPeriodDate changes here, reschedule notifications
-                            nextPeriodDate = context
-                                .read<PeriodProvider>()
-                                .getNextPeriodDate(
-                                  mode == 'dynamic',
-                                  user.cycleLength,
-                                );
-                            NotificationService()
-                                .scheduleNotificationsForNextPeriod(
-                                  nextPeriodDate,
-                                  settings.notificationDaysBefore,
-                                  settings.notificationTime,
-                                );
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Confirm'),
-                        ),
-                      ],
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.primaryContainer,
+            return Column(
+              children: [
+                _buildSwitchTile(
+                  'Dynamic period prediction',
+                  predictionMode == 'dynamic'
+                      ? 'Next period date is based on your cycle history'
+                      : 'Next period date is based on the cycle length you specify bellow',
+                  predictionMode == 'dynamic',
+                  (value) {
+                    // show confirmation dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Change Prediction Mode'),
+                          content: Text(
+                            value
+                                ? 'Are you sure you want to switch to dynamic prediction? This will adjust your future period predictions based on your cycle history.'
+                                : 'Are you sure you want to switch to static prediction? This will use the cycle length you specify in settings for future period predictions.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.tertiary,
+                              ),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                String mode = value ? 'dynamic' : 'static';
+                                settingsProvider.setPredictionMode(mode);
+
+                                // nextPeriodDate changes here, reschedule notifications
+                                nextPeriodDate = context
+                                    .read<PeriodProvider>()
+                                    .getNextPeriodDate(
+                                      mode == 'dynamic',
+                                      user.cycleLength,
+                                    );
+                                NotificationService()
+                                    .scheduleNotificationsForNextPeriod(
+                                      nextPeriodDate,
+                                      settings.notificationDaysBefore,
+                                      settings.notificationTime,
+                                    );
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Confirm'),
+                            ),
+                          ],
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer,
+                        );
+                      },
                     );
                   },
-                );
-              },
+                ),
+                if (predictionMode == 'static') ...[
+                  _buildListTile(user, settings, 'period_length'),
+                  _buildListTile(user, settings, 'cycle_length'),
+                ],
+              ],
             );
           },
         ),
+        const Divider(),
+        SectionTitle('Account & Data'),
         _buildListTile(user, settings, 'backup'),
         _buildListTile(user, settings, 'restore'),
         _buildListTile(user, settings, 'delete'),
@@ -278,8 +286,18 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-
         const SizedBox(height: 16),
+        if (_showAnimalGeneratorLink)
+          Column(
+            children: [
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => context.push('/animal'),
+                  child: const Text("To the doggy generator!"),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -513,8 +531,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter a valid cycle length.'),
+                    SnackBar(
+                      content: Text(
+                        'Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)',
+                      ),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -573,8 +593,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter a valid period length.'),
+                    SnackBar(
+                      content: Text(
+                        'Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)',
+                      ),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );

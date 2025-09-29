@@ -32,3 +32,19 @@ Future<bool> getDisplayVersionDetails() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getBool('display_version_details') ?? false;
 }
+
+// Animal generator unlocked
+Future<void> setAnimalGeneratorUnlockedValue(
+  bool animalGeneratorUnlockedValue,
+) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(
+    'animal_generator_unlocked',
+    animalGeneratorUnlockedValue,
+  );
+}
+
+Future<bool> getAnimalGeneratorUnlocked() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('animal_generator_unlocked') ?? false;
+}
