@@ -136,7 +136,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                                   ).clearSnackBars();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Good boy! 🐶'),
+                                      content: Text('Good doggy! 🐶'),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
