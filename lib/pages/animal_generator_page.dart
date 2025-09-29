@@ -21,15 +21,19 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
     setState(() => isLoadingImage = true);
     try {
       final url = await AnimalImageService().getRandomDogImage(dogBreed);
+      if (!mounted) return;
       setState(() {
         imageUrl = url;
         displayError = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         displayError = true;
       });
     } finally {
+      // ignore: control_flow_in_finally
+      if (!mounted) return;
       setState(() {
         isLoadingImage = false;
       });
