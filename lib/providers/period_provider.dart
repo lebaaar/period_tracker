@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/database_service.dart';
 import 'package:period_tracker/services/period_service.dart';
@@ -43,7 +44,15 @@ class PeriodProvider extends ChangeNotifier {
     bool dynamicPeriodPrediction,
     int? userCycleLength,
   ) {
-    if (_periods.length < 2) return null;
+    if (_periods.isEmpty) return null;
+    if (_periods.length < 2) {
+      // Not enough data to predict next period - only one period logged
+      // Use the provided userCycleLength
+      // Case when user gets not enough data to predict the next period right after onboarding
+      return _periods.last.startDate.add(
+        Duration(days: userCycleLength ?? kDefaultCycleLength),
+      );
+    }
     periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     if (dynamicPeriodPrediction) {
       // dynamic prediction based on average cycle length
@@ -103,10 +112,11 @@ class PeriodProvider extends ChangeNotifier {
       color: defaultColor,
     );
 
-    if (_periods.length < 2 || nextPeriodDate == null) {
+    if (_periods.isEmpty || nextPeriodDate == null) {
       status.text = 'Not enough data to predict the next period';
       return status;
     }
+
     status.color = Colors.green;
 
     _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
