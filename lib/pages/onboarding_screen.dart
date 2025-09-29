@@ -64,8 +64,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!periodValid) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid period length.'),
+        SnackBar(
+          content: Text(
+            'Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)',
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -76,7 +78,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please enter a valid cycle length.'),
+          content: Text(
+            'Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)',
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -136,7 +140,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Cycle Info', style: Theme.of(context).textTheme.headlineMedium),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Cycle Info',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              IconButton(
+                icon: const Icon(Icons.help_outline),
+                color: Theme.of(context).colorScheme.tertiary,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text('Cycle Information'),
+                      content: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '• Period length: number of days your period usually lasts - number of "bleeding" days. [5]',
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            '• Cycle length: number of days from the first day of one period to the first day of the next. [28]',
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           Text(
             'Enter your cycle and period lengths in days',
@@ -398,6 +444,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     // Disable version details by default
                     await setDisplayVersionDetailsValue(false);
+
+                    // Hide easter eggs
+                    await setAnimalGeneratorUnlockedValue(false);
 
                     // Navigate to home screen
                     if (context.mounted) {
