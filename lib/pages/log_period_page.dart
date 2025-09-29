@@ -9,6 +9,7 @@ import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
+import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -468,7 +469,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () => context.push('/animal'),
+                    onPressed: () async {
+                      await setAnimalGeneratorUnlockedValue(true);
+                      context.push('/animal');
+                    },
                     child: const Text("To the doggy generator!"),
                   ),
                 ],

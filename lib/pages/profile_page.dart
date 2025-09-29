@@ -29,11 +29,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   int _versionTapCount = 0;
   bool _showVersionDetails = false;
+  bool _showAnimalGeneratorLink = false;
 
   @override
   void initState() {
     super.initState();
     _loadDisplayVersionPreference();
+    _loadAnimalGeneratorUnlocked();
 
     _nameController = TextEditingController();
     _cycleLengthController = TextEditingController();
@@ -52,6 +54,13 @@ class _ProfilePageState extends State<ProfilePage> {
     final saved = await getDisplayVersionDetails();
     setState(() {
       _showVersionDetails = saved;
+    });
+  }
+
+  Future<void> _loadAnimalGeneratorUnlocked() async {
+    final saved = await getAnimalGeneratorUnlocked();
+    setState(() {
+      _showAnimalGeneratorLink = saved;
     });
   }
 
@@ -278,8 +287,18 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-
         const SizedBox(height: 16),
+        if (_showAnimalGeneratorLink)
+          Column(
+            children: [
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => context.push('/animal'),
+                  child: const Text("To the doggy generator!"),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
