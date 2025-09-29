@@ -23,10 +23,8 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="33%" alt="Get it on Google Play">
   </a>
   <br>
-  <i>Note: app is currently in closed testing phase. To get preview access, please send an email to <a href="mailto:lanlebar6@gmail.com">lanlebar6@gmail.com</a></i>
   <br>
-  <br>
-  <a href="downloads/period_tracker.apk">
+  <a href="download/app-release.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="33%" alt="Download APK">
   </a>
   <br>
