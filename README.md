@@ -11,7 +11,6 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
 - Dynamic period prediction: smartly adjusts based on past cycles
 - Static mode: set a fixed period & cycle duration for consistent tracking
 - Customizable reminders: get notified n days before your period starts
-
 - Easter eggs :)
 
 
@@ -23,6 +22,8 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
   <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="33%" alt="Get it on Google Play">
   </a>
+  <br>
+  <i>Note: app is currently in closed testing phase. To get preview access, please send an email to lanlebar6@gmail.com </i>
   <br>
   <br>
   <a href="downloads/period_tracker.apk">
@@ -40,6 +41,7 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
 TODO
 
 ## Built with
+TODO
 Built fully in Flutter. Packages used: `provider`...
 
 ## License
@@ -52,7 +54,7 @@ Available  [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990
 ## Contributing
 Pull requests are always welcome! For major changes, please open an issue first to discuss the changes
 
-### Development tips
+## Development
 
-- Running emulator via CLI (TODO: replace medium_36 <AVD_NAME>)  
-`emulator -avd medium_36 -no-snapshot-save -no-boot-anim -gpu host -accel on`
+- Running emulator via CLI:
+`emulator -avd <AVD_NAME> -no-snapshot-save -no-boot-anim -gpu host -accel on`
