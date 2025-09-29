@@ -27,9 +27,14 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _cycleLengthController;
   late final TextEditingController _periodLengthController;
 
+  int _versionTapCount = 0;
+  bool _showVersionDetails = false;
+
   @override
   void initState() {
     super.initState();
+    _loadDisplayVersionPreference();
+
     _nameController = TextEditingController();
     _cycleLengthController = TextEditingController();
     _periodLengthController = TextEditingController();
@@ -41,6 +46,28 @@ class _ProfilePageState extends State<ProfilePage> {
     _cycleLengthController.dispose();
     _periodLengthController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadDisplayVersionPreference() async {
+    final saved = await getDisplayVersionDetails();
+    setState(() {
+      _showVersionDetails = saved;
+    });
+  }
+
+  void _onVersionTapped() async {
+    if (_showVersionDetails) return;
+
+    setState(() {
+      _versionTapCount++;
+    });
+
+    if (_versionTapCount >= 9) {
+      await setDisplayVersionDetailsValue(true);
+      setState(() {
+        _showVersionDetails = true;
+      });
+    }
   }
 
   @override
@@ -220,37 +247,38 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildListTile(user, settings, 'restore'),
         _buildListTile(user, settings, 'delete'),
         const SizedBox(height: 24),
-        Center(
-          child: Text(
-            'Made with ❤️ for Nina',
-            style: Theme.of(context).textTheme.bodySmall,
+        if (_showVersionDetails)
+          Center(
+            child: Text(
+              'Made with ❤️ for Nina',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
-        ),
         Center(
-          child: FutureBuilder<PackageInfo>(
-            future: _packageInfoFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                  padding: const EdgeInsets.all(8),
-                  child: const CircularProgressIndicator(),
+          child: GestureDetector(
+            onTap: _onVersionTapped,
+            child: FutureBuilder<PackageInfo>(
+              future: _packageInfoFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    padding: const EdgeInsets.all(8),
+                    child: const CircularProgressIndicator(),
+                  );
+                }
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final packageInfo = snapshot.data!;
+                return Text(
+                  'Version ${packageInfo.version} ${packageInfo.buildNumber == '' ? '' : '(${packageInfo.buildNumber})'}',
+                  style: Theme.of(context).textTheme.bodySmall,
                 );
-              }
-              if (snapshot.hasError || !snapshot.hasData) {
-                // Cannot retrieve package info
-                // print('Error retrieving package info: ${snapshot.error}');
-                return SizedBox();
-              }
-              final packageInfo = snapshot.data!;
-              return Text(
-                'Version ${packageInfo.version} ${packageInfo.buildNumber == '' ? '' : '(${packageInfo.buildNumber})'}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 10),
-              );
-            },
+              },
+            ),
           ),
         ),
+
         const SizedBox(height: 16),
       ],
     );

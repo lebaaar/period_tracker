@@ -394,7 +394,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Request notification permission
                     final bool result = await NotificationService()
                         .requestPermissions();
-                    if (!result) setNotificationsValue(false);
+                    if (!result) await setNotificationsValue(false);
+
+                    // Disable version details by default
+                    await setDisplayVersionDetailsValue(false);
 
                     // Navigate to home screen
                     if (context.mounted) {
