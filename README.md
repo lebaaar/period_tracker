@@ -16,20 +16,18 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
 
 ## Download
 
-
-
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="33%" alt="Get it on Google Play">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
   </a>
   <br>
   <br>
   <a href="download/app-release.apk">
-    <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="33%" alt="Download APK">
+    <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="220" alt="Download APK">
   </a>
   <br>
   <p align="center">
-  <i>Available on Google Play Store and as a direct APK download. Not avaliable on App Store because because f*ck Apple and their 99$/year membership</i>
+  <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because f*ck Apple and their 99$/year membership</i>
   </p>
 </p>
 
