@@ -60,6 +60,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return Scaffold(
       body: SafeArea(
+        child: SingleChildScrollView(
         child: Column(
           children: [
             Padding(
@@ -118,7 +119,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
             // Calendar section
-            TableCalendar(
+              SizedBox(
+                height: 400,
+                child: TableCalendar(
               headerStyle: HeaderStyle(formatButtonVisible: false),
               startingDayOfWeek: StartingDayOfWeek.monday,
               firstDay: kFirstCalendarDay,
@@ -217,15 +220,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 },
               ),
             ),
-            Expanded(
-              child: Center(
+              ),
+              Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: periodProvider.getDataForDate(_selectedDay, context),
                 ),
               ),
+            ],
             ),
-          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
