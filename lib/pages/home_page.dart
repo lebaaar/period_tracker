@@ -101,23 +101,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                    const SizedBox(height: 26),
-                    Text(
-                      'Current cycle day: $currentCycleDay',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: progress,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary,
-                      ),
-                      minHeight: 8,
+                          const SizedBox(height: 26),
+                          Text(
+                            'Current cycle day: $currentCycleDay',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: progress,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.primary,
+                            ),
+                            minHeight: 8,
                             backgroundColor: Theme.of(
                               context,
                             ).colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
                         ],
                       ),
                     const SizedBox(height: 16),
@@ -132,7 +132,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               // Calendar section
               SizedBox(
-                height: 400,
+                // height: 420, // probably don't need fixed height
                 child: TableCalendar(
                   headerStyle: HeaderStyle(formatButtonVisible: false),
                   startingDayOfWeek: StartingDayOfWeek.monday,
@@ -171,6 +171,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           focusedDay,
                           periods,
                           nextPeriodDate,
+                          user,
                         ),
                     todayBuilder: (context, day, focusedDay) => _todayBuilder(
                       context,
@@ -178,6 +179,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       focusedDay,
                       periods,
                       nextPeriodDate,
+                      user,
                     ),
                     selectedBuilder: (context, day, focusedDay) =>
                         _selectedBuilder(
@@ -186,6 +188,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           focusedDay,
                           periods,
                           nextPeriodDate,
+                          user,
                         ),
                   ),
                 ),
@@ -202,7 +205,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          bool isEditing = PeriodService.isInPeriod(_selectedDay, periods);
+          Period? period = PeriodService.getPeriodInDate(_selectedDay, periods);
+          bool isEditing = period != null;
 
           if (isEditing) {
             // Find the period being edited
@@ -236,7 +240,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(99.0),
         ),
-        child: PeriodService.isInPeriod(_selectedDay, periods)
+        child: PeriodService.getPeriodInDate(_selectedDay, periods) != null
             ? Icon(
                 Icons.edit_rounded,
                 color: Theme.of(context).colorScheme.onPrimary,
@@ -255,35 +259,62 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     DateTime focusedDay,
     periods,
     DateTime? nextPeriodDate,
+    User? user,
   ) {
     // distinguish 3 cases:
     // - selected date is inside logged period
     // - selected date is inside upcoming period
     // - default builder for all other dates
 
-    final isInPeriod = PeriodService.isInPeriod(day, periods);
+    Period? period = PeriodService.getPeriodInDate(day, periods);
+    final isInPeriod = period != null;
     final isStartDay = PeriodService.isStartDay(day, periods);
     final isEndDay = PeriodService.isEndDay(day, periods);
 
+    final bool isFirstDayOfMonth = DateTimeHelper.isFirstDayOfMonth(day);
+    final bool isLastDayOfMonth = DateTimeHelper.isLastDayOfMonth(day);
+    final bool spansMultipleMonths =
+        isStartDay &&
+            isEndDay // if this is true gradient is applied
+        ? false // period lasts 1 single day - should never happen
+        : (isFirstDayOfMonth || isLastDayOfMonth) &&
+              period != null &&
+              period.startDate.month != period.endDate!.month;
+
     BoxDecoration? decoration;
     Color? textColor;
+    Gradient? gradient;
+    if (spansMultipleMonths) {
+      if (isInPeriod) {
+        gradient = isFirstDayOfMonth
+            ? kLoggedPeriodFirstMonthDayGradient
+            : isLastDayOfMonth
+            ? kLoggedPeriodLastMonthDayGradient
+            : null;
+      }
+    }
     if (isInPeriod) {
       // day is inside logged period
       textColor = Theme.of(context).colorScheme.onSurface;
       decoration = BoxDecoration(
         color: Theme.of(context).colorScheme.secondary,
+        gradient: gradient,
         borderRadius: BorderRadius.horizontal(
           left: isStartDay ? const Radius.circular(99) : Radius.zero,
           right: isEndDay ? const Radius.circular(99) : Radius.zero,
         ),
       );
     }
+    int periodDuration = kDefaultPeriodLength - 1;
+    if (user != null) {
+      periodDuration = user.periodLength - 1;
+    }
 
     // next period date styling
     if (nextPeriodDate != null) {
       DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
       DateTime nextPeriodEnd = DateTimeHelper.stripTime(
-        nextPeriodDate.add(Duration(days: 5 - 1)),
+        nextPeriodDate.add(Duration(days: periodDuration)),
       );
       DateTime current = DateTimeHelper.stripTime(day);
       Color primaryColor = Theme.of(context).colorScheme.primary;
@@ -317,13 +348,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             right: isNextPeriodEndDay ? const Radius.circular(99) : Radius.zero,
           ),
         );
-        return Container(
-          margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-          decoration: decoration,
-          child: Center(
-            child: Text('${day.day}', style: TextStyle(color: textColor)),
-          ),
-        );
       }
     }
 
@@ -343,24 +367,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     DateTime focusedDay,
     periods,
     DateTime? nextPeriodDate,
+    User? user,
   ) {
     // distinguish 3 cases:
     // - selected date is inside logged period
     // - selected date is inside upcoming period
     // - default builder for all other dates
-
-    final isInPeriod = PeriodService.isInPeriod(day, periods);
+    final Period? period = PeriodService.getPeriodInDate(day, periods);
+    final isInPeriod = period != null;
+    int periodDuration = kDefaultPeriodLength - 1;
+    if (user != null) {
+      periodDuration = user.periodLength - 1;
+    }
 
     if (isInPeriod) {
       // today is inside logged period
-      return _defaultBuilder(context, day, focusedDay, periods, nextPeriodDate);
+      return _defaultBuilder(
+        context,
+        day,
+        focusedDay,
+        periods,
+        nextPeriodDate,
+        user,
+      );
     }
 
     // default styling that is returned if today is just a regular day, meaning it doesn't fall into any of the logged or upcoming periods
     BoxDecoration? decoration = BoxDecoration(
       shape: BoxShape.circle,
       border: Border.all(
-        color: Theme.of(context).colorScheme.secondary, // TODO, remove?
+        color: Theme.of(context).colorScheme.secondary,
         width: 2,
       ),
     );
@@ -369,7 +405,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (nextPeriodDate != null) {
       DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
       DateTime nextPeriodEnd = DateTimeHelper.stripTime(
-        nextPeriodDate.add(Duration(days: 5 - 1)),
+        nextPeriodDate.add(Duration(days: periodDuration)),
       );
       DateTime current = DateTimeHelper.stripTime(day);
 
@@ -385,6 +421,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           focusedDay,
           periods,
           nextPeriodDate,
+          user,
         );
       }
     }
@@ -404,23 +441,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     DateTime focusedDay,
     periods,
     DateTime? nextPeriodDate,
+    User? user,
   ) {
     // distinguish 3 cases:
     // - selected date is inside logged period
     // - selected date is inside upcoming period
     // - default builder for all other dates
-    final isInPeriod = PeriodService.isInPeriod(day, periods);
+    final Period? period = PeriodService.getPeriodInDate(day, periods);
+    final isInPeriod = period != null;
     final isStartDay = PeriodService.isStartDay(day, periods);
     final isEndDay = PeriodService.isEndDay(day, periods);
+
+    final bool isFirstDayOfMonth = DateTimeHelper.isFirstDayOfMonth(day);
+    final bool isLastDayOfMonth = DateTimeHelper.isLastDayOfMonth(day);
+    final bool spansMultipleMonths =
+        isStartDay &&
+            isEndDay // if this is true gradient is applied
+        ? false // period lasts 1 single day - should never happen
+        : (isFirstDayOfMonth || isLastDayOfMonth) &&
+              period != null &&
+              period.startDate.month != period.endDate!.month;
+
+    final upComingSpanMultipleMonths = isFirstDayOfMonth || isLastDayOfMonth;
 
     bool insideUpcomingPeriod = false;
     bool isNextPeriodStartDay = false;
     bool isNextPeriodEndDay = false;
+    int periodDuration = kDefaultPeriodLength - 1;
+    if (user != null) {
+      periodDuration = user.periodLength - 1;
+    }
 
     if (nextPeriodDate != null) {
       DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
       DateTime nextPeriodEnd = DateTimeHelper.stripTime(
-        nextPeriodDate.add(Duration(days: 5 - 1)),
+        nextPeriodDate.add(Duration(days: periodDuration)),
       );
       DateTime current = DateTimeHelper.stripTime(day);
 
@@ -437,10 +492,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     BoxDecoration? decoration;
     Color? textColor;
+    Gradient? gradient;
+    if (spansMultipleMonths) {
+      if (isInPeriod) {
+        gradient = isFirstDayOfMonth
+            ? kLoggedSelectedPeriodFirstMonthDayGradient
+            : isLastDayOfMonth
+            ? kLoggedSelectedPeriodLastMonthDayGradient
+            : null;
+      }
+    } else if (upComingSpanMultipleMonths) {
+      if (insideUpcomingPeriod) {
+        gradient = isFirstDayOfMonth
+            ? kUpcomingSelectedPeriodFirstMonthDayGradient
+            : isLastDayOfMonth
+            ? kUpcomingSelectedPeriodLastMonthDayGradient
+            : null;
+      }
+    }
     if (isInPeriod) {
       // selected date is inside logged period
       decoration = BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
+        gradient: gradient,
         borderRadius: BorderRadius.horizontal(
           left: isStartDay ? const Radius.circular(99) : Radius.zero,
           right: isEndDay ? const Radius.circular(99) : Radius.zero,
@@ -450,6 +524,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } else if (insideUpcomingPeriod) {
       // selected day is inside upcoming period
       decoration = BoxDecoration(
+        gradient: gradient,
         color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.horizontal(
           left: isNextPeriodStartDay ? const Radius.circular(99) : Radius.zero,
