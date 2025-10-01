@@ -139,6 +139,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   firstDay: kFirstCalendarDay,
                   lastDay: kLastCalendarDay,
                   focusedDay: _focusedDay,
+                  availableGestures: AvailableGestures.horizontalSwipe,
                   selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                   rangeStartDay: _rangeStart,
                   rangeEndDay: _rangeEnd,
