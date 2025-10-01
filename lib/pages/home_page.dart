@@ -244,7 +244,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     periods,
     DateTime? nextPeriodDate,
   ) {
-    // distinguish 3 casesL
+    // distinguish 3 cases:
     // - selected date is inside logged period
     // - selected date is inside upcoming period
     // - default builder for all other dates
@@ -257,6 +257,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     Color? textColor;
     if (isInPeriod) {
       // day is inside logged period
+      textColor = Theme.of(context).colorScheme.onSurface;
       decoration = BoxDecoration(
         color: Theme.of(context).colorScheme.secondary,
         borderRadius: BorderRadius.horizontal(
@@ -332,7 +333,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     periods,
     DateTime? nextPeriodDate,
   ) {
-    // distinguish 3 casesL
+    // distinguish 3 cases:
     // - selected date is inside logged period
     // - selected date is inside upcoming period
     // - default builder for all other dates
@@ -393,7 +394,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     periods,
     DateTime? nextPeriodDate,
   ) {
-    // distinguish 3 casesL
+    // distinguish 3 cases:
     // - selected date is inside logged period
     // - selected date is inside upcoming period
     // - default builder for all other dates
