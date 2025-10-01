@@ -41,13 +41,6 @@ class PeriodService {
     return false;
   }
 
-  static bool isInPeriod(DateTime day, List<Period> periods) {
-    final checkDay = DateTime.utc(day.year, day.month, day.day);
-    Period? period = getPeriodInDate(checkDay, periods);
-    if (period != null) return true;
-    return false;
-  }
-
   static bool isStartDay(DateTime day, List<Period> periods) {
     return periods.any(
       (p) =>

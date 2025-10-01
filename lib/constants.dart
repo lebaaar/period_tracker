@@ -1,10 +1,56 @@
 // UI
+import 'package:flutter/rendering.dart';
+import 'package:period_tracker/theme.dart';
+
 final double kBorderRadius = 12;
 final double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2020, 1, 1);
 final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31);
+
+// table_calendar specific
+// logged period gradients - gradient the whole background
+final Gradient kLoggedPeriodFirstMonthDayGradient = LinearGradient(
+  colors: [colorScheme.surface, colorScheme.secondary],
+  stops: [0.0, 0.33],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
+final Gradient kLoggedPeriodLastMonthDayGradient = LinearGradient(
+  colors: [colorScheme.secondary, colorScheme.surface],
+  stops: [0.66, 1.0],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
+
+// logged selected period gradients - gradient the whole background
+final Gradient kLoggedSelectedPeriodFirstMonthDayGradient = LinearGradient(
+  colors: [colorScheme.surface, colorScheme.primary],
+  stops: [0.0, 0.33],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
+final Gradient kLoggedSelectedPeriodLastMonthDayGradient = LinearGradient(
+  colors: [colorScheme.primary, colorScheme.surface],
+  stops: [0.66, 1.0],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
+
+// TODO: upcoming period gradients - gradient just the border
+final Gradient kUpcomingSelectedPeriodFirstMonthDayGradient = LinearGradient(
+  colors: [colorScheme.surface, colorScheme.primary],
+  stops: [0.0, 0.33],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
+final Gradient kUpcomingSelectedPeriodLastMonthDayGradient = LinearGradient(
+  colors: [colorScheme.primary, colorScheme.surface],
+  stops: [0.66, 1.0],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
 
 // Default cycle and period lengths
 final int kDefaultCycleLength = 28;

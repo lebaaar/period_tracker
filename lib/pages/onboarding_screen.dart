@@ -160,11 +160,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '• Period length: number of days your period usually lasts - number of "bleeding" days. [5]',
+                            '• Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)',
                           ),
                           SizedBox(height: 12),
                           Text(
-                            '• Cycle length: number of days from the first day of one period to the first day of the next. [28]',
+                            '• Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)',
                           ),
                         ],
                       ),
@@ -274,7 +274,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               FocusScope.of(context).unfocus();
               return CalendarDatePicker(
                 initialDate: _lastPeriodDate ?? DateTime.now(),
-                firstDate: DateTime(2000),
+                firstDate: kFirstCalendarDay,
                 lastDate: DateTime.now(),
                 onDateChanged: (picked) {
                   setState(() {

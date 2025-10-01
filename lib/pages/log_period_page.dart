@@ -410,7 +410,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Theme.of(context).colorScheme.secondary,
                           width: 2,
                         ),
                       ),

@@ -113,7 +113,9 @@ class PeriodProvider extends ChangeNotifier {
     );
 
     if (_periods.isEmpty || nextPeriodDate == null) {
-      status.text = 'Not enough data to predict the next period';
+      // in this case status bar on home page is hidden
+      status.text =
+          'Start by tapping the + button bellow to log your most recent period.';
       return status;
     }
 
@@ -121,16 +123,8 @@ class PeriodProvider extends ChangeNotifier {
 
     _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     final lastPeriod = _periods.last;
-    final lastStart = DateTime(
-      lastPeriod.startDate.year,
-      lastPeriod.startDate.month,
-      lastPeriod.startDate.day,
-    );
-    final lastEnd = DateTime(
-      lastPeriod.endDate!.year,
-      lastPeriod.endDate!.month,
-      lastPeriod.endDate!.day,
-    );
+    final lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
+    final lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
     final now = DateTime.now();
     final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
@@ -160,8 +154,13 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns average cycle length in days
-  double? getAverageCycleLength() {
-    if (_periods.length < 2) return null;
+  double? getAverageCycleLength({int? userCycleLength}) {
+    if (_periods.isEmpty) return null;
+    if (_periods.length < 2) {
+      // not enough data to calculate average cycle length - use the user provided cycle length if available
+      // returns null if userCycleLength is null
+      return userCycleLength?.toDouble();
+    }
     final sorted = List<Period>.from(_periods)
       ..sort((a, b) => a.startDate.compareTo(b.startDate));
     List<int> cycles = [];
