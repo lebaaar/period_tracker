@@ -121,16 +121,8 @@ class PeriodProvider extends ChangeNotifier {
 
     _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     final lastPeriod = _periods.last;
-    final lastStart = DateTime(
-      lastPeriod.startDate.year,
-      lastPeriod.startDate.month,
-      lastPeriod.startDate.day,
-    );
-    final lastEnd = DateTime(
-      lastPeriod.endDate!.year,
-      lastPeriod.endDate!.month,
-      lastPeriod.endDate!.day,
-    );
+    final lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
+    final lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
     final now = DateTime.now();
     final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
