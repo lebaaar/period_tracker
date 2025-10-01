@@ -118,6 +118,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ).colorScheme.secondary,
                       borderRadius: BorderRadius.circular(99),
                     ),
+                        ],
+                      ),
                     const SizedBox(height: 16),
                     Text(
                       status.text,
