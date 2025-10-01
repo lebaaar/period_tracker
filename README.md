@@ -52,5 +52,9 @@ Pull requests are always welcome! For major changes, please open an issue first 
 
 ## Development
 
+- Running release on device:
+`flutter run --release`
+- Building for release (make sure to update the version before each new release):
+`flutter build appbundle --release`
 - Running emulator via CLI:
 `emulator -avd <AVD_NAME> -no-snapshot-save -no-boot-anim -gpu host -accel on`
