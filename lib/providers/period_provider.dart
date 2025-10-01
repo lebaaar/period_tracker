@@ -215,9 +215,10 @@ class PeriodProvider extends ChangeNotifier {
           Text(
             'Selected period: ${DateTimeHelper.displayDate(period.startDate)} - '
             '${period.endDate != null ? DateTimeHelper.displayDate(period.endDate!) : 'Ongoing'}',
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 4),
-          Text(notes),
+          Text(notes, textAlign: TextAlign.center),
         ],
       ),
     );
