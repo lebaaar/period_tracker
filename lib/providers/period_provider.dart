@@ -152,8 +152,12 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns average cycle length in days
-  double? getAverageCycleLength() {
-    if (_periods.length < 2) return null;
+  double? getAverageCycleLength({int? userCycleLength}) {
+    if (_periods.length < 2) {
+      // not enough data to calculate average cycle length - use the user provided cycle length if available
+      // returns null if userCycleLength is null
+      return userCycleLength?.toDouble();
+    }
     final sorted = List<Period>.from(_periods)
       ..sort((a, b) => a.startDate.compareTo(b.startDate));
     List<int> cycles = [];
