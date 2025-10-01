@@ -113,7 +113,9 @@ class PeriodProvider extends ChangeNotifier {
     );
 
     if (_periods.isEmpty || nextPeriodDate == null) {
-      status.text = 'Not enough data to predict the next period';
+      // in this case status bar on home page is hidden
+      status.text =
+          'Start by tapping the + button bellow to log your most recent period.';
       return status;
     }
 
