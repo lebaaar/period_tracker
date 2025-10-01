@@ -241,10 +241,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
                   },
                 ),
-                if (predictionMode == 'static') ...[
-                  _buildListTile(user, settings, 'period_length'),
-                  _buildListTile(user, settings, 'cycle_length'),
-                ],
+                _buildListTile(
+                  user,
+                  settings,
+                  'period_length',
+                  isDisabled: predictionMode == 'dynamic',
+                ),
+                _buildListTile(
+                  user,
+                  settings,
+                  'cycle_length',
+                  isDisabled: predictionMode == 'dynamic',
+                ),
               ],
             );
           },
@@ -302,7 +310,12 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildListTile(User user, Settings? settings, String tileType) {
+  Widget _buildListTile(
+    User user,
+    Settings? settings,
+    String tileType, {
+    bool isDisabled = false,
+  }) {
     String title;
     String subtitle;
 
@@ -343,83 +356,97 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     return ListTile(
-      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: isDisabled
+              ? Theme.of(context).disabledColor
+              : Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+      ),
       subtitle: Text(
         subtitle,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.tertiary,
+          color: isDisabled
+              ? Theme.of(context).disabledColor
+              : Theme.of(context).colorScheme.tertiary,
         ),
       ),
-      trailing: Icon(Icons.chevron_right_rounded),
-      onTap: () {
-        switch (tileType) {
-          case 'name':
-            _showEditNameDialog(user, (newName) {
-              context.read<UserProvider>().updateUser(
-                name: newName,
-                cycleLength: user.cycleLength,
-                periodLength: user.periodLength,
-                lastPeriodDate: user.lastPeriodDate,
-              );
-            });
-            break;
-          case 'cycle_length':
-            _showEditCycleLengthDialog(user, (newLength) {
-              context.read<UserProvider>().updateUser(
-                cycleLength: int.parse(newLength),
-                name: user.name,
-                periodLength: user.periodLength,
-                lastPeriodDate: user.lastPeriodDate,
-              );
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: isDisabled ? Theme.of(context).disabledColor : null,
+      ),
+      onTap: isDisabled
+          ? null
+          : () {
+              switch (tileType) {
+                case 'name':
+                  _showEditNameDialog(user, (newName) {
+                    context.read<UserProvider>().updateUser(
+                      name: newName,
+                      cycleLength: user.cycleLength,
+                      periodLength: user.periodLength,
+                      lastPeriodDate: user.lastPeriodDate,
+                    );
+                  });
+                  break;
+                case 'cycle_length':
+                  _showEditCycleLengthDialog(user, (newLength) {
+                    context.read<UserProvider>().updateUser(
+                      cycleLength: int.parse(newLength),
+                      name: user.name,
+                      periodLength: user.periodLength,
+                      lastPeriodDate: user.lastPeriodDate,
+                    );
 
-              // update nextPeriodDate if prediction mode is static
-              DateTime? nextPeriodDate = context
-                  .read<PeriodProvider>()
-                  .getNextPeriodDate(
-                    settings?.predictionMode == 'dynamic',
-                    int.parse(newLength),
-                  );
-              NotificationService().scheduleNotificationsForNextPeriod(
-                nextPeriodDate,
-                settings!.notificationDaysBefore,
-                settings.notificationTime,
-              );
-            });
-            break;
-          case 'period_length':
-            _showEditPeriodLengthDialog(user, (newLength) {
-              context.read<UserProvider>().updateUser(
-                periodLength: int.parse(newLength),
-                name: user.name,
-                cycleLength: user.cycleLength,
-                lastPeriodDate: user.lastPeriodDate,
-              );
+                    // update nextPeriodDate if prediction mode is static
+                    DateTime? nextPeriodDate = context
+                        .read<PeriodProvider>()
+                        .getNextPeriodDate(
+                          settings?.predictionMode == 'dynamic',
+                          int.parse(newLength),
+                        );
+                    NotificationService().scheduleNotificationsForNextPeriod(
+                      nextPeriodDate,
+                      settings!.notificationDaysBefore,
+                      settings.notificationTime,
+                    );
+                  });
+                  break;
+                case 'period_length':
+                  _showEditPeriodLengthDialog(user, (newLength) {
+                    context.read<UserProvider>().updateUser(
+                      periodLength: int.parse(newLength),
+                      name: user.name,
+                      cycleLength: user.cycleLength,
+                      lastPeriodDate: user.lastPeriodDate,
+                    );
 
-              // periodLength change does not affect nextPeriodDate, no notification reschedule needed
-              // periodLength is only used for auto-logging period end date
-              // possible TODO: if user is currently on period, update the end date based on new period length
-            });
-            break;
-          case 'notifications':
-            context.go('/notifications');
-            break;
-          case 'backup':
-            _showBackupDialog();
-            break;
-          case 'restore':
-            _showRestoreDialog();
-            break;
-          case 'delete':
-            _showDeleteAccountDialog();
-            break;
-          default:
-            throw ArgumentError(
-              '''Invalid tile type: $tileType. Should be one the following:
+                    // periodLength change does not affect nextPeriodDate, no notification reschedule needed
+                    // periodLength is only used for auto-logging period end date
+                    // possible TODO: if user is currently on period, update the end date based on new period length
+                  });
+                  break;
+                case 'notifications':
+                  context.go('/notifications');
+                  break;
+                case 'backup':
+                  _showBackupDialog();
+                  break;
+                case 'restore':
+                  _showRestoreDialog();
+                  break;
+                case 'delete':
+                  _showDeleteAccountDialog();
+                  break;
+                default:
+                  throw ArgumentError(
+                    '''Invalid tile type: $tileType. Should be one the following:
               "name", "cycle_length", "period_length",  "notifications",
               "backup", "restore" or "delete".''',
-            );
-        }
-      },
+                  );
+              }
+            },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
   }
