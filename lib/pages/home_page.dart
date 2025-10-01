@@ -61,165 +61,122 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_month_rounded,
-                        size: 40,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Next period:',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          Text(
-                            nextPeriodDate != null
-                                ? DateTimeHelper.displayDate(nextPeriodDate)
-                                : 'Not enough data',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 26),
-                  Text(
-                    'Current cycle day: $currentCycleDay',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: progress,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.primary,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_month_rounded,
+                          size: 40,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Next period:',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Text(
+                              nextPeriodDate != null
+                                  ? DateTimeHelper.displayDate(nextPeriodDate)
+                                  : 'Not enough data',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    minHeight: 8,
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    status.text,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: status.color),
-                  ),
-                ],
+                    const SizedBox(height: 26),
+                    Text(
+                      'Current cycle day: $currentCycleDay',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: progress,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
+                      ),
+                      minHeight: 8,
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      status.text,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: status.color),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // Calendar section
+              // Calendar section
               SizedBox(
                 height: 400,
                 child: TableCalendar(
-              headerStyle: HeaderStyle(formatButtonVisible: false),
-              startingDayOfWeek: StartingDayOfWeek.monday,
-              firstDay: kFirstCalendarDay,
-              lastDay: kLastCalendarDay,
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              rangeStartDay: _rangeStart,
-              rangeEndDay: _rangeEnd,
-              calendarFormat: CalendarFormat.month,
-              rangeSelectionMode: RangeSelectionMode.toggledOff,
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  if (!isSameDay(_selectedDay, selectedDay)) {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                    _rangeStart = null;
-                  }
-                });
-              },
-              daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
-              daysOfWeekStyle: DaysOfWeekStyle(
-                weekdayStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-                weekendStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-              ),
-              calendarStyle: CalendarStyle(outsideDaysVisible: false),
-              calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, focusedDay) {
-                  return _defaultBuilder(context, day, focusedDay, periods);
-                },
-                todayBuilder: (context, day, focusedDay) {
-                  final isInPeriod = PeriodService.isInPeriod(day, periods);
-                  if (isInPeriod) {
-                    return _defaultBuilder(context, day, focusedDay, periods);
-                  }
-                  return Container(
-                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
+                  headerStyle: HeaderStyle(formatButtonVisible: false),
+                  startingDayOfWeek: StartingDayOfWeek.monday,
+                  firstDay: kFirstCalendarDay,
+                  lastDay: kLastCalendarDay,
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                  rangeStartDay: _rangeStart,
+                  rangeEndDay: _rangeEnd,
+                  calendarFormat: CalendarFormat.month,
+                  rangeSelectionMode: RangeSelectionMode.toggledOff,
+                  onDaySelected: (selectedDay, focusedDay) {
+                    setState(() {
+                      if (!isSameDay(_selectedDay, selectedDay)) {
+                        _selectedDay = selectedDay;
+                        _focusedDay = focusedDay;
+                        _rangeStart = null;
+                      }
+                    });
+                  },
+                  daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
                     ),
-                    child: Center(
-                      child: Text(
-                        '${day.day}',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
+                    weekendStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                  ),
+                  calendarStyle: CalendarStyle(outsideDaysVisible: false),
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, day, focusedDay) =>
+                        _defaultBuilder(
+                          context,
+                          day,
+                          focusedDay,
+                          periods,
+                          nextPeriodDate,
                         ),
-                      ),
+                    todayBuilder: (context, day, focusedDay) => _todayBuilder(
+                      context,
+                      day,
+                      focusedDay,
+                      periods,
+                      nextPeriodDate,
                     ),
-                  );
-                },
-                selectedBuilder: (context, day, focusedDay) {
-                  final isInPeriod = PeriodService.isInPeriod(day, periods);
-                  final isStartDay = PeriodService.isStartDay(day, periods);
-                  final isEndDay = PeriodService.isEndDay(day, periods);
-
-                  BoxDecoration? decoration;
-                  Color? textColor;
-                  if (isInPeriod) {
-                    decoration = BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.horizontal(
-                        left: isStartDay
-                            ? const Radius.circular(99)
-                            : Radius.zero,
-                        right: isEndDay
-                            ? const Radius.circular(99)
-                            : Radius.zero,
-                      ),
-                    );
-                    textColor = Theme.of(context).colorScheme.surface;
-                  } else {
-                    decoration = BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
-                    );
-                    textColor = Theme.of(context).colorScheme.onPrimary;
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                    decoration: decoration,
-                    child: Center(
-                      child: Text(
-                        '${day.day}',
-                        style: TextStyle(color: textColor),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                    selectedBuilder: (context, day, focusedDay) =>
+                        _selectedBuilder(
+                          context,
+                          day,
+                          focusedDay,
+                          periods,
+                          nextPeriodDate,
+                        ),
+                  ),
+                ),
               ),
               Center(
                 child: Padding(
@@ -228,7 +185,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
             ],
-            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -280,7 +237,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _defaultBuilder(BuildContext context, day, focusedDay, periods) {
+  Widget _defaultBuilder(
+    BuildContext context,
+    DateTime day,
+    DateTime focusedDay,
+    periods,
+    DateTime? nextPeriodDate,
+  ) {
+    // distinguish 3 casesL
+    // - selected date is inside logged period
+    // - selected date is inside upcoming period
+    // - default builder for all other dates
+
     final isInPeriod = PeriodService.isInPeriod(day, periods);
     final isStartDay = PeriodService.isStartDay(day, periods);
     final isEndDay = PeriodService.isEndDay(day, periods);
@@ -288,6 +256,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     BoxDecoration? decoration;
     Color? textColor;
     if (isInPeriod) {
+      // day is inside logged period
       decoration = BoxDecoration(
         color: Theme.of(context).colorScheme.secondary,
         borderRadius: BorderRadius.horizontal(
@@ -296,6 +265,193 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       );
       textColor = Theme.of(context).colorScheme.onSurface;
+    }
+
+    // next period date styling
+    if (nextPeriodDate != null) {
+      DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
+      DateTime nextPeriodEnd = DateTimeHelper.stripTime(
+        nextPeriodDate.add(Duration(days: 5 - 1)),
+      );
+      DateTime current = DateTimeHelper.stripTime(day);
+      Color primaryColor = Theme.of(context).colorScheme.primary;
+
+      if (DateTimeHelper.dayBetweenDates(
+        current,
+        nextPeriodStart,
+        nextPeriodEnd,
+      )) {
+        // day is inside upcoming period
+        final isNextPeriodStartDay = DateTimeHelper.isSameDay(
+          nextPeriodStart,
+          day,
+        );
+        final isNextPeriodEndDay = DateTimeHelper.isSameDay(nextPeriodEnd, day);
+        decoration = BoxDecoration(
+          border: Border(
+            left: isNextPeriodStartDay
+                ? BorderSide(color: primaryColor, width: 2)
+                : BorderSide.none,
+            right: isNextPeriodEndDay
+                ? BorderSide(color: primaryColor, width: 2)
+                : BorderSide.none,
+            top: BorderSide(color: primaryColor, width: 2),
+            bottom: BorderSide(color: primaryColor, width: 2),
+          ),
+          borderRadius: BorderRadius.horizontal(
+            left: isNextPeriodStartDay
+                ? const Radius.circular(99)
+                : Radius.zero,
+            right: isNextPeriodEndDay ? const Radius.circular(99) : Radius.zero,
+          ),
+        );
+        return Container(
+          margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+          decoration: decoration,
+          child: Center(
+            child: Text('${day.day}', style: TextStyle(color: textColor)),
+          ),
+        );
+      }
+    }
+
+    // default builder
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+      decoration: decoration,
+      child: Center(
+        child: Text('${day.day}', style: TextStyle(color: textColor)),
+      ),
+    );
+  }
+
+  Widget _todayBuilder(
+    BuildContext context,
+    DateTime day,
+    DateTime focusedDay,
+    periods,
+    DateTime? nextPeriodDate,
+  ) {
+    // distinguish 3 casesL
+    // - selected date is inside logged period
+    // - selected date is inside upcoming period
+    // - default builder for all other dates
+
+    final isInPeriod = PeriodService.isInPeriod(day, periods);
+
+    if (isInPeriod) {
+      // today is inside logged period
+      return _defaultBuilder(context, day, focusedDay, periods, nextPeriodDate);
+    }
+
+    // default styling that is returned if today is just a regular day, meaning it doesn't fall into any of the logged or upcoming periods
+    BoxDecoration? decoration = BoxDecoration(
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: Theme.of(context).colorScheme.secondary, // TODO, remove?
+        width: 2,
+      ),
+    );
+    Color? textColor = Theme.of(context).colorScheme.onSurface;
+
+    if (nextPeriodDate != null) {
+      DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
+      DateTime nextPeriodEnd = DateTimeHelper.stripTime(
+        nextPeriodDate.add(Duration(days: 5 - 1)),
+      );
+      DateTime current = DateTimeHelper.stripTime(day);
+
+      if (DateTimeHelper.dayBetweenDates(
+        current,
+        nextPeriodStart,
+        nextPeriodEnd,
+      )) {
+        // selected date is inside upcoming period
+        return _defaultBuilder(
+          context,
+          day,
+          focusedDay,
+          periods,
+          nextPeriodDate,
+        );
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+      decoration: decoration,
+      child: Center(
+        child: Text('${day.day}', style: TextStyle(color: textColor)),
+      ),
+    );
+  }
+
+  Widget _selectedBuilder(
+    BuildContext context,
+    DateTime day,
+    DateTime focusedDay,
+    periods,
+    DateTime? nextPeriodDate,
+  ) {
+    // distinguish 3 casesL
+    // - selected date is inside logged period
+    // - selected date is inside upcoming period
+    // - default builder for all other dates
+    final isInPeriod = PeriodService.isInPeriod(day, periods);
+    final isStartDay = PeriodService.isStartDay(day, periods);
+    final isEndDay = PeriodService.isEndDay(day, periods);
+
+    bool insideUpcomingPeriod = false;
+    bool isNextPeriodStartDay = false;
+    bool isNextPeriodEndDay = false;
+
+    if (nextPeriodDate != null) {
+      DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
+      DateTime nextPeriodEnd = DateTimeHelper.stripTime(
+        nextPeriodDate.add(Duration(days: 5 - 1)),
+      );
+      DateTime current = DateTimeHelper.stripTime(day);
+
+      if (DateTimeHelper.dayBetweenDates(
+        current,
+        nextPeriodStart,
+        nextPeriodEnd,
+      )) {
+        isNextPeriodStartDay = DateTimeHelper.isSameDay(nextPeriodStart, day);
+        isNextPeriodEndDay = DateTimeHelper.isSameDay(nextPeriodEnd, day);
+        insideUpcomingPeriod = true;
+      }
+    }
+
+    BoxDecoration? decoration;
+    Color? textColor;
+    if (isInPeriod) {
+      // selected date is inside logged period
+      decoration = BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.horizontal(
+          left: isStartDay ? const Radius.circular(99) : Radius.zero,
+          right: isEndDay ? const Radius.circular(99) : Radius.zero,
+        ),
+      );
+      textColor = Theme.of(context).colorScheme.surface;
+    } else if (insideUpcomingPeriod) {
+      // selected day is inside upcoming period
+      decoration = BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.horizontal(
+          left: isNextPeriodStartDay ? const Radius.circular(99) : Radius.zero,
+          right: isNextPeriodEndDay ? const Radius.circular(99) : Radius.zero,
+        ),
+      );
+      textColor = Theme.of(context).colorScheme.surface;
+    } else {
+      // default selector builder
+      decoration = BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        shape: BoxShape.circle,
+      );
+      textColor = Theme.of(context).colorScheme.onPrimary;
     }
 
     return Container(
