@@ -153,6 +153,7 @@ class PeriodProvider extends ChangeNotifier {
 
   // Returns average cycle length in days
   double? getAverageCycleLength({int? userCycleLength}) {
+    if (_periods.isEmpty) return null;
     if (_periods.length < 2) {
       // not enough data to calculate average cycle length - use the user provided cycle length if available
       // returns null if userCycleLength is null

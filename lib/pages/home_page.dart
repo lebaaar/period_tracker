@@ -55,6 +55,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       nextPeriodDate,
     );
 
+    bool showProgressBar = avgCycleLength != null;
     double progress = 0;
     if (avgCycleLength != null && avgCycleLength > 0) {
       progress = currentCycleDay / avgCycleLength;
@@ -96,6 +97,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
+                    if (showProgressBar)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                     const SizedBox(height: 26),
                     Text(
                       'Current cycle day: $currentCycleDay',
@@ -108,15 +113,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         Theme.of(context).colorScheme.primary,
                       ),
                       minHeight: 8,
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.secondary,
                       borderRadius: BorderRadius.circular(99),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       status.text,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: status.color),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: status.color),
+                          ),
+                        ],
                     ),
                   ],
                 ),
