@@ -46,7 +46,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final currentCycleDay = periodProvider.getCurrentCycleDay(
       DateTime.utc(tempDate.year, tempDate.month, tempDate.day),
     );
-    final avgCycleLength = periodProvider.getAverageCycleLength();
+    final avgCycleLength = periodProvider.getAverageCycleLength(
+      userCycleLength:
+          user?.cycleLength, // provide userCycleLength if available
+    );
     final status = periodProvider.getStatusMessage(
       Theme.of(context).colorScheme.tertiary,
       nextPeriodDate,
@@ -265,7 +268,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           right: isEndDay ? const Radius.circular(99) : Radius.zero,
         ),
       );
-      textColor = Theme.of(context).colorScheme.onSurface;
     }
 
     // next period date styling
