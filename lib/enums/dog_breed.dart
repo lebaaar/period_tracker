@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 enum DogBreed {
   affenpinscher("affenpinscher", "Affenpinscher"),
   african_wild("african/wild", "African Wild"),
