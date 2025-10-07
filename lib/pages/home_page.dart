@@ -200,6 +200,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   child: periodProvider.getDataForDate(_selectedDay, context),
                 ),
               ),
+              SizedBox(height: 80), // to avoid FAB overlapping content
             ],
           ),
         ),
