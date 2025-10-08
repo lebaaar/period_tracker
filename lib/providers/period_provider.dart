@@ -66,6 +66,38 @@ class PeriodProvider extends ChangeNotifier {
     }
   }
 
+  // Returns the next 3 expected period start dates
+  List<DateTime> getNext3PeriodDates(
+    bool dynamicPredictionMode,
+    int? userCycleLength,
+  ) {
+    List<DateTime> upcomingPeriods = [];
+
+    DateTime? firstPeriod = getNextPeriodDate(
+      dynamicPredictionMode,
+      userCycleLength,
+    );
+    if (firstPeriod == null) return upcomingPeriods;
+
+    upcomingPeriods.add(firstPeriod);
+
+    // Calculate cycle length based on mode
+    int cycleLength;
+    if (dynamicPredictionMode) {
+      final avgCycle = getAverageCycleLength();
+      cycleLength = avgCycle?.round() ?? userCycleLength ?? kDefaultCycleLength;
+    } else {
+      cycleLength = userCycleLength ?? kDefaultCycleLength;
+    }
+
+    // Add the next 2 periods
+    for (int i = 1; i < 3; i++) {
+      upcomingPeriods.add(firstPeriod.add(Duration(days: cycleLength * i)));
+    }
+
+    return upcomingPeriods;
+  }
+
   int getCurrentCycleDay([DateTime? date]) {
     if (_periods.isEmpty) return 0;
 

@@ -38,10 +38,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final Settings? settings = context.watch<SettingsProvider>().settings;
     final User? user = context.watch<UserProvider>().user;
 
-    final DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(
+    final List<DateTime> next3PeriodDates = periodProvider.getNext3PeriodDates(
       settings?.predictionMode == 'dynamic',
       user?.cycleLength,
     );
+    final DateTime? nextPeriodDate = next3PeriodDates.isNotEmpty
+        ? next3PeriodDates[0]
+        : null;
+
     DateTime tempDate = DateTime.now();
     final currentCycleDay = periodProvider.getCurrentCycleDay(
       DateTime.utc(tempDate.year, tempDate.month, tempDate.day),
@@ -171,7 +175,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           day,
                           focusedDay,
                           periods,
-                          nextPeriodDate,
+                          next3PeriodDates,
                           user,
                         ),
                     todayBuilder: (context, day, focusedDay) => _todayBuilder(
@@ -179,7 +183,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       day,
                       focusedDay,
                       periods,
-                      nextPeriodDate,
+                      next3PeriodDates,
                       user,
                     ),
                     selectedBuilder: (context, day, focusedDay) =>
@@ -188,7 +192,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           day,
                           focusedDay,
                           periods,
-                          nextPeriodDate,
+                          next3PeriodDates,
                           user,
                         ),
                   ),
@@ -260,7 +264,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     DateTime day,
     DateTime focusedDay,
     periods,
-    DateTime? nextPeriodDate,
+    List<DateTime> next3PeriodDates,
     User? user,
   ) {
     // distinguish 3 cases:
@@ -312,42 +316,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       periodDuration = user.periodLength - 1;
     }
 
-    // next period date styling
-    if (nextPeriodDate != null) {
-      DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
-      DateTime nextPeriodEnd = DateTimeHelper.stripTime(
-        nextPeriodDate.add(Duration(days: periodDuration)),
-      );
-      DateTime current = DateTimeHelper.stripTime(day);
-      Color primaryColor = Theme.of(context).colorScheme.primary;
+    // next period dates (3) styling
+    DateTime current = DateTimeHelper.stripTime(day);
+    Color primaryColor = Theme.of(context).colorScheme.primary;
 
-      if (DateTimeHelper.dayBetweenDates(
-        current,
-        nextPeriodStart,
-        nextPeriodEnd,
-      )) {
-        // day is inside upcoming period
-        final isNextPeriodStartDay = DateTimeHelper.isSameDay(
-          nextPeriodStart,
-          day,
-        );
-        final isNextPeriodEndDay = DateTimeHelper.isSameDay(nextPeriodEnd, day);
+    for (
+      int periodIndex = 0;
+      periodIndex < next3PeriodDates.length;
+      periodIndex++
+    ) {
+      DateTime periodStart = DateTimeHelper.stripTime(
+        next3PeriodDates[periodIndex],
+      );
+      DateTime periodEnd = DateTimeHelper.stripTime(
+        next3PeriodDates[periodIndex].add(Duration(days: periodDuration)),
+      );
+
+      if (DateTimeHelper.dayBetweenDates(current, periodStart, periodEnd)) {
+        // day is inside one of the upcoming periods
+        final isStartDay = DateTimeHelper.isSameDay(periodStart, day);
+        final isEndDay = DateTimeHelper.isSameDay(periodEnd, day);
+
         decoration = BoxDecoration(
           border: Border(
-            left: isNextPeriodStartDay
-                ? BorderSide(color: primaryColor, width: 2)
+            left: isStartDay
+                ? BorderSide(color: primaryColor, width: 2.0)
                 : BorderSide.none,
-            right: isNextPeriodEndDay
-                ? BorderSide(color: primaryColor, width: 2)
+            right: isEndDay
+                ? BorderSide(color: primaryColor, width: 2.0)
                 : BorderSide.none,
-            top: BorderSide(color: primaryColor, width: 2),
-            bottom: BorderSide(color: primaryColor, width: 2),
+            top: BorderSide(color: primaryColor, width: 2.0),
+            bottom: BorderSide(color: primaryColor, width: 2.0),
           ),
           borderRadius: BorderRadius.horizontal(
-            left: isNextPeriodStartDay
-                ? const Radius.circular(99)
-                : Radius.zero,
-            right: isNextPeriodEndDay ? const Radius.circular(99) : Radius.zero,
+            left: isStartDay ? const Radius.circular(99) : Radius.zero,
+            right: isEndDay ? const Radius.circular(99) : Radius.zero,
           ),
         );
       }
@@ -368,7 +371,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     DateTime day,
     DateTime focusedDay,
     periods,
-    DateTime? nextPeriodDate,
+    List<DateTime> next3PeriodDates,
     User? user,
   ) {
     // distinguish 3 cases:
@@ -389,7 +392,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         day,
         focusedDay,
         periods,
-        nextPeriodDate,
+        next3PeriodDates,
         user,
       );
     }
@@ -404,25 +407,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
     Color? textColor = Theme.of(context).colorScheme.onSurface;
 
-    if (nextPeriodDate != null) {
-      DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
-      DateTime nextPeriodEnd = DateTimeHelper.stripTime(
-        nextPeriodDate.add(Duration(days: periodDuration)),
+    // Check if today is in any of the upcoming periods
+    DateTime current = DateTimeHelper.stripTime(day);
+    for (DateTime periodDate in next3PeriodDates) {
+      DateTime periodStart = DateTimeHelper.stripTime(periodDate);
+      DateTime periodEnd = DateTimeHelper.stripTime(
+        periodDate.add(Duration(days: periodDuration)),
       );
-      DateTime current = DateTimeHelper.stripTime(day);
 
-      if (DateTimeHelper.dayBetweenDates(
-        current,
-        nextPeriodStart,
-        nextPeriodEnd,
-      )) {
-        // selected date is inside upcoming period
+      if (DateTimeHelper.dayBetweenDates(current, periodStart, periodEnd)) {
+        // today is inside one of the upcoming periods
         return _defaultBuilder(
           context,
           day,
           focusedDay,
           periods,
-          nextPeriodDate,
+          next3PeriodDates,
           user,
         );
       }
@@ -442,7 +442,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     DateTime day,
     DateTime focusedDay,
     periods,
-    DateTime? nextPeriodDate,
+    List<DateTime> next3PeriodDates,
     User? user,
   ) {
     // distinguish 3 cases:
@@ -474,21 +474,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       periodDuration = user.periodLength - 1;
     }
 
-    if (nextPeriodDate != null) {
-      DateTime nextPeriodStart = DateTimeHelper.stripTime(nextPeriodDate);
-      DateTime nextPeriodEnd = DateTimeHelper.stripTime(
-        nextPeriodDate.add(Duration(days: periodDuration)),
+    // Check if selected day is in any of the upcoming periods
+    DateTime current = DateTimeHelper.stripTime(day);
+    for (DateTime periodDate in next3PeriodDates) {
+      DateTime periodStart = DateTimeHelper.stripTime(periodDate);
+      DateTime periodEnd = DateTimeHelper.stripTime(
+        periodDate.add(Duration(days: periodDuration)),
       );
-      DateTime current = DateTimeHelper.stripTime(day);
 
-      if (DateTimeHelper.dayBetweenDates(
-        current,
-        nextPeriodStart,
-        nextPeriodEnd,
-      )) {
-        isNextPeriodStartDay = DateTimeHelper.isSameDay(nextPeriodStart, day);
-        isNextPeriodEndDay = DateTimeHelper.isSameDay(nextPeriodEnd, day);
+      if (DateTimeHelper.dayBetweenDates(current, periodStart, periodEnd)) {
+        isNextPeriodStartDay = DateTimeHelper.isSameDay(periodStart, day);
+        isNextPeriodEndDay = DateTimeHelper.isSameDay(periodEnd, day);
         insideUpcomingPeriod = true;
+        break; // Only consider the first matching period
       }
     }
 
