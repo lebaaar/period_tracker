@@ -464,11 +464,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               period != null &&
               period.startDate.month != period.endDate!.month;
 
-    final upComingSpanMultipleMonths = isFirstDayOfMonth || isLastDayOfMonth;
-
     bool insideUpcomingPeriod = false;
     bool isNextPeriodStartDay = false;
     bool isNextPeriodEndDay = false;
+    bool upComingSpanMultipleMonths = false;
     int periodDuration = kDefaultPeriodLength - 1;
     if (user != null) {
       periodDuration = user.periodLength - 1;
@@ -486,6 +485,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         isNextPeriodStartDay = DateTimeHelper.isSameDay(periodStart, day);
         isNextPeriodEndDay = DateTimeHelper.isSameDay(periodEnd, day);
         insideUpcomingPeriod = true;
+
+        // Check if this upcoming period actually spans multiple months
+        upComingSpanMultipleMonths =
+            (isFirstDayOfMonth || isLastDayOfMonth) &&
+            periodStart.month != periodEnd.month;
+
         break; // Only consider the first matching period
       }
     }
