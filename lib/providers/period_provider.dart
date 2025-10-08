@@ -101,37 +101,51 @@ class PeriodProvider extends ChangeNotifier {
   int getCurrentCycleDay([DateTime? date]) {
     if (_periods.isEmpty) return 0;
 
-    // Normalize to local
+    // Normalize to UTC date only (strip time)
     date ??= DateTime.now();
-    date = date.toLocal();
+    final targetDate = DateTime.utc(date.year, date.month, date.day);
 
     _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
 
-    if (date.isBefore(_periods.first.startDate.toLocal())) {
+    // Normalize period dates to UTC date only for consistent comparison
+    final normalizedPeriods = _periods.map((p) {
+      final startDate = DateTime.utc(
+        p.startDate.year,
+        p.startDate.month,
+        p.startDate.day,
+      );
+      final endDate = p.endDate != null
+          ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day)
+          : null;
+      return {'period': p, 'start': startDate, 'end': endDate};
+    }).toList();
+
+    // Check if target date is before the first period
+    if (targetDate.isBefore(normalizedPeriods.first['start'] as DateTime)) {
       return 0;
     }
 
     // Find the most recent period that started before or on this date
-    Period? lastPeriod;
-    for (var p in _periods) {
-      if (!date.isBefore(p.startDate.toLocal())) {
-        lastPeriod = p;
+    Map<String, dynamic>? lastPeriodData;
+    for (var periodData in normalizedPeriods) {
+      final startDate = periodData['start'] as DateTime;
+      if (targetDate.isAtSameMomentAs(startDate) ||
+          targetDate.isAfter(startDate)) {
+        lastPeriodData = periodData;
       } else {
         break;
       }
     }
 
-    if (lastPeriod == null) return 0;
+    if (lastPeriodData == null) return 0;
 
-    // If within that period
-    final start = lastPeriod.startDate.toLocal();
-    final end = lastPeriod.endDate?.toLocal();
-    if (end == null || !date.isAfter(end)) {
-      return date.difference(start).inDays + 1;
-    }
+    final start = lastPeriodData['start'] as DateTime;
 
-    // If after that period ended count from start
-    return date.difference(start).inDays + 1;
+    // Calculate days from the start of the most recent period
+    int daysSinceStart = targetDate.difference(start).inDays + 1;
+
+    // Ensure we return at least day 1 if we're on or after the start date
+    return daysSinceStart > 0 ? daysSinceStart : 1;
   }
 
   // Returns a status message (e.g., late, on track)
@@ -147,7 +161,7 @@ class PeriodProvider extends ChangeNotifier {
     if (_periods.isEmpty || nextPeriodDate == null) {
       // in this case status bar on home page is hidden
       status.text =
-          'Start by tapping the + button bellow to log your most recent period.';
+          'Start by tapping the + button bellow to log your most recent period';
       return status;
     }
 
@@ -224,7 +238,7 @@ class PeriodProvider extends ChangeNotifier {
     Period? period = PeriodService.getPeriodInDate(checkDate, periods);
     if (period == null) {
       return Text(
-        'Cycle Day: ${getCurrentCycleDay(checkDate)}',
+        'Cycle Day: $cycleDay',
         style: Theme.of(context).textTheme.bodyMedium,
       );
     }
@@ -240,7 +254,7 @@ class PeriodProvider extends ChangeNotifier {
       child: Column(
         children: [
           Text(
-            'Cycle Day: ${getCurrentCycleDay(checkDate)}',
+            'Cycle Day: $cycleDay',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           SizedBox(height: 4),
