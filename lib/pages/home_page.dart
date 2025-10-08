@@ -486,7 +486,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         isNextPeriodEndDay = DateTimeHelper.isSameDay(periodEnd, day);
         insideUpcomingPeriod = true;
 
-        // Check if this upcoming period actually spans multiple months
+        // Check if this upcoming period spans multiple months
         upComingSpanMultipleMonths =
             (isFirstDayOfMonth || isLastDayOfMonth) &&
             periodStart.month != periodEnd.month;
