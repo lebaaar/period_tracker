@@ -191,11 +191,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '• Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)',
+                            'Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)\n',
                           ),
-                          SizedBox(height: 12),
                           Text(
-                            '• Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)',
+                            'Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)',
                           ),
                         ],
                       ),
