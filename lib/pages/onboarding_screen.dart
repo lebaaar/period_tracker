@@ -141,12 +141,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           // Bottom content
           Column(
             children: [
-              Text(
-                'Already have an account?',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
               ElevatedButton(
                 onPressed: () {
                   context.go('/onboarding/restore');
@@ -154,14 +148,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 8,
+                    vertical: 0,
                   ),
                 ),
                 child: Text(
-                  'Restore data',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                  textAlign: TextAlign.center,
+                  'Already have an account?\nRestore data',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               const SizedBox(height: 16),

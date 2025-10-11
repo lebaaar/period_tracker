@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 
-class RestoreDataPage extends StatelessWidget {
-  const RestoreDataPage({super.key});
+class OnboardingRestoreDataPage extends StatelessWidget {
+  const OnboardingRestoreDataPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class RestoreDataPage extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Column(
-            mainAxisSize: MainAxisSize.min, // shrink to content while centered
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -45,7 +45,7 @@ class RestoreDataPage extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   context.push('/help?initialPage=restore');

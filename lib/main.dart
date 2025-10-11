@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
+import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
-import 'package:period_tracker/pages/restore_data_page.dart';
+import 'package:period_tracker/pages/restore_data_preview_page.dart';
 import 'package:period_tracker/pages/restore_help_page.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
@@ -14,6 +17,7 @@ import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 import 'pages/home_page.dart';
 import 'pages/insights_page.dart';
@@ -25,6 +29,13 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ReceiveSharingIntent.instance.getInitialMedia().then((files) async {
+    if (files.isNotEmpty) {
+      String filePath = files.first.path;
+      await setSharedFilePath(filePath);
+    }
+  });
 
   await NotificationService().init();
 
@@ -116,7 +127,7 @@ class PeriodTrackerApp extends StatelessWidget {
           routes: [
             GoRoute(
               path: 'restore',
-              builder: (context, state) => const RestoreDataPage(),
+              builder: (context, state) => const OnboardingRestoreDataPage(),
             ),
           ],
         ),
@@ -128,7 +139,24 @@ class PeriodTrackerApp extends StatelessWidget {
             return RestoreHelpPage(initialTab: initialTab);
           },
         ),
+        GoRoute(
+          path: '/restore',
+          builder: (context, state) => const RestoreDataPreviewPage(),
+        ),
       ],
+      redirect: (context, state) async {
+        final String locaton = state.uri.toString();
+        bool filePathSet = await getSharedFilePath() != '' || false;
+        if (locaton.startsWith('content://') && filePathSet) {
+          return '/restore';
+        }
+        return null; // no redirection
+      },
+      errorBuilder: (context, state) {
+        return showOnboarding
+            ? const OnboardingScreen()
+            : const MainNavigation();
+      },
     );
 
     // disable landscape mode
