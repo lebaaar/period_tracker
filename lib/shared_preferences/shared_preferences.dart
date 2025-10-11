@@ -48,3 +48,13 @@ Future<bool> getAnimalGeneratorUnlocked() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getBool('animal_generator_unlocked') ?? false;
 }
+
+Future<void> setSharedFilePath(String filePath) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('shared_file_path', filePath);
+}
+
+Future<String?> getSharedFilePath() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('shared_file_path');
+}
