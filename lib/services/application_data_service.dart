@@ -100,7 +100,7 @@ class ApplicationDataService {
     final File file = File(filePath);
     await file.writeAsString(backupContent);
 
-    return XFile(filePath);
+    return XFile(filePath, mimeType: 'application/x-period');
   }
 
   /// Restores app data from backup data

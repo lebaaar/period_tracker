@@ -37,6 +37,11 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.5
   provider: ^6.1.5
+  # receive_sharing_intent: ^1.8.1
+  receive_sharing_intent:
+    git:
+      url: https://github.com/KasemJaffer/receive_sharing_intent
+      ref: 2cea396843cd3ab1b5ec4334be4233864637874e
   share_plus: ^12.0.0
   shared_preferences: ^2.5.3
   sqflite: ^2.4.2
