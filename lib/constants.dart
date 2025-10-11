@@ -79,3 +79,16 @@ final String kNotificationChannelDescription =
 final int kDefaultNotificationsDaysBefore = 3;
 final int kMaxNotificationsDaysBefore = 14;
 final int kDefaultNotificationHour = 8;
+
+// Backup constants
+final String kBackupFileName = 'data.period';
+final String kBackupMimeType = 'application/json';
+final String kBackupEmailTitle = 'Period Tracker backup';
+final String kBackupEmailText =
+    '''Attached is your Period Tracker $kBackupFileName file, which contains all your data.
+
+To restore your data on a new device:
+1. Save the attached $kBackupFileName file on your new device.
+2. Locate the file using a file manager app and open it with the Period Tracker app.
+4. Follow instructions...
+5. Confirm to restore your data.''';

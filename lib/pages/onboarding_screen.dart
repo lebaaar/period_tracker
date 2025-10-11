@@ -94,40 +94,78 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Welcome!', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 12),
-          Text(
-            'Let\'s start with your name',
-            style: Theme.of(context).textTheme.bodyMedium,
+          // Centered content
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Welcome!',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Let\'s start with your name',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _nameController,
+                  focusNode: _nameFocusNode,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: 'Your name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(kBorderRadius),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) {
+                    FocusScope.of(context).unfocus();
+                    _controller.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                    FocusScope.of(context).requestFocus(_periodLengthFocusNode);
+                  },
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _nameController,
-            focusNode: _nameFocusNode,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: 'Your name',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
+
+          // Bottom content
+          Column(
+            children: [
+              Text(
+                'Already have an account?',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-            ),
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) {
-              // Close keyboard before navigating
-              FocusScope.of(context).unfocus();
-              _controller.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
-              // Move focus to the period length input and open keyboard
-              FocusScope.of(context).requestFocus(_periodLengthFocusNode);
-            },
+              ElevatedButton(
+                onPressed: () {
+                  context.go('/onboarding/restore');
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                ),
+                child: Text(
+                  'Restore data',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ],
       ),

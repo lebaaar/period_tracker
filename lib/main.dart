@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
+import 'package:period_tracker/pages/restore_data_page.dart';
+import 'package:period_tracker/pages/restore_help_page.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
@@ -111,6 +113,20 @@ class PeriodTrackerApp extends StatelessWidget {
         GoRoute(
           path: '/onboarding',
           builder: (context, state) => const OnboardingScreen(),
+          routes: [
+            GoRoute(
+              path: 'restore',
+              builder: (context, state) => const RestoreDataPage(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/help',
+          builder: (context, state) {
+            final String initialTab =
+                state.uri.queryParameters['initialPage'] ?? 'restore';
+            return RestoreHelpPage(initialTab: initialTab);
+          },
         ),
       ],
     );
