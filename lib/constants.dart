@@ -89,6 +89,5 @@ final String kBackupEmailText =
 
 To restore your data on a new device:
 1. Save the attached $kBackupFileName file on your new device.
-2. Locate the file using a file manager app and open it with the Period Tracker app.
-4. TODO - Follow instructions...
-5. Confirm to restore your data.''';
+2. Locate the file with your Files app and open it with the Period Tracker app.
+3. Click "Restore my data" and Confirm to restore your data.''';

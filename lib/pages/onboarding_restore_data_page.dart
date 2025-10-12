@@ -40,12 +40,11 @@ class OnboardingRestoreDataPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'To restore data you need the $kBackupFileName file on your device. Locate the file in your Files app and open it with this app.',
+                  'To restore data you need the $kBackupFileName file on your device. Locate the file with your Files app and open it with this app.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
-              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   context.push('/help?initialPage=restore');
