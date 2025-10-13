@@ -187,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'Dynamic period prediction',
                   predictionMode == 'dynamic'
                       ? 'Next period date is based on your cycle history'
-                      : 'Next period date is based on the cycle length you specify bellow',
+                      : 'Next period date is based on the cycle length you specify below',
                   predictionMode == 'dynamic',
                   (value) {
                     // show confirmation dialog
@@ -686,8 +686,8 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'All your data will be saved into a $kBackupFileName file. Send the file to yourself (via email) or save it to a cloud storage service.\n'
-                  'On your new device, open the open the file with Period Tracker to restore all your data.\n\n'
+                  'All your data will be saved into a $kBackupFileName file. Send the file to yourself (for example via email) so you can access it on your new device.\n'
+                  'On your new device, locate the file and open it with Period Tracker app to restore all your data.\n\n'
                   'Detailed instructions will be sent in the email.',
                 ),
                 TextButton(
@@ -725,7 +725,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.of(context).pop();
                 _exportData();
               },
-              child: const Text('Send backup'),
+              child: const Text('Send backup file'),
             ),
           ],
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
