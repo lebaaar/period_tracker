@@ -139,27 +139,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
 
           // Bottom content
-          Column(
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  context.go('/onboarding/restore');
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 0,
+          ElevatedButton(
+            onPressed: () {
+              context.go('/onboarding/restore');
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+            ),
+            // child: Text(
+            //   textAlign: TextAlign.center,
+            //   'Already have an account?\nRestore data',
+            //   style: Theme.of(context).textTheme.bodySmall,
+            // ),
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: Theme.of(context).textTheme.bodySmall,
+                children: [
+                  const TextSpan(text: 'Already have an account?\n'),
+                  TextSpan(
+                    text: 'Restore data',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                ),
-                child: Text(
-                  textAlign: TextAlign.center,
-                  'Already have an account?\nRestore data',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                ],
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
