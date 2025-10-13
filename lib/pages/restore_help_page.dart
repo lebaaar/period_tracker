@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
-import 'package:period_tracker/services/application_data_service.dart';
-import 'package:flutter/services.dart';
 
 /// A two-tab help page for restore & transfer flows.
 ///
@@ -57,116 +55,109 @@ class RestoreHelpPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.restore_rounded,
-            size: 100,
+            size: 75,
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 20),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child: Text(
-              'To restore data you need the $kBackupFileName file on your device. Locate the file and open it with this app.'
-              'This data is generated on the old device using the "Backup Data" option in your profile.'
-              'After ',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'To restore data you need the $kBackupFileName file on your (new) device. Below are the detailed instructions on how to restore your data.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Prerequisites:\n'
+                  '- Installed Period Tracker app on your new device.\n'
+                  '- $kBackupFileName file on your new device. If you do not have this file, see instructions in the "Transfer Data" tab on how to obtain it.\n',
+                ),
+                const SizedBox(height: 12),
+                Text('1. Open the Files app on your new device.'),
+                const SizedBox(height: 12),
+                Text(
+                  '2. Locate the $kBackupFileName file. By default it will be in the "Downloads" folder.',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '3. Long press the $kBackupFileName file, click on the 3 dots and select "Open with".',
+                ),
+                const SizedBox(height: 12),
+                Text('4. Select Period Tracker from the list of apps.'),
+                const SizedBox(height: 12),
+                Text('5. Period Tracker app opens.'),
+                Text(
+                  'Important: if you restore data from $kBackupFileName on a device that already has an account, all existing data will be replaced with the data from the backup file.',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '6. Confirm that you want to restore data from the backup file by clicking "Restore my data".',
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     // open file picker is handled elsewhere; this keeps the page informational
-          //   },
-          //   child: const Text('Open file manager'),
-          // ),
         ],
       ),
     );
   }
 
   Widget _buildTransferTab(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.cloud_upload_rounded,
-              size: 100,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 20),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'To transfer your data to another device, create a backup using "Backup Data" in your profile and send the backup file to yourself (for example via email).',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'On the new device, download the backup file, then open it with this app to restore your data.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Note: install and open Period Tracker at least once before restoring the backup file on the new device.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.cloud_upload_rounded,
+            size: 75,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 20),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextButton(
-                  onPressed: () => context.pop(),
-                  child: const Text('Cancel'),
+                Text(
+                  'To transfer your data to another device, you need to carry over a backup file from your old device to the new one. Below are the detailed instructions on how to transfer the backup file.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      final content = await ApplicationDataService()
-                          .createBackupFileContent();
-                      final xfile = await ApplicationDataService()
-                          .exportBackupToFile(content);
-                      if (!context.mounted) return;
-                      await Clipboard.setData(ClipboardData(text: xfile.path));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Backup created — path copied to clipboard:\n${xfile.path}',
-                          ),
-                          duration: const Duration(seconds: 5),
-                        ),
-                      );
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to create backup: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Send backup'),
+                const SizedBox(height: 12),
+                Text(
+                  '1. On your old device, navigate to "Profile" and select "Transfer Data" under "Account & Data".',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '2. Click "Send backup file" in the dialog that appears. Sharing options will open, with the $kBackupFileName file attached.',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '3. Select how you want to share the $kBackupFileName file (e.g. via email). You will need to be able to access this file on your new device.',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '4. If you selected email, your email app will open with the $kBackupFileName file attached. Send the email to yourself.',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '5. On your new device, open the email you sent to yourself and download the $kBackupFileName file.',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'For instructions on how to restore data from the $kBackupFileName file on your new device, see the "Restore Data" tab.',
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
