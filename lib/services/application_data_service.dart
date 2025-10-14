@@ -1,3 +1,4 @@
+import "dart:convert";
 import "dart:io";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:path_provider/path_provider.dart";
@@ -20,11 +21,7 @@ class ApplicationDataService {
 
   ApplicationDataService._constructor();
 
-  Future<String> getCacheDirectoryPath() async {
-    final directory = await getApplicationCacheDirectory();
-    return directory.path;
-  }
-
+  /// Clears all app data including database and shared preferences
   Future<void> clearAppData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
@@ -37,6 +34,9 @@ class ApplicationDataService {
     await directory.create(recursive: true);
   }
 
+  /// Shares the backup file using the platform's share mechanism
+  /// @param file The XFile object representing the backup file to be shared
+  /// @returns true if sharing was successful, false otherwise
   Future<bool> shareBackup(XFile file) async {
     final params = ShareParams(
       subject: kBackupEmailTitle,
@@ -51,36 +51,27 @@ class ApplicationDataService {
     return false;
   }
 
-  // Future<bool> requestStoragePermission() async {
-  //   var status = await Permission.storage.status;
-  //   if (!status.isGranted) {
-  //     status = await Permission.storage.request();
-  //   }
-  //   return status.isGranted;
-  // }
-
-  /// Creates a backup of all app data including database and shared preferences
+  /// Creates a JSON string containing all app data for backup
+  /// @returns JSON string representing the backup data
   Future<String> createBackupFileContent() async {
-    // TODO
-    final databaseService = DatabaseService();
-    final prefs = await SharedPreferences.getInstance();
-
     // Get all data from database
+    final databaseService = DatabaseService();
     final periods = await databaseService.getAllPeriods();
     final user = await databaseService.getUser();
     final settings = await databaseService.getSettings();
 
     // Get all shared preferences data
-    final sharedPrefsData = <String, dynamic>{};
+    final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys();
+    final sharedPrefsData = <String, dynamic>{};
     for (String key in keys) {
       final value = prefs.get(key);
       sharedPrefsData[key] = value;
     }
 
-    // Create backup data structure
-    final backupData = {
-      'version': await PackageInfo.fromPlatform().then((info) => info.version),
+    final Map<String, dynamic> backupData = {
+      'version': (await PackageInfo.fromPlatform()).version,
+      'buildNumber': (await PackageInfo.fromPlatform()).buildNumber,
       'timestamp': DateTime.now().toIso8601String(),
       'database': {
         'periods': periods.map((period) => period.toMap()).toList(),
@@ -89,11 +80,16 @@ class ApplicationDataService {
       },
       'sharedPreferences': sharedPrefsData,
     };
+    final String jsonString = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(backupData);
 
-    return backupData.toString();
+    return jsonString;
   }
 
-  /// Exports backup data to a JSON file
+  /// Exports backup data to a .period file with x-period MIME format and returns the file
+  /// @param backupContent The JSON string content to be written to the file
+  /// @returns XFile object representing the backup file
   Future<XFile> exportBackupToFile(String backupContent) async {
     final Directory directory = await getTemporaryDirectory();
     final String filePath = '${directory.path}/$kBackupFileName';
@@ -103,11 +99,21 @@ class ApplicationDataService {
     return XFile(filePath, mimeType: 'application/x-period');
   }
 
+  /// Parses the backup file content and returns a Map representation
+  /// @param content The JSON string content of the backup file
+  /// @returns Map representing the backup data
+  Map<String, dynamic> parseBackupFile(String content) {
+    final Map<String, dynamic> data = jsonDecode(content);
+    return data;
+  }
+
   /// Restores app data from backup data
+  /// @param backupData The Map representation of the backup data
+  /// @throws Exception if the backup data is invalid or restoration fails
   Future<void> restoreFromBackup(Map<String, dynamic> backupData) async {
     // TODO
     // Validate backup data structure
-    if (!_isValidBackupData(backupData)) {
+    if (!isBackupDataValid(backupData)) {
       throw Exception('Invalid backup data format');
     }
 
@@ -171,11 +177,32 @@ class ApplicationDataService {
   }
 
   /// Validates the backup data structure
-  bool _isValidBackupData(Map<String, dynamic> data) {
+  /// @param data The Map representation of the backup data
+  /// @returns true if the backup data structure is valid, false otherwise
+  bool isBackupDataValid(Map<String, dynamic> data) {
     // TODO
-    return data.containsKey('version') &&
-        data.containsKey('timestamp') &&
-        data.containsKey('database') &&
-        data.containsKey('sharedPreferences');
+    final requiredKeys = {
+      'version',
+      'timestamp',
+      'database',
+      'sharedPreferences',
+    };
+    for (var key in requiredKeys) {
+      if (!data.containsKey(key)) {
+        return false;
+      }
+    }
+
+    final dbContent = data['database'];
+    if (dbContent is! Map<String, dynamic>) return false;
+
+    final dbRequiredKeys = {'periods', 'user', 'settings'};
+    for (var key in dbRequiredKeys) {
+      if (!dbContent.containsKey(key)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

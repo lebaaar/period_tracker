@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 
 class RestoreDataPreviewPage extends StatefulWidget {
@@ -15,12 +17,14 @@ class RestoreDataPreviewPage extends StatefulWidget {
 class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   late bool _onBoardingComplete;
   String? _sharedFilePath;
-  String? _sharedFileContent;
-  String? _name;
+  Map<String, dynamic>? _sharedFileContent;
   bool _loading = true;
   String? _error;
   bool _showErrorDetails = false;
   bool _alertShown = false;
+
+  String? _name;
+  List<Period> _periods = [];
 
   Future<void> _initialize() async {
     final isComplete = await getOnboardingComplete();
@@ -29,13 +33,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     });
 
     try {
-      // setState(() {
-      //   _loading = false;
-      //   _sharedFilePath =
-      //       '/data/user/0/com.example.period_tracker/cache/data (4).period';
-      // });
-      // return;
-
       final String? path = await getSharedFilePath();
       await setSharedFilePath(''); // clear the shared file path after use
       if (path == null || path.isEmpty) {
@@ -57,13 +54,45 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         });
         return;
       }
+      final String fileContent = await file.readAsString();
+      _sharedFileContent = ApplicationDataService().parseBackupFile(
+        fileContent,
+      );
+      if (_sharedFileContent == null) {
+        setState(() {
+          _sharedFilePath = path;
+          _sharedFileContent = null;
+          _loading = false;
+          _error = 'Failed to parse backup file';
+        });
+        return;
+      }
 
-      final content = await file.readAsString();
+      // verify backup data structure and content
+      final bool valid = ApplicationDataService().isBackupDataValid(
+        _sharedFileContent!,
+      );
+      if (!valid) {
+        setState(() {
+          _sharedFilePath = path;
+          _sharedFileContent = null;
+          _loading = false;
+          _error = 'Invalid backup file format';
+        });
+        return;
+      }
+
       setState(() {
         _sharedFilePath = path;
-        _sharedFileContent = content;
+        _sharedFileContent = _sharedFileContent!;
         _loading = false;
+        _name = _sharedFileContent!['database']['user']['name'];
+        _periods = (_sharedFileContent!['database']['periods'] as List<dynamic>)
+            .map((e) => Period.fromMap(e as Map<String, dynamic>))
+            .toList();
       });
+
+      // show alert if onboarding is complete and we have a valid shared file
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _maybeShowOnboardingAlert(),
       );
@@ -88,7 +117,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         builder: (context) => AlertDialog(
           title: const Text('Existing data detected'),
           content: const Text(
-            'We detected you already have an existing account on this device. Restoring from this backup will replace your current data.\n'
+            'We detected you already have an existing account on this device. Restoring from this backup file will replace your current data.\n'
             'Do you wish to continue?',
           ),
           actions: [
@@ -121,8 +150,27 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     _initialize();
   }
 
+  void _restoreData() {
+    //
+    if (_sharedFileContent == null) return;
+    ApplicationDataService().restoreFromBackup(_sharedFileContent!);
+    context.go('/');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final int periodCount = _periods.length;
+    final String restoreSummary = periodCount == 0
+        ? 'All your data is ready to be restored.'
+        : periodCount == 1
+        ? 'All your data, including 1 logged period, is ready to be restored.'
+        : 'All your data, including $periodCount logged periods, is ready to be restored.';
+    final String restoreSummaryOverwrite = periodCount == 0
+        ? 'All your data will be restored, replacing your existing data.'
+        : periodCount == 1
+        ? 'All your data, including 1 logged period, will be restored, replacing your existing data.'
+        : 'All your data, including $periodCount logged periods, will be restored, replacing your existing data.';
+
     return Scaffold(
       body: Center(
         child: SafeArea(
@@ -231,7 +279,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                           const SizedBox(width: 6),
                         ],
                       ),
-
                     if (_sharedFilePath != null)
                       Column(
                         children: [
@@ -248,30 +295,56 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                                     context,
                                   ).textTheme.headlineSmall,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 14),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8.0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
                                   ),
                                   child: Text(
                                     textAlign: TextAlign.center,
-                                    'You opened a $kBackupFileName file, which means your existing data will be replaced with the data in the backup file. This action cannot be undone.',
+                                    '$restoreSummaryOverwrite\n'
+                                    'Only proceed if you are sure you want to replace your existing data with the data in the backup file.',
                                   ),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {
-                                    context.go('/onboarding');
-                                  },
+                                  onPressed: _restoreData,
                                   child: const Text('Restore from file'),
                                 ),
-                                const SizedBox(height: 40),
-                                const Text('Want to keep your existing data?'),
+                                const SizedBox(height: 50),
                                 ElevatedButton(
                                   onPressed: () {
                                     context.go('/');
                                   },
-                                  child: const Text('Go back home'),
+                                  child: RichText(
+                                    textAlign: TextAlign.center,
+                                    text: TextSpan(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                          ),
+                                      children: [
+                                        const TextSpan(
+                                          text:
+                                              'Want to keep your existing data?\n',
+                                        ),
+                                        TextSpan(
+                                          text: 'Exit restore',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             )
@@ -287,25 +360,55 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                                     context,
                                   ).textTheme.headlineSmall,
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'All your n logged periods and notes are ready to be restored.',
-                                  textAlign: TextAlign.center,
+                                const SizedBox(height: 14),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                  ),
+                                  child: Text(
+                                    restoreSummary,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: _restoreData,
                                   child: const Text('Restore my data'),
                                 ),
-                                const SizedBox(height: 40),
-                                const Text(
-                                  'Want to start fresh instead?',
-                                  textAlign: TextAlign.center,
-                                ),
+                                const SizedBox(height: 50),
                                 ElevatedButton(
                                   onPressed: () {
                                     context.go('/onboarding');
                                   },
-                                  child: const Text('Start fresh'),
+                                  child: RichText(
+                                    textAlign: TextAlign.center,
+                                    text: TextSpan(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                          ),
+                                      children: [
+                                        const TextSpan(
+                                          text:
+                                              'Want to start fresh instead?\n',
+                                        ),
+                                        TextSpan(
+                                          text: 'Start fresh',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
