@@ -146,11 +146,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             ),
-            // child: Text(
-            //   textAlign: TextAlign.center,
-            //   'Already have an account?\nRestore data',
-            //   style: Theme.of(context).textTheme.bodySmall,
-            // ),
             child: RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
