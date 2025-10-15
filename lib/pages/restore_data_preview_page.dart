@@ -95,10 +95,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
             .toList();
       });
 
-      setState(() {
-        _error = 'KYS';
-      });
-
       // show alert if onboarding is complete and we have a valid shared file
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _maybeShowOnboardingAlert(),
