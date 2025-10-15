@@ -87,7 +87,7 @@ class ApplicationDataService {
     return jsonString;
   }
 
-  /// Exports backup data to a .period file with x-period MIME format and returns the file
+  /// Exports backup data to a .json file with application/json MIME format and returns the file
   /// @param backupContent The JSON string content to be written to the file
   /// @returns XFile object representing the backup file
   Future<XFile> exportBackupToFile(String backupContent) async {
@@ -96,7 +96,7 @@ class ApplicationDataService {
     final File file = File(filePath);
     await file.writeAsString(backupContent);
 
-    return XFile(filePath, mimeType: 'application/x-period');
+    return XFile(filePath, mimeType: 'application/json');
   }
 
   /// Parses the backup file content and returns a Map representation

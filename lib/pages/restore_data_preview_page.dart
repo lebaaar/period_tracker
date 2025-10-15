@@ -237,9 +237,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.tertiary,
-                                    fontSize: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.fontSize,
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -265,9 +262,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.tertiary,
-                                  fontSize: Theme.of(
-                                    context,
-                                  ).textTheme.bodyMedium?.fontSize,
                                 ),
                               ),
                             ),
@@ -279,7 +273,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                           const SizedBox(width: 6),
                         ],
                       ),
-                    if (_sharedFilePath != null)
+                    if (_error == null && _sharedFilePath != null)
                       Column(
                         children: [
                           SizedBox(height: 30),

@@ -21,30 +21,34 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
-              />
+            />
+
+            <!-- Main launcher intent -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Open .period files with Period Tracker app -->
+            <!-- Handle mailto: links to contact support -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mailto" />
+            </intent-filter>
+
+            <!-- .json file handler - RESTRICTED TO .json ONLY -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <!-- Handle file:// and content:// URIs -->
-                <data android:scheme="file" />
                 <data android:scheme="content" />
-
-                <!-- MIME type -->
-                <!-- <data android:mimeType="application/x-period" /> -->
-                <data android:mimeType="*/*" />
-
-                <!-- TODO: Match .period extension -->
-                <!-- <data android:pathPattern=".*\\.period" /> -->
+                <data android:scheme="file" />
+                <data android:mimeType="application/json" />
+                <data android:pathPattern=".*\\.json" />
             </intent-filter>
         </activity>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

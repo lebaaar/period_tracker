@@ -2,6 +2,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:period_tracker/theme.dart';
 
+// UI
 final double kBorderRadius = 12;
 final double kTableCalendarDaysOfTheWeekHeight = 30;
 
@@ -81,7 +82,7 @@ final int kMaxNotificationsDaysBefore = 14;
 final int kDefaultNotificationHour = 8;
 
 // Backup constants
-final String kBackupFileName = 'data.period';
+final String kBackupFileName = 'period.json';
 final String kBackupMimeType = 'application/json';
 final String kBackupEmailTitle = 'Period Tracker backup';
 final String kBackupEmailText =
