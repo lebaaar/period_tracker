@@ -2,15 +2,18 @@
   <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Logo" height="60">
   <h1 align="center">Period Tracker</h1>
 </div>
-Period tracker mobile app I built for my girlfriend. She needed a simple app to track her period cycle without all the annoying ads and premium subscription offers.
 
+<div>
+  Period tracking mobile app I built for my girlfriend. She needed a simple app to track her period cycle without all the annoying ads and premium subscription offers. Requires no internet access, all data is stored on device.
+</div>
 
 ## Features
 - Effortless cycle logging with a clean, easy-to-use design
-- Personalized insights on average cycle and period length
+- Insights - average cycle and average period length
 - Dynamic period prediction: smartly adjusts based on past cycles
 - Static mode: set a fixed period & cycle duration for consistent tracking
 - Customizable reminders: get notified n days before your period starts
+- Offline data transfer between devices
 - Easter eggs :)
 
 
@@ -36,9 +39,15 @@ Period tracker mobile app I built for my girlfriend. She needed a simple app to 
 ## Gallery
 TODO
 
-## Built with
-TODO
-Built fully in Flutter. Packages used: `provider`...
+## Tech stack
+Built entirely with Flutter, using multiple packages:
+- `go_router` - navigation
+- `provider` - state management
+- `flutter_local_notifications` - local notifications
+- `table_calendar` - interactivem customizable calendars
+- `sqflite` - local database
+- `shared_preferences` - lightweight key–value data persistence
+- ...
 
 ## License
 Distributed under the MIT License. See [LICENSE.txt](TODO).
@@ -48,7 +57,7 @@ Available  [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990
 
 
 ## Contributing
-Pull requests are always welcome! For major changes, please open an issue first to discuss the changes
+Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
 
 ## Development
 
