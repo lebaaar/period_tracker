@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:open_mail/open_mail.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/application_data_service.dart';
+import 'package:period_tracker/services/encryption_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 
 class RestoreDataPreviewPage extends StatefulWidget {
@@ -92,6 +95,10 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
             .toList();
       });
 
+      setState(() {
+        _error = 'KYS';
+      });
+
       // show alert if onboarding is complete and we have a valid shared file
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _maybeShowOnboardingAlert(),
@@ -157,6 +164,75 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     context.go('/');
   }
 
+  void showNoMailAppsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Cannot Open Email App"),
+          content: const Text(
+            "No email apps installed on this device. Please install an email app to contact support.",
+          ),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        );
+      },
+    );
+  }
+
+  Future<void> openEmail() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    // TODO - AES encrypt the content
+    final String encodedContent = _sharedFileContent != null
+        ? EncryptionService().base64Encode(_sharedFileContent.toString())
+        : 'N/A';
+
+    final EmailContent emailContent = EmailContent(
+      to: [kContactEmail],
+      subject: 'Issue with Period Tracker [$kRestoreDataErrorCode]',
+      body:
+          '''
+Hello,
+I'm having an issue with restoring data in the Period Tracker app.
+Here are the details:\n
+[Error: ${_error ?? 'Unknown error'}]
+[Timestamp: ${DateTime.now()}]
+[Version: ${packageInfo.version}+${packageInfo.buildNumber}]
+[Device: ${Platform.operatingSystem}]
+[OS version: ${Platform.operatingSystemVersion}]
+[Backup path: ${_sharedFilePath ?? 'N/A'}]
+[Backup content:
+$encodedContent]''',
+    );
+    OpenMailAppResult result;
+
+    try {
+      result = await OpenMail.composeNewEmailInMailApp(
+        nativePickerTitle: 'Select email app to contact support',
+        emailContent: emailContent,
+      );
+
+      if (!result.didOpen && !result.canOpen) {
+        showNoMailAppsDialog(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Cannot send email.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final int periodCount = _periods.length;
@@ -196,15 +272,53 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                           const SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'There might be an issue with your $kBackupFileName file.\nTry exporting the file again, by clicking "Transfer data" in the Profile section of the app on your old phone. Then open the new file with this app to restore your data.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium?.fontSize,
-                              ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'There is an issue with your $kBackupFileName file.\nTry exporting the file on your old phone again.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'If the problem persists ',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: const Size(0, 0),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        alignment: Alignment.centerLeft,
+                                      ),
+                                      onPressed: () => openEmail(),
+                                      child: Text(
+                                        'contact support',
+                                        style: TextStyle(
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                    Text('.'),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                           ElevatedButton(

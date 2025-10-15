@@ -1,4 +1,3 @@
-// UI
 import 'package:flutter/rendering.dart';
 import 'package:period_tracker/theme.dart';
 
@@ -82,7 +81,7 @@ final int kMaxNotificationsDaysBefore = 14;
 final int kDefaultNotificationHour = 8;
 
 // Backup constants
-final String kBackupFileName = 'period.json';
+final String kBackupFileName = 'period_tracker.json';
 final String kBackupMimeType = 'application/json';
 final String kBackupEmailTitle = 'Period Tracker backup';
 final String kBackupEmailText =
@@ -92,3 +91,9 @@ To restore your data on a new device:
 1. Save the attached $kBackupFileName file on your new device.
 2. Locate the file with your Files app and open it with the Period Tracker app.
 3. In the Period Tracker app, click "Restore my data".''';
+
+// Error codes
+final String kRestoreDataErrorCode = 'RESTORE_DATA';
+
+// Contact
+final String kContactEmail = 'lanlebar6@gmail.com';
