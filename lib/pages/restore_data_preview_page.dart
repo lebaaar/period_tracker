@@ -31,8 +31,11 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
   Future<void> _initialize() async {
     final isComplete = await getOnboardingComplete();
+    if (!mounted) return;
     setState(() {
       _onBoardingComplete = isComplete;
+      _loading = true; // show spinner while we load/parse
+      _error = null;
     });
 
     try {
@@ -171,20 +174,85 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   }
 
   void _restoreData() async {
-    if (_sharedFileContent == null) return;
+    if (_sharedFileContent == null) return; // should not happen
     setState(() {
       _loading = true;
     });
-    final success = await ApplicationDataService().restoreFromBackup(
-      _sharedFileContent!,
-    );
-    setState(() {
-      _loading = false;
-    });
-    if (success) {
-      context.go('/');
-    } else {
-      print('Restore failed');
+
+    try {
+      // TODO: get rid of async gaps
+      final success = await ApplicationDataService().restoreFromBackup(
+        _sharedFileContent!,
+      );
+
+      setState(() {
+        _loading = false;
+      });
+
+      if (success) {
+        context.go('/');
+        return;
+      }
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error :('),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'An error occurred while restoring your data. Try exporting the file on your old phone again',
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'If the problem persists ',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      alignment: Alignment.centerLeft,
+                    ),
+                    onPressed: () => openEmail(),
+                    child: Text(
+                      'contact support',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        decorationColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Text('.'),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
     }
   }
 
@@ -435,7 +503,7 @@ $encodedContent]''',
                                   child: Text(
                                     textAlign: TextAlign.center,
                                     '$restoreSummaryOverwrite\n'
-                                    'Only proceed if you are sure you want to replace your existing data with the data in the backup file.',
+                                    'Only proceed if you are sure you want to replace your existing data with the data in the $kBackupFileName file.',
                                   ),
                                 ),
                                 ElevatedButton(
