@@ -473,7 +473,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Request notification permission
                     final bool result = await NotificationService()
                         .requestPermissions();
-                    if (!result) await setNotificationsValue(false);
+                    result
+                        ? await setNotificationsValue(true)
+                        : await setNotificationsValue(false);
 
                     // Disable version details by default
                     await setDisplayVersionDetailsValue(false);
