@@ -35,11 +35,10 @@ class Settings {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'predictionMethod': predictionMode,
+      'predictionMode': predictionMode,
       'darkMode': darkMode,
       'notificationDaysBefore': notificationDaysBefore,
-      'notificationTimeHour': notificationTime.hour,
-      'notificationTimeMinute': notificationTime.minute,
+      'notificationTime': '${notificationTime.hour}:${notificationTime.minute}',
     };
   }
 

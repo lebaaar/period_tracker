@@ -107,7 +107,7 @@ class ApplicationDataService {
     return data;
   }
 
-  /// Restores app data from backup data
+  /// Restores app data from backup data. Data is always validated before calling this method.
   /// @param backupData The Map representation of the backup data
   /// @throws Exception if the backup data is invalid or restoration fails
   Future<void> restoreFromBackup(Map<String, dynamic> backupData) async {
@@ -180,14 +180,14 @@ class ApplicationDataService {
   /// @param data The Map representation of the backup data
   /// @returns true if the backup data structure is valid, false otherwise
   bool isBackupDataValid(Map<String, dynamic> data) {
-    // TODO
     final requiredKeys = {
       'version',
+      'buildNumber',
       'timestamp',
       'database',
       'sharedPreferences',
     };
-    for (var key in requiredKeys) {
+    for (String key in requiredKeys) {
       if (!data.containsKey(key)) {
         return false;
       }
@@ -197,12 +197,53 @@ class ApplicationDataService {
     if (dbContent is! Map<String, dynamic>) return false;
 
     final dbRequiredKeys = {'periods', 'user', 'settings'};
-    for (var key in dbRequiredKeys) {
+    for (String key in dbRequiredKeys) {
       if (!dbContent.containsKey(key)) {
         return false;
       }
     }
 
+    // try parsing periods
+    final periods = dbContent['periods'];
+    if (periods is! List<dynamic>) return false;
+    for (var period in periods) {
+      if (period is! Map<String, dynamic>) return false;
+      try {
+        Period.fromMap(period);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // try parsing user
+    final user = dbContent['user'];
+    if (user != null) {
+      if (user is! Map<String, dynamic>) return false;
+      try {
+        User.fromMap(user);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // try parsing settings
+    final settings = dbContent['settings'];
+    if (settings is! Map<String, dynamic>) return false;
+    try {
+      Settings.fromMap(settings);
+    } catch (e) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Verifies if the backup file version is compatible with the current app version
+  /// @param backupVersion The version string from the backup file
+  /// @param currentVersion The current app version string
+  /// @returns true if the versions are compatible, false otherwise
+  bool verifyVersionCompatibility(String backupVersion, String currentVersion) {
+    // TODO: Implement in case of breaking DB changes in future versions
     return true;
   }
 }

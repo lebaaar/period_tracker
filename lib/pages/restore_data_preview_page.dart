@@ -27,7 +27,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   bool _alertShown = false;
 
   String? _name;
-  List<Period> _periods = [];
+  List _periods = [];
 
   Future<void> _initialize() async {
     final isComplete = await getOnboardingComplete();
@@ -72,10 +72,10 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       }
 
       // verify backup data structure and content
-      final bool valid = ApplicationDataService().isBackupDataValid(
+      final bool validBackupData = ApplicationDataService().isBackupDataValid(
         _sharedFileContent!,
       );
-      if (!valid) {
+      if (!validBackupData) {
         setState(() {
           _sharedFilePath = path;
           _sharedFileContent = null;
@@ -85,12 +85,29 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         return;
       }
 
+      // verify version compatibility
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      final bool compatible = ApplicationDataService()
+          .verifyVersionCompatibility(
+            _sharedFileContent!['version'] as String,
+            packageInfo.version,
+          );
+      if (!compatible) {
+        setState(() {
+          _sharedFilePath = path;
+          _sharedFileContent = null;
+          _loading = false;
+          _error = 'Incompatible backup file version';
+        });
+        return;
+      }
+
       setState(() {
         _sharedFilePath = path;
         _sharedFileContent = _sharedFileContent!;
         _loading = false;
         _name = _sharedFileContent!['database']['user']['name'];
-        _periods = (_sharedFileContent!['database']['periods'] as List<dynamic>)
+        _periods = (_sharedFileContent!['database']['periods'])
             .map((e) => Period.fromMap(e as Map<String, dynamic>))
             .toList();
       });
@@ -132,7 +149,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.tertiary,
               ),
-              child: const Text('Cancel'),
+              child: const Text('No, exit restore'),
             ),
             TextButton(
               onPressed: () {
@@ -154,7 +171,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   }
 
   void _restoreData() {
-    //
     if (_sharedFileContent == null) return;
     ApplicationDataService().restoreFromBackup(_sharedFileContent!);
     context.go('/');
