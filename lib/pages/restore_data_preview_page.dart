@@ -53,7 +53,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
           _sharedFilePath = path;
           _sharedFileContent = null;
           _loading = false;
-          _error = 'Shared file not found on disk';
+          _error = '$kBackupFileName file not found';
         });
         return;
       }
@@ -170,10 +170,22 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     _initialize();
   }
 
-  void _restoreData() {
+  void _restoreData() async {
     if (_sharedFileContent == null) return;
-    ApplicationDataService().restoreFromBackup(_sharedFileContent!);
-    context.go('/');
+    setState(() {
+      _loading = true;
+    });
+    final success = await ApplicationDataService().restoreFromBackup(
+      _sharedFileContent!,
+    );
+    setState(() {
+      _loading = false;
+    });
+    if (success) {
+      context.go('/');
+    } else {
+      print('Restore failed');
+    }
   }
 
   void showNoMailAppsDialog(BuildContext context) {

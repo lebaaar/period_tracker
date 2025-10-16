@@ -110,70 +110,71 @@ class ApplicationDataService {
   /// Restores app data from backup data. Data is always validated before calling this method.
   /// @param backupData The Map representation of the backup data
   /// @throws Exception if the backup data is invalid or restoration fails
-  Future<void> restoreFromBackup(Map<String, dynamic> backupData) async {
-    // TODO
-    // Validate backup data structure
-    if (!isBackupDataValid(backupData)) {
-      throw Exception('Invalid backup data format');
-    }
-
+  Future<bool> restoreFromBackup(Map<String, dynamic> backupData) async {
     final databaseService = DatabaseService();
-    final prefs = await SharedPreferences.getInstance();
 
     try {
       // Clear existing data
       await clearAppData();
 
-      // Restore database data
-      final databaseData = backupData['database'] as Map<String, dynamic>;
+      // Load database data
+      final Map<String, dynamic> database = backupData['database'];
+      final User user = User.fromMap(database['user'] as Map<String, dynamic>);
+      final Settings settings = Settings.fromMap(
+        database['settings'] as Map<String, dynamic>,
+      );
+      final List<dynamic> periodsList = database['periods'] as List<dynamic>;
+      final List<Period> periods = periodsList
+          .map((periodMap) => Period.fromMap(periodMap as Map<String, dynamic>))
+          .toList();
 
       // Restore user data
-      if (databaseData['user'] != null) {
-        await databaseService.insertUser(
-          User.fromMap(databaseData['user'] as Map<String, dynamic>),
-        );
-      }
+      await databaseService.insertUser(user);
 
       // Restore settings data
-      if (databaseData['settings'] != null) {
-        await databaseService.updateSettings(
-          Settings.fromMap(databaseData['settings'] as Map<String, dynamic>),
-        );
-      }
+      await databaseService.updateSettings(settings);
 
       // Restore periods data
-      if (databaseData['periods'] != null) {
-        final periodsList = databaseData['periods'] as List<dynamic>;
-        for (var periodMap in periodsList) {
-          final period = Period.fromMap(periodMap as Map<String, dynamic>);
-          await databaseService.insertPeriod(period);
-        }
+      for (var period in periods) {
+        await databaseService.insertPeriod(period);
       }
 
-      // Restore shared preferences
-      if (backupData['sharedPreferences'] != null) {
-        final sharedPrefsData =
-            backupData['sharedPreferences'] as Map<String, dynamic>;
-        for (var entry in sharedPrefsData.entries) {
-          final key = entry.key;
-          final value = entry.value;
+      // Restore shared preferences data
+      final Map<String, dynamic> sharedPrefsData =
+          backupData['sharedPreferences'] as Map<String, dynamic>;
 
-          if (value is bool) {
-            await prefs.setBool(key, value);
-          } else if (value is int) {
-            await prefs.setInt(key, value);
-          } else if (value is double) {
-            await prefs.setDouble(key, value);
-          } else if (value is String) {
-            await prefs.setString(key, value);
-          } else if (value is List<String>) {
-            await prefs.setStringList(key, value);
-          }
+      if (backupData['sharedPreferences'] == null) {
+        return true;
+      }
+
+      for (var entry in sharedPrefsData.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        switch (key) {
+          case 'onboarding_complete':
+            setOnboardingValue(value as bool);
+            break;
+          case 'notifications_enabled':
+            setNotificationsValue(value as bool);
+            break;
+          case 'display_version_details':
+            setDisplayVersionDetailsValue(value as bool);
+            break;
+          case 'animal_generator_unlocked':
+            setAnimalGeneratorUnlockedValue(value as bool);
+            break;
+          case 'shared_file_path':
+            // skip
+            break;
+          default:
+            continue;
         }
       }
     } catch (e) {
-      throw Exception('Failed to restore backup: $e');
+      throw Exception('Failed to restore from backup: $e');
     }
+
+    return true;
   }
 
   /// Validates the backup data structure

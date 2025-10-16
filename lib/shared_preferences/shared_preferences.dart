@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Onboarding complete
+// onboarding_complete
 Future<void> setOnboardingValue(bool isComplete) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('onboarding_complete', isComplete);
@@ -11,7 +11,7 @@ Future<bool> getOnboardingComplete() async {
   return prefs.getBool('onboarding_complete') ?? false;
 }
 
-// Notification enabled
+// notifications_enabled
 Future<void> setNotificationsValue(bool notificationsEnabled) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('notifications_enabled', notificationsEnabled);
@@ -22,7 +22,7 @@ Future<bool> getNotificationEnabled() async {
   return prefs.getBool('notifications_enabled') ?? true;
 }
 
-// Display version details
+// display_version_details
 Future<void> setDisplayVersionDetailsValue(bool displayVersionDetails) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('display_version_details', displayVersionDetails);
@@ -33,7 +33,7 @@ Future<bool> getDisplayVersionDetails() async {
   return prefs.getBool('display_version_details') ?? false;
 }
 
-// Animal generator unlocked
+// animal_generator_unlocked
 Future<void> setAnimalGeneratorUnlockedValue(
   bool animalGeneratorUnlockedValue,
 ) async {
@@ -49,6 +49,7 @@ Future<bool> getAnimalGeneratorUnlocked() async {
   return prefs.getBool('animal_generator_unlocked') ?? false;
 }
 
+// shared_file_path
 Future<void> setSharedFilePath(String filePath) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString('shared_file_path', filePath);
