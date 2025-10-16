@@ -85,12 +85,13 @@ final String kBackupFileName = 'period_tracker.json';
 final String kBackupMimeType = 'application/json';
 final String kBackupEmailTitle = 'Period Tracker backup';
 final String kBackupEmailText =
-    '''Attached is your Period Tracker $kBackupFileName file, which contains all your data.
+    '''Attached is your $kBackupFileName file, which contains all your data. This file enables you to restore your data.
 
 To restore your data on a new device:
 1. Save the attached $kBackupFileName file on your new device.
-2. Locate the file with your Files app and open it with the Period Tracker app.
-3. In the Period Tracker app, click "Restore my data".''';
+2. Open the Files app and locate the file. By default, it should be in the Downloads folder.
+3. Hold down on the file, click on the three dots and select Open with > Period Tracker.
+4. In the Period Tracker app, click "Restore my data".''';
 
 // Error codes
 final String kRestoreDataErrorCode = 'RESTORE_DATA';

@@ -686,7 +686,7 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'All your data will be saved into a $kBackupFileName file. Send the file to yourself (e.g. via email) so you can access it on your new device.\n'
+                  'All your data will be saved into a $kBackupFileName file. Send this file to yourself (e.g. via email) so you can access it on your new device.\n'
                   'On your new device, locate the file and open it with Period Tracker app to restore your data. Detailed instructions will be sent in the email.',
                 ),
                 TextButton(

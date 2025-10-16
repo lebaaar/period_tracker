@@ -131,7 +131,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     if (_alertShown) return;
     if (_onBoardingComplete && _sharedFilePath != null) {
       _alertShown = true;
-      showDialog<void>(
+      showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
@@ -440,7 +440,7 @@ $encodedContent]''',
                                 ),
                                 ElevatedButton(
                                   onPressed: _restoreData,
-                                  child: const Text('Restore from file'),
+                                  child: const Text('Restore my data'),
                                 ),
                                 const SizedBox(height: 50),
                                 ElevatedButton(
