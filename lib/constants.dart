@@ -91,9 +91,7 @@ To restore your data on a new device:
 1. Save the attached $kBackupFileName file on your new device.
 2. Open the Files app and locate the file. By default, it should be in the Downloads folder.
 3. Hold down on the file, click on the three dots and select Open with > Period Tracker.
-4. In the Period Tracker app, click "Restore my data".
-
-Important: You must download the $kBackupFileName file and locate it in the Files app. Opening the file from email will not work.''';
+4. In the Period Tracker app, click "Restore my data".''';
 
 // Error codes
 final String kRestoreDataErrorCode = 'RESTORE_DATA';
