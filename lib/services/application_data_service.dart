@@ -154,9 +154,6 @@ class ApplicationDataService {
           case 'onboarding_complete':
             setOnboardingValue(value as bool);
             break;
-          case 'notifications_enabled':
-            setNotificationsValue(value as bool);
-            break;
           case 'display_version_details':
             setDisplayVersionDetailsValue(value as bool);
             break;

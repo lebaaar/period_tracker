@@ -11,17 +11,6 @@ Future<bool> getOnboardingComplete() async {
   return prefs.getBool('onboarding_complete') ?? false;
 }
 
-// notifications_enabled
-Future<void> setNotificationsValue(bool notificationsEnabled) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('notifications_enabled', notificationsEnabled);
-}
-
-Future<bool> getNotificationEnabled() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getBool('notifications_enabled') ?? true;
-}
-
 // display_version_details
 Future<void> setDisplayVersionDetailsValue(bool displayVersionDetails) async {
   final prefs = await SharedPreferences.getInstance();

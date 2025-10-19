@@ -140,39 +140,35 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildListTile(user, settings, 'name'),
         const Divider(),
         SectionTitle('Notifications'),
-        FutureBuilder<bool>(
-          future: getNotificationEnabled(),
-          builder: (context, snapshot) {
-            final enabled = snapshot.data ?? true;
-            return _buildSwitchTile(
-              'Enable notifications',
-              'Receive reminders for your next period',
-              enabled,
-              (value) async {
-                setNotificationsValue(value);
-                setState(() {});
-                if (value) {
-                  // reschedule notifications
-                  NotificationService().scheduleNotificationsForNextPeriod(
-                    nextPeriodDate,
-                    settings.notificationDaysBefore,
-                    settings.notificationTime,
-                  );
-                } else {
-                  // cancel all notifications
-                  NotificationService().cancelAllNotifications();
-                }
-              },
+        Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, child) {
+            final bool notificationsEnabled =
+                settingsProvider.settings?.notificationsEnabled ?? false;
+            return Column(
+              children: [
+                _buildSwitchTile(
+                  'Enable notifications',
+                  'Receive reminders for your next period',
+                  notificationsEnabled,
+                  (value) {
+                    settingsProvider.setNotificationEnabled(value);
+                    if (value) {
+                      // reschedule notifications
+                      NotificationService().scheduleNotificationsForNextPeriod(
+                        nextPeriodDate,
+                        settings.notificationDaysBefore,
+                        settings.notificationTime,
+                      );
+                    } else {
+                      // cancel all notifications
+                      NotificationService().cancelAllNotifications();
+                    }
+                  },
+                ),
+                if (notificationsEnabled)
+                  _buildListTile(user, settings, 'notifications'),
+              ],
             );
-          },
-        ),
-        FutureBuilder(
-          future: getNotificationEnabled(),
-          builder: (context, snapshot) {
-            final enabled = snapshot.data ?? false;
-            return enabled
-                ? _buildListTile(user, settings, 'notifications')
-                : SizedBox.shrink();
           },
         ),
         const Divider(),
@@ -436,7 +432,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 default:
                   throw ArgumentError(
                     '''Invalid tile type: $tileType. Should be one the following:
-              "name", "cycle_length", "period_length", "notifications", "transefer" or "delete".''',
+              "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''',
                   );
               }
             },

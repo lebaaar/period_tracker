@@ -4,6 +4,7 @@ class Settings {
   final int? id;
   final String predictionMode;
   final bool darkMode;
+  final bool notificationsEnabled;
   final int notificationDaysBefore;
   final TimeOfDay notificationTime;
 
@@ -11,6 +12,7 @@ class Settings {
     this.id,
     required this.predictionMode,
     required this.darkMode,
+    required this.notificationsEnabled,
     required this.notificationDaysBefore,
     required this.notificationTime,
   });
@@ -27,6 +29,7 @@ class Settings {
       id: map['id'] as int?,
       predictionMode: map['predictionMode'] as String,
       darkMode: map['darkMode'] == 1,
+      notificationsEnabled: map['notificationsEnabled'] == 1,
       notificationDaysBefore: map['notificationDaysBefore'] as int,
       notificationTime: notificationTime,
     );
@@ -37,6 +40,7 @@ class Settings {
       'id': id,
       'predictionMode': predictionMode,
       'darkMode': darkMode,
+      'notificationsEnabled': notificationsEnabled ? 1 : 0,
       'notificationDaysBefore': notificationDaysBefore,
       'notificationTime': '${notificationTime.hour}:${notificationTime.minute}',
     };
@@ -44,6 +48,6 @@ class Settings {
 
   @override
   String toString() {
-    return 'Settings(id: $id, predictionMode: $predictionMode, darkMode: $darkMode, notificationDaysBefore: $notificationDaysBefore, notificationTime: $notificationTime)';
+    return 'Settings(id: $id, predictionMode: $predictionMode, darkMode: $darkMode, notificationsEnabled: $notificationsEnabled, notificationDaysBefore: $notificationDaysBefore, notificationTime: $notificationTime)';
   }
 }

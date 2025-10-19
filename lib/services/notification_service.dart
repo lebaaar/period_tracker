@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/notification_type.dart';
-import 'package:period_tracker/shared_preferences/shared_preferences.dart';
+import 'package:period_tracker/models/settings_model.dart';
+import 'package:period_tracker/services/database_service.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:period_tracker/utils/period_status_message_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+// Logic for handling notification taps in background - action button in notification
 // @pragma('vm:entry-point')
 // void notificationTapBackground(NotificationResponse response) {
 //   if (response.actionId == 'log') {
@@ -21,6 +23,8 @@ class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
+
+  final DatabaseService _db = DatabaseService(); // TODO - repository pattern
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -67,6 +71,8 @@ class NotificationService {
     );
   }
 
+  /// Requests notification permissions (Android 13+).
+  /// @return true if permissions are granted, false otherwise.
   Future<bool> requestPermissions() async {
     // Android 13+
     final androidPlugin = NotificationService()._flutterLocalNotificationsPlugin
@@ -80,6 +86,12 @@ class NotificationService {
     return true; // permission granted or older Android version (granted == null)
   }
 
+  /// Schedules a notification. Method should be called only if notifications are enabled.
+  /// @param id Unique identifier for the notification.
+  /// @param title Title of the notification.
+  /// @param body Body text of the notification.
+  /// @param scheduledDate Date and time when the notification should be shown.
+  /// @param type Type of the notification (used for payload).
   Future<void> scheduleNotification(
     int id,
     String title,
@@ -87,7 +99,10 @@ class NotificationService {
     DateTime scheduledDate,
     NotificationType type,
   ) async {
-    if (await getNotificationEnabled() == false) return;
+    // Check if notifications are enabled
+    final Settings settings = await _db.getSettings();
+    bool notificationsEnabled = settings.notificationsEnabled;
+    if (!notificationsEnabled) return;
 
     String? payload;
     if (type == NotificationType.logReminder ||
@@ -106,6 +121,10 @@ class NotificationService {
     );
   }
 
+  /// Schedules notifications for the next period.
+  /// @param nextPeriodStartDate The start date of the next period.
+  /// @param sendNotificationsDaysBefore Number of days before the period to send notifications.
+  /// @param notificationTime Time of day to send the notifications.
   Future<void> scheduleNotificationsForNextPeriod(
     DateTime? nextPeriodStartDate,
     int sendNotificationsDaysBefore,
@@ -148,6 +167,7 @@ class NotificationService {
     }
   }
 
+  /// Cancels all scheduled notifications.
   Future<void> cancelAllNotifications() async {
     await _flutterLocalNotificationsPlugin.cancelAll();
   }
