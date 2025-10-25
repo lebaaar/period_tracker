@@ -114,6 +114,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
               // Check max days before
               if (int.parse(newDays) > kMaxNotificationsDaysBefore) {
+                ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
