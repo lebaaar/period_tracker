@@ -72,7 +72,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('The selected period overlaps with an existing one.'),
+          content: Text('The selected period overlaps with an existing one'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -113,7 +113,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'There must be at least $kMinDaysBetweenPeriods days between periods.',
+              'There must be at least $kMinDaysBetweenPeriods days between periods',
             ),
             behavior: SnackBarBehavior.floating,
           ),
