@@ -484,7 +484,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Warning: backup file sending cancelled'),
+            content: Text('Warning: backup file not sent'),
             behavior: SnackBarBehavior.floating,
           ),
         );

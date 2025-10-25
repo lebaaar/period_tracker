@@ -202,15 +202,15 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'An error occurred while restoring your data. Try exporting the file on your old phone again',
+              Text(
+                'An error occurred while restoring your data. Please try exporting the $kBackupFileName file on your old phone and importing it again',
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'If the problem persists ',
+                    'If the issue persists ',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   TextButton(
@@ -368,7 +368,7 @@ $encodedContent]''',
                             child: Column(
                               children: [
                                 Text(
-                                  'There is an issue with your $kBackupFileName file.\nTry exporting the file on your old phone again.',
+                                  'There is an issue with your $kBackupFileName file. Please restart the app try again. In case that doesn\'t work, try exporting the file on your old phone again.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Theme.of(
@@ -381,7 +381,7 @@ $encodedContent]''',
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      'If the problem persists ',
+                                      'If the issue persists ',
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodyMedium,
