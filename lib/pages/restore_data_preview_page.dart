@@ -9,6 +9,7 @@ import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/encryption_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
+import 'package:restart_app/restart_app.dart';
 
 class RestoreDataPreviewPage extends StatefulWidget {
   const RestoreDataPreviewPage({super.key});
@@ -40,7 +41,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
     try {
       final String? path = await getSharedFilePath();
-      await setSharedFilePath(''); // clear the shared file path after use
+      await clearSharedFilePath(); // clear the shared file path after use
       if (path == null || path.isEmpty) {
         setState(() {
           _sharedFilePath = null;

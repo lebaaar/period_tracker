@@ -48,3 +48,8 @@ Future<String?> getSharedFilePath() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('shared_file_path');
 }
+
+Future<void> clearSharedFilePath() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('shared_file_path');
+}
