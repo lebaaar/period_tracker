@@ -3,7 +3,7 @@ class User {
   final String? name;
   final int cycleLength;
   final int periodLength;
-  final DateTime lastPeriodDate;
+  final DateTime lastPeriodDate; // TODO - remove unused field
 
   User({
     this.id,

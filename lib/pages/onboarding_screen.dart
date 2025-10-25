@@ -146,15 +146,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             ),
-            child: RichText(
+            child: Text.rich(
+              style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
-              text: TextSpan(
-                style: Theme.of(context).textTheme.bodySmall,
+              TextSpan(
                 children: [
                   const TextSpan(text: 'Already have an account?\n'),
                   TextSpan(
                     text: 'Restore data',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),

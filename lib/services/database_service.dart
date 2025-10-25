@@ -28,8 +28,10 @@ class DatabaseService {
   final String _userNameColumnName = 'name';
   final String _userCycleLengthColumnName = 'cycleLength';
   final String _userPeriodLengthColumnName = 'periodLength';
-  final String _userLastPeriodDateColumnName = 'lastPeriodDate';
-  final String _userDynamicCycleLength = 'dynamicCycleLength';
+  final String _userLastPeriodDateColumnName =
+      'lastPeriodDate'; // TODO - remove unused field
+  final String _userDynamicCycleLength =
+      'dynamicCycleLength'; // TODO - remove unused field
 
   final String _settingsTableName = kSettingsTableName;
   final String _settingsIdColumnName = 'id';
@@ -166,6 +168,22 @@ class DatabaseService {
       _settingsNotificationEnabledColumnName: 1,
       _settingsNotificationDaysBeforeColumnName: 3,
       _settingsNotificationTimeColumnName: '08:00',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> insertSettings(Settings settings) async {
+    final db = await database;
+    await db.insert(_settingsTableName, {
+      _settingsIdColumnName: 1,
+      _settingsPredictionModeColumnName: settings.predictionMode,
+      _settingsDarkModeColumnName: settings.darkMode ? 1 : 0,
+      _settingsNotificationEnabledColumnName: settings.notificationsEnabled
+          ? 1
+          : 0,
+      _settingsNotificationDaysBeforeColumnName:
+          settings.notificationDaysBefore,
+      _settingsNotificationTimeColumnName:
+          '${settings.notificationTime.hour.toString().padLeft(2, '0')}:${settings.notificationTime.minute.toString().padLeft(2, '0')}',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
