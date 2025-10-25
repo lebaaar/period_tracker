@@ -191,7 +191,8 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       });
 
       if (success) {
-        context.go('/');
+        await setDisplayRestoreSuccess(true);
+        Restart.restartApp(); // restarts app (goes to home page - /)
         return;
       }
 

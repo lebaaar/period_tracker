@@ -53,3 +53,19 @@ Future<void> clearSharedFilePath() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.remove('shared_file_path');
 }
+
+// display_restore_success
+Future<void> setDisplayRestoreSuccess(bool displayRestoreSuccess) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('display_restore_success', displayRestoreSuccess);
+}
+
+Future<bool> getDisplayRestoreSuccess() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('display_restore_success') ?? false;
+}
+
+Future<void> clearDisplayRestoreSuccess() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('display_restore_success');
+}

@@ -59,6 +59,10 @@ Future<void> main() async {
   );
 
   final bool onBoardingComplete = await getOnboardingComplete();
+  final bool displayRestoreSuccess = await getDisplayRestoreSuccess();
+  if (displayRestoreSuccess) {
+    await clearDisplayRestoreSuccess();
+  }
 
   runApp(
     MultiProvider(
@@ -67,14 +71,22 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      child: PeriodTrackerApp(showOnboarding: !onBoardingComplete),
+      child: PeriodTrackerApp(
+        showOnboarding: !onBoardingComplete,
+        displayRestoreSuccess: displayRestoreSuccess,
+      ),
     ),
   );
 }
 
 class PeriodTrackerApp extends StatelessWidget {
-  const PeriodTrackerApp({super.key, required this.showOnboarding});
   final bool showOnboarding;
+  final bool displayRestoreSuccess;
+  const PeriodTrackerApp({
+    super.key,
+    required this.showOnboarding,
+    required this.displayRestoreSuccess,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +95,8 @@ class PeriodTrackerApp extends StatelessWidget {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => const MainNavigation(),
+          builder: (context, state) =>
+              MainNavigation(displayRestoreSuccess: displayRestoreSuccess),
           routes: [
             GoRoute(
               path: 'log',
@@ -155,7 +168,7 @@ class PeriodTrackerApp extends StatelessWidget {
       errorBuilder: (context, state) {
         return showOnboarding
             ? const OnboardingScreen()
-            : const MainNavigation();
+            : MainNavigation(displayRestoreSuccess: displayRestoreSuccess);
       },
     );
 
@@ -171,7 +184,8 @@ class PeriodTrackerApp extends StatelessWidget {
 }
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  final bool displayRestoreSuccess;
+  const MainNavigation({super.key, required this.displayRestoreSuccess});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -179,6 +193,19 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.displayRestoreSuccess) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data restored successfully 🎉')),
+        );
+      });
+    }
+  }
+
   final pages = [HomePage(), InsightsPage(), ProfilePage()];
   final List<String> appBarTitles = ['Home', 'Insights', 'Profile'];
 
