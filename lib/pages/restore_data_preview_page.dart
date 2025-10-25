@@ -24,6 +24,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   Map<String, dynamic>? _sharedFileContent;
   bool _loading = true;
   String? _error;
+  bool _restoreError = false;
   bool _showErrorDetails = false;
   bool _alertShown = false;
 
@@ -39,6 +40,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       _error = null;
     });
 
+    // try parsing the file
     try {
       final String? path = await getSharedFilePath();
       await clearSharedFilePath(); // clear the shared file path after use
@@ -186,73 +188,21 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         _sharedFileContent!,
       );
 
-      setState(() {
-        _loading = false;
-      });
+      // wait a moment to show the spinner
+      await Future.delayed(const Duration(milliseconds: 2000));
 
       if (success) {
         await setDisplayRestoreSuccess(true);
+        setState(() {
+          _loading = false;
+        });
         Restart.restartApp(); // restarts app (goes to home page - /)
         return;
       }
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error :('),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'An error occurred while restoring your data. Please try exporting the $kBackupFileName file on your old phone and importing it again',
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'If the issue persists ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      alignment: Alignment.centerLeft,
-                    ),
-                    onPressed: () => openEmail(),
-                    child: Text(
-                      'contact support',
-                      style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        decorationColor: Theme.of(
-                          context,
-                        ).colorScheme.onSurface,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  Text('.'),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              child: const Text('OK'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        ),
-      );
     } catch (e) {
       setState(() {
         _loading = false;
+        _restoreError = true;
         _error = e.toString();
       });
     }
@@ -297,6 +247,7 @@ Hello,
 I'm having an issue with restoring data in the Period Tracker app.
 Here are the details:\n
 [Error: ${_error ?? 'Unknown error'}]
+[Restore error: ${_restoreError.toString()}]
 [Timestamp: ${DateTime.now()}]
 [Version: ${packageInfo.version}+${packageInfo.buildNumber}]
 [Device: ${Platform.operatingSystem}]
@@ -320,7 +271,7 @@ $encodedContent]''',
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error: Cannot send email.'),
+          content: Text('An error occurred while trying to open email app'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -340,6 +291,9 @@ $encodedContent]''',
         : periodCount == 1
         ? 'All your data, including 1 logged period, will be restored, replacing your existing data.'
         : 'All your data, including $periodCount logged periods, will be restored, replacing your existing data.';
+    final String errorText = _restoreError
+        ? 'An error occurred while restoring your data. Please restart the app try again. In case that doesn\'t work, try exporting the file on your old phone again.'
+        : 'There is an issue with your $kBackupFileName file. Please restart the app try again. In case that doesn\'t work, try exporting the file on your old phone again.';
 
     return Scaffold(
       body: Center(
@@ -369,7 +323,7 @@ $encodedContent]''',
                             child: Column(
                               children: [
                                 Text(
-                                  'There is an issue with your $kBackupFileName file. Please restart the app try again. In case that doesn\'t work, try exporting the file on your old phone again.',
+                                  errorText,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Theme.of(
@@ -517,17 +471,12 @@ $encodedContent]''',
                                   onPressed: () {
                                     context.go('/');
                                   },
-                                  child: RichText(
+                                  child: Text.rich(
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
                                     textAlign: TextAlign.center,
-                                    text: TextSpan(
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                          ),
+                                    TextSpan(
                                       children: [
                                         const TextSpan(
                                           text:
@@ -535,14 +484,11 @@ $encodedContent]''',
                                         ),
                                         TextSpan(
                                           text: 'Exit restore',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                              ),
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -581,17 +527,12 @@ $encodedContent]''',
                                   onPressed: () {
                                     context.go('/onboarding');
                                   },
-                                  child: RichText(
+                                  child: Text.rich(
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
                                     textAlign: TextAlign.center,
-                                    text: TextSpan(
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                          ),
+                                    TextSpan(
                                       children: [
                                         const TextSpan(
                                           text:
@@ -599,14 +540,11 @@ $encodedContent]''',
                                         ),
                                         TextSpan(
                                           text: 'Start fresh',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                              ),
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
                                         ),
                                       ],
                                     ),

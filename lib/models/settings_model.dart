@@ -29,7 +29,7 @@ class Settings {
       id: map['id'] as int?,
       predictionMode: map['predictionMode'] as String,
       darkMode: map['darkMode'] == 1,
-      notificationsEnabled: map['notificationsEnabled'] == 1,
+      notificationsEnabled: map['notificationEnabled'] == 1,
       notificationDaysBefore: map['notificationDaysBefore'] as int,
       notificationTime: notificationTime,
     );
@@ -39,7 +39,7 @@ class Settings {
     return {
       'id': id,
       'predictionMode': predictionMode,
-      'darkMode': darkMode,
+      'darkMode': darkMode ? 1 : 0,
       'notificationsEnabled': notificationsEnabled ? 1 : 0,
       'notificationDaysBefore': notificationDaysBefore,
       'notificationTime': '${notificationTime.hour}:${notificationTime.minute}',

@@ -132,7 +132,7 @@ class ApplicationDataService {
       await databaseService.insertUser(user);
 
       // Restore settings data
-      await databaseService.updateSettings(settings);
+      await databaseService.insertSettings(settings);
 
       // Restore periods data
       for (var period in periods) {

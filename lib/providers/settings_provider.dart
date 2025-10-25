@@ -48,6 +48,12 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> insertSettings(Settings settings) async {
+    await _db.insertSettings(settings);
+    _settings = settings;
+    notifyListeners();
+  }
+
   Future<void> updateSettings({
     String? predictionMode,
     bool? darkMode,

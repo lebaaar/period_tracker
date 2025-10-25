@@ -164,7 +164,7 @@ class DatabaseService {
     await db.insert(_settingsTableName, {
       _settingsIdColumnName: 1,
       _settingsPredictionModeColumnName: 'dynamic',
-      _settingsDarkModeColumnName: 0,
+      _settingsDarkModeColumnName: 1,
       _settingsNotificationEnabledColumnName: 1,
       _settingsNotificationDaysBeforeColumnName: 3,
       _settingsNotificationTimeColumnName: '08:00',

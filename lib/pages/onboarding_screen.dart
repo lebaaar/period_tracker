@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
@@ -423,7 +424,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'Please select the start day of your last period.',
+                              'Please select the start day of your last period',
                             ),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -468,13 +469,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
-                    await context.read<SettingsProvider>().loadSettings();
 
                     // Request notification permission
                     final bool result = await NotificationService()
                         .requestPermissions();
-                    await context.read<SettingsProvider>().updateSettings(
-                      notificationsEnabled: result,
+
+                    await context.read<SettingsProvider>().insertSettings(
+                      Settings(
+                        id: 1,
+                        predictionMode: 'dynamic',
+                        darkMode: true,
+                        notificationsEnabled: result,
+                        notificationDaysBefore: 3,
+                        notificationTime: const TimeOfDay(hour: 8, minute: 0),
+                      ),
                     );
 
                     // Disable version details by default
