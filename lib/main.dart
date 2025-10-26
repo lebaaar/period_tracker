@@ -30,13 +30,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  ReceiveSharingIntent.instance.getInitialMedia().then((files) async {
-    if (files.isNotEmpty) {
-      String filePath = files.first.path;
-      await setSharedFilePath(filePath);
-    }
-  });
-
   await NotificationService().init();
 
   // Set system UI overlay style globally
@@ -79,7 +72,7 @@ Future<void> main() async {
   );
 }
 
-class PeriodTrackerApp extends StatelessWidget {
+class PeriodTrackerApp extends StatefulWidget {
   final bool showOnboarding;
   final bool displayRestoreSuccess;
   const PeriodTrackerApp({
@@ -89,14 +82,67 @@ class PeriodTrackerApp extends StatelessWidget {
   });
 
   @override
+  State<PeriodTrackerApp> createState() => _PeriodTrackerAppState();
+}
+
+class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
+  late StreamSubscription _intentSub;
+  final List _sharedFiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Listen to media sharing coming from outside the app while the app is in the memory
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (value) {
+        setState(() {
+          _sharedFiles.clear();
+          _sharedFiles.addAll(value);
+          if (_sharedFiles.isNotEmpty) {
+            _setFileShared(true);
+          }
+        });
+      },
+      onError: (err) {
+        // TODO: handle error
+      },
+    );
+
+    // Get the media sharing coming from outside the app while the app is closed.
+    ReceiveSharingIntent.instance.getInitialMedia().then((value) {
+      setState(() {
+        _sharedFiles.clear();
+        _sharedFiles.addAll(value);
+        if (_sharedFiles.isNotEmpty) {
+          _setFileShared(true);
+        }
+
+        ReceiveSharingIntent.instance.reset();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _intentSub.cancel();
+    super.dispose();
+  }
+
+  Future<void> _setFileShared(bool value) async {
+    await setFileShared(value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final GoRouter router = GoRouter(
-      initialLocation: showOnboarding ? '/onboarding' : '/',
+      initialLocation: widget.showOnboarding ? '/onboarding' : '/',
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) =>
-              MainNavigation(displayRestoreSuccess: displayRestoreSuccess),
+          builder: (context, state) => MainNavigation(
+            displayRestoreSuccess: widget.displayRestoreSuccess,
+          ),
           routes: [
             GoRoute(
               path: 'log',
@@ -154,21 +200,23 @@ class PeriodTrackerApp extends StatelessWidget {
         ),
         GoRoute(
           path: '/restore',
-          builder: (context, state) => const RestoreDataPreviewPage(),
+          builder: (context, state) =>
+              RestoreDataPreviewPage(sharedFiles: _sharedFiles),
         ),
       ],
       redirect: (context, state) async {
-        final String locaton = state.uri.toString();
-        bool filePathSet = await getSharedFilePath() != '' || false;
-        if (locaton.startsWith('content://') && filePathSet) {
+        bool fileShared = await getFileShared() == true;
+        if (_sharedFiles.isNotEmpty && fileShared) {
           return '/restore';
         }
         return null; // no redirection
       },
       errorBuilder: (context, state) {
-        return showOnboarding
+        return widget.showOnboarding
             ? const OnboardingScreen()
-            : MainNavigation(displayRestoreSuccess: displayRestoreSuccess);
+            : MainNavigation(
+                displayRestoreSuccess: widget.displayRestoreSuccess,
+              );
       },
     );
 
@@ -185,6 +233,7 @@ class PeriodTrackerApp extends StatelessWidget {
 
 class MainNavigation extends StatefulWidget {
   final bool displayRestoreSuccess;
+
   const MainNavigation({super.key, required this.displayRestoreSuccess});
 
   @override

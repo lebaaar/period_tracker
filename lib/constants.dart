@@ -93,8 +93,5 @@ To restore your data on a new device:
 3. Hold down on the file, click on the three dots and select Open with > Period Tracker.
 4. In the Period Tracker app, click "Restore my data".''';
 
-// Error codes
-final String kRestoreDataErrorCode = 'RESTORE_DATA';
-
 // Contact
 final String kContactEmail = 'lanlebar6@gmail.com';

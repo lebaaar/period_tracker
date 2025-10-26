@@ -160,9 +160,6 @@ class ApplicationDataService {
           case 'animal_generator_unlocked':
             setAnimalGeneratorUnlockedValue(value as bool);
             break;
-          case 'shared_file_path':
-            // skip
-            break;
           default:
             continue;
         }

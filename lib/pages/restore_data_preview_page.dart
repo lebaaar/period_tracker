@@ -9,10 +9,12 @@ import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/encryption_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
+import 'package:period_tracker/utils/file_helper.dart';
 import 'package:restart_app/restart_app.dart';
 
 class RestoreDataPreviewPage extends StatefulWidget {
-  const RestoreDataPreviewPage({super.key});
+  final List sharedFiles;
+  const RestoreDataPreviewPage({super.key, required this.sharedFiles});
 
   @override
   State<RestoreDataPreviewPage> createState() => _RestoreDataPreviewPageState();
@@ -20,7 +22,6 @@ class RestoreDataPreviewPage extends StatefulWidget {
 
 class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   late bool _onBoardingComplete;
-  String? _sharedFilePath;
   Map<String, dynamic>? _sharedFileContent;
   bool _loading = true;
   String? _error;
@@ -36,40 +37,50 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     if (!mounted) return;
     setState(() {
       _onBoardingComplete = isComplete;
-      _loading = true; // show spinner while we load/parse
+      _loading = true;
       _error = null;
     });
+    await clearFileShared();
 
     // try parsing the file
     try {
-      final String? path = await getSharedFilePath();
-      await clearSharedFilePath(); // clear the shared file path after use
-      if (path == null || path.isEmpty) {
+      // check if the file path is valid
+      final String? filePath = widget.sharedFiles[0].path;
+      if (filePath == null || filePath.isEmpty) {
         setState(() {
-          _sharedFilePath = null;
-          _sharedFileContent = null;
-          _loading = false;
-        });
-        return;
-      }
-
-      final file = File(path);
-      if (!await file.exists()) {
-        setState(() {
-          _sharedFilePath = path;
           _sharedFileContent = null;
           _loading = false;
           _error = '$kBackupFileName file not found';
         });
         return;
       }
-      final String fileContent = await file.readAsString();
+
+      // check if the file exists
+      final File file = File(filePath);
+      if (!await file.exists()) {
+        setState(() {
+          _sharedFileContent = null;
+          _loading = false;
+          _error = '$kBackupFileName file not found';
+        });
+        return;
+      }
+
+      // read the file content
+      final String? fileContent = await FileHelper.readFileContent(filePath);
+      if (fileContent == null || fileContent.isEmpty) {
+        setState(() {
+          _sharedFileContent = null;
+          _loading = false;
+          _error = 'Backup file is empty';
+        });
+        return;
+      }
       _sharedFileContent = ApplicationDataService().parseBackupFile(
         fileContent,
       );
       if (_sharedFileContent == null) {
         setState(() {
-          _sharedFilePath = path;
           _sharedFileContent = null;
           _loading = false;
           _error = 'Failed to parse backup file';
@@ -83,7 +94,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       );
       if (!validBackupData) {
         setState(() {
-          _sharedFilePath = path;
           _sharedFileContent = null;
           _loading = false;
           _error = 'Invalid backup file format';
@@ -100,7 +110,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
           );
       if (!compatible) {
         setState(() {
-          _sharedFilePath = path;
           _sharedFileContent = null;
           _loading = false;
           _error = 'Incompatible backup file version';
@@ -109,7 +118,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       }
 
       setState(() {
-        _sharedFilePath = path;
         _sharedFileContent = _sharedFileContent!;
         _loading = false;
         _name = _sharedFileContent!['database']['user']['name'];
@@ -124,7 +132,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       );
     } catch (e) {
       setState(() {
-        _sharedFilePath = null;
         _sharedFileContent = null;
         _loading = false;
         _error = e.toString();
@@ -135,7 +142,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
   void _maybeShowOnboardingAlert() {
     if (!mounted) return;
     if (_alertShown) return;
-    if (_onBoardingComplete && _sharedFilePath != null) {
+    if (_onBoardingComplete) {
       _alertShown = true;
       showDialog(
         context: context,
@@ -233,28 +240,26 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
   Future<void> openEmail() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    // TODO - AES encrypt the content
     final String encodedContent = _sharedFileContent != null
         ? EncryptionService().base64Encode(_sharedFileContent.toString())
         : 'N/A';
 
     final EmailContent emailContent = EmailContent(
       to: [kContactEmail],
-      subject: 'Issue with Period Tracker [$kRestoreDataErrorCode]',
+      subject: 'Issue with Period Tracker',
       body:
           '''
 Hello,
-I'm having an issue with restoring data in the Period Tracker app.
-Here are the details:\n
+
+I'm having an issue with restoring data in the Period Tracker app. Here are the details:
+
 [Error: ${_error ?? 'Unknown error'}]
 [Restore error: ${_restoreError.toString()}]
 [Timestamp: ${DateTime.now()}]
 [Version: ${packageInfo.version}+${packageInfo.buildNumber}]
 [Device: ${Platform.operatingSystem}]
 [OS version: ${Platform.operatingSystemVersion}]
-[Backup path: ${_sharedFilePath ?? 'N/A'}]
-[Backup content:
-$encodedContent]''',
+[Backup content: $encodedContent]''',
     );
     OpenMailAppResult result;
 
@@ -304,7 +309,7 @@ $encodedContent]''',
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (_error != null || _sharedFilePath == null)
+                    if (_error == null)
                       Column(
                         children: [
                           Text(
@@ -435,7 +440,7 @@ $encodedContent]''',
                           const SizedBox(width: 6),
                         ],
                       ),
-                    if (_error == null && _sharedFilePath != null)
+                    if (_error == null)
                       Column(
                         children: [
                           SizedBox(height: 30),
@@ -469,7 +474,7 @@ $encodedContent]''',
                                 const SizedBox(height: 50),
                                 InkWell(
                                   splashColor: Theme.of(
-                                      context,
+                                    context,
                                   ).colorScheme.primary.withValues(alpha: 0.33),
                                   onTap: () => context.go('/'),
                                   borderRadius: BorderRadius.circular(8),
@@ -526,7 +531,7 @@ $encodedContent]''',
                                 const SizedBox(height: 50),
                                 InkWell(
                                   splashColor: Theme.of(
-                                      context,
+                                    context,
                                   ).colorScheme.primary.withValues(alpha: 0.33),
                                   onTap: () => context.go('/onboarding'),
                                   borderRadius: BorderRadius.circular(8),
