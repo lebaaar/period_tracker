@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
+import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
@@ -248,8 +249,24 @@ class _MainNavigationState extends State<MainNavigation> {
     super.initState();
     if (widget.displayRestoreSuccess) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data restored successfully 🎉')),
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('Data successfully restored 🎉'),
+            content: Text(
+              'All your data has been successfully restored from the $kBackupFileName file.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Great!'),
+              ),
+            ],
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          ),
         );
       });
     }

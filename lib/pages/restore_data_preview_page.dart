@@ -185,9 +185,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
   void _restoreData() async {
     if (_sharedFileContent == null) return; // should not happen
-    setState(() {
-      _loading = true;
-    });
+    setState(() => _loading = true);
 
     try {
       // TODO: get rid of async gaps
@@ -203,7 +201,9 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         setState(() {
           _loading = false;
         });
-        Restart.restartApp(); // restarts app (goes to home page - /)
+
+        // restart app to go to home page
+        Restart.restartApp();
         return;
       }
     } catch (e) {
