@@ -1,6 +1,8 @@
 import 'package:flutter/rendering.dart';
 import 'package:period_tracker/theme.dart';
 
+final String kPackageName = 'com.lebaaar.period_tracker';
+
 // UI
 final double kBorderRadius = 12;
 final double kTableCalendarDaysOfTheWeekHeight = 30;
