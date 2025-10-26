@@ -253,9 +253,9 @@ class _MainNavigationState extends State<MainNavigation> {
           context: context,
           barrierDismissible: false,
           builder: (context) => AlertDialog(
-            title: const Text('Data successfully restored 🎉'),
+            title: const Text('Data restored successfully 🎉'),
             content: Text(
-              'All your data has been successfully restored from the $kBackupFileName file.',
+              'All your data has been successfully restored from the $kBackupFileName file',
             ),
             actions: [
               TextButton(
