@@ -467,23 +467,24 @@ $encodedContent]''',
                                   child: const Text('Restore my data'),
                                 ),
                                 const SizedBox(height: 50),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    context.go('/');
-                                  },
-                                  child: Text.rich(
-                                    style: Theme.of(
+                                InkWell(
+                                  splashColor: Theme.of(
                                       context,
-                                    ).textTheme.bodyMedium,
-                                    textAlign: TextAlign.center,
-                                    TextSpan(
+                                  ).colorScheme.primary.withValues(alpha: 0.33),
+                                  onTap: () => context.go('/'),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        const TextSpan(
-                                          text:
-                                              'Want to keep your existing data?\n',
+                                        const Text(
+                                          'Want to keep your existing data?',
                                         ),
-                                        TextSpan(
-                                          text: 'Exit restore',
+                                        Text(
+                                          'Exit restore',
                                           style: TextStyle(
                                             color: Theme.of(
                                               context,
@@ -523,23 +524,24 @@ $encodedContent]''',
                                   child: const Text('Restore my data'),
                                 ),
                                 const SizedBox(height: 50),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    context.go('/onboarding');
-                                  },
-                                  child: Text.rich(
-                                    style: Theme.of(
+                                InkWell(
+                                  splashColor: Theme.of(
                                       context,
-                                    ).textTheme.bodyMedium,
-                                    textAlign: TextAlign.center,
-                                    TextSpan(
+                                  ).colorScheme.primary.withValues(alpha: 0.33),
+                                  onTap: () => context.go('/onboarding'),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        const TextSpan(
-                                          text:
-                                              'Want to start fresh instead?\n',
+                                        const Text(
+                                          'Want to start fresh instead?',
                                         ),
-                                        TextSpan(
-                                          text: 'Start fresh',
+                                        Text(
+                                          'Start fresh',
                                           style: TextStyle(
                                             color: Theme.of(
                                               context,
