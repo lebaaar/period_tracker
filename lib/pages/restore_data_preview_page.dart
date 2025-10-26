@@ -309,7 +309,7 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (_error == null)
+                    if (_error != null)
                       Column(
                         children: [
                           Text(
