@@ -161,7 +161,7 @@ class PeriodProvider extends ChangeNotifier {
     if (_periods.isEmpty || nextPeriodDate == null) {
       // in this case status bar on home page is hidden
       status.text =
-          'Start by tapping the + button bellow to log your most recent period';
+          'Start by tapping the + button below to log your most recent period';
       return status;
     }
 

@@ -18,13 +18,14 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   // Example: toggle notification enabled
-  Future<void> setNotificationEnabled(bool enabled) async {
+  Future<void> setNotificationEnabled(bool value) async {
     if (_settings == null) return;
-    await _db.updateNotificationEnabled(enabled);
+    await _db.updateNotificationEnabled(value);
     _settings = Settings(
       id: _settings!.id,
       predictionMode: _settings!.predictionMode,
       darkMode: _settings!.darkMode,
+      notificationsEnabled: value,
       notificationDaysBefore: _settings!.notificationDaysBefore,
       notificationTime: _settings!.notificationTime,
     );
@@ -39,6 +40,7 @@ class SettingsProvider extends ChangeNotifier {
       id: _settings!.id,
       predictionMode: mode,
       darkMode: _settings!.darkMode,
+      notificationsEnabled: _settings!.notificationsEnabled,
       notificationDaysBefore: _settings!.notificationDaysBefore,
       notificationTime: _settings!.notificationTime,
     );
@@ -46,9 +48,16 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> insertSettings(Settings settings) async {
+    await _db.insertSettings(settings);
+    _settings = settings;
+    notifyListeners();
+  }
+
   Future<void> updateSettings({
     String? predictionMode,
     bool? darkMode,
+    bool? notificationsEnabled,
     int? notificationDaysBefore,
     TimeOfDay? notificationTime,
   }) async {
@@ -58,6 +67,8 @@ class SettingsProvider extends ChangeNotifier {
       id: _settings!.id,
       predictionMode: predictionMode ?? _settings!.predictionMode,
       darkMode: darkMode ?? _settings!.darkMode,
+      notificationsEnabled:
+          notificationsEnabled ?? _settings!.notificationsEnabled,
       notificationDaysBefore:
           notificationDaysBefore ?? _settings!.notificationDaysBefore,
       notificationTime: notificationTime ?? _settings!.notificationTime,

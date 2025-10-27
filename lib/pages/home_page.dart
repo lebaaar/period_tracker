@@ -7,6 +7,7 @@ import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';

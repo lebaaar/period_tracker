@@ -13,6 +13,7 @@ import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -139,39 +140,35 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildListTile(user, settings, 'name'),
         const Divider(),
         SectionTitle('Notifications'),
-        FutureBuilder<bool>(
-          future: getNotificationEnabled(),
-          builder: (context, snapshot) {
-            final enabled = snapshot.data ?? true;
-            return _buildSwitchTile(
-              'Enable notifications',
-              'Receive reminders for your next period',
-              enabled,
-              (value) async {
-                setNotificationsValue(value);
-                setState(() {});
-                if (value) {
-                  // reschedule notifications
-                  NotificationService().scheduleNotificationsForNextPeriod(
-                    nextPeriodDate,
-                    settings.notificationDaysBefore,
-                    settings.notificationTime,
-                  );
-                } else {
-                  // cancel all notifications
-                  NotificationService().cancelAllNotifications();
-                }
-              },
+        Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, child) {
+            final bool notificationsEnabled =
+                settingsProvider.settings?.notificationsEnabled ?? false;
+            return Column(
+              children: [
+                _buildSwitchTile(
+                  'Enable notifications',
+                  'Receive reminders for your next period',
+                  notificationsEnabled,
+                  (value) {
+                    settingsProvider.setNotificationEnabled(value);
+                    if (value) {
+                      // reschedule notifications
+                      NotificationService().scheduleNotificationsForNextPeriod(
+                        nextPeriodDate,
+                        settings.notificationDaysBefore,
+                        settings.notificationTime,
+                      );
+                    } else {
+                      // cancel all notifications
+                      NotificationService().cancelAllNotifications();
+                    }
+                  },
+                ),
+                if (notificationsEnabled)
+                  _buildListTile(user, settings, 'notifications'),
+              ],
             );
-          },
-        ),
-        FutureBuilder(
-          future: getNotificationEnabled(),
-          builder: (context, snapshot) {
-            final enabled = snapshot.data ?? false;
-            return enabled
-                ? _buildListTile(user, settings, 'notifications')
-                : SizedBox.shrink();
           },
         ),
         const Divider(),
@@ -186,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'Dynamic period prediction',
                   predictionMode == 'dynamic'
                       ? 'Next period date is based on your cycle history'
-                      : 'Next period date is based on the cycle length you specify bellow',
+                      : 'Next period date is based on the cycle length you specify below',
                   predictionMode == 'dynamic',
                   (value) {
                     // show confirmation dialog
@@ -259,8 +256,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const Divider(),
         SectionTitle('Account & Data'),
-        _buildListTile(user, settings, 'backup'),
-        _buildListTile(user, settings, 'restore'),
+        _buildListTile(user, settings, 'transfer'),
         _buildListTile(user, settings, 'delete'),
         const SizedBox(height: 24),
         if (_showVersionDetails)
@@ -336,23 +332,20 @@ class _ProfilePageState extends State<ProfilePage> {
         title = 'Notifications';
         subtitle = 'Manage your notification settings';
         break;
-      case 'backup':
-        title = 'Backup Data';
+      case 'transfer':
+        title = 'Transfer Data';
         subtitle =
-            'Backup your data (for transfer or restore on another device)';
-        break;
-      case 'restore':
-        title = 'Restore Data';
-        subtitle = 'Restore data from a backup file';
+            'Save all your data in a backup file for transfer on another device';
         break;
       case 'delete':
         title = 'Delete Account';
         subtitle = 'Permanently delete your account and all data';
         break;
       default:
-        throw ArgumentError('''Invalid tile type: $tileType. Should be
-          "name", "cycle_length", "period_length", "notifications", "backup",
-          "restore" or "delete".''');
+        throw ArgumentError(
+          '''Invalid tile type: $tileType. Should be
+          "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''',
+        );
     }
 
     return ListTile(
@@ -430,11 +423,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 case 'notifications':
                   context.go('/notifications');
                   break;
-                case 'backup':
-                  _showBackupDialog();
-                  break;
-                case 'restore':
-                  _showRestoreDialog();
+                case 'transfer':
+                  _showTransferDialog();
                   break;
                 case 'delete':
                   _showDeleteAccountDialog();
@@ -442,8 +432,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 default:
                   throw ArgumentError(
                     '''Invalid tile type: $tileType. Should be one the following:
-              "name", "cycle_length", "period_length",  "notifications",
-              "backup", "restore" or "delete".''',
+              "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''',
                   );
               }
             },
@@ -470,6 +459,46 @@ class _ProfilePageState extends State<ProfilePage> {
       activeThumbColor: Theme.of(context).colorScheme.primary,
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
+  }
+
+  Future<void> _exportData() async {
+    try {
+      final String backupContent = await ApplicationDataService()
+          .createBackupFileContent();
+      final XFile backupFile = await ApplicationDataService()
+          .exportBackupToFile(backupContent);
+
+      final bool emailSent = await ApplicationDataService().shareBackup(
+        backupFile,
+      );
+      if (!mounted) return;
+      if (emailSent) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Backup file sent successfully'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Warning: backup file not sent'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to export backup :('),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   // Dialogs
@@ -641,17 +670,57 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showBackupDialog() {
+  void _showTransferDialog() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Backup Data'),
-          content: const Text('This feature is not implemented yet :('),
+          title: const Text('Transfer Data'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'All your data will be saved into a $kBackupFileName file. Send this file to yourself (e.g. via email) so you can access it on your new device.\n'
+                  'On your new device, locate the file and open it with Period Tracker app to restore your data. Detailed instructions will be sent in the email.',
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    alignment: Alignment.centerLeft,
+                  ),
+                  onPressed: () {
+                    context.push('/help?initialPage=transfer');
+                  },
+                  child: Text(
+                    'Need help?',
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      decorationColor: Theme.of(context).colorScheme.tertiary,
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.tertiary,
+              ),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _exportData();
+              },
+              child: const Text('Send backup file'),
             ),
           ],
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -659,26 +728,7 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
-
-  void _showRestoreDialog() {
-    // file picker...
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Restore Data'),
-          content: const Text('This feature is not implemented yet :('),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
-  }
+  // ...existing code...
 
   void _showDeleteAccountDialog() {
     showDialog(
@@ -704,7 +754,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Account deleted successfully.'),
+                      content: Text('Account deleted successfully'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
