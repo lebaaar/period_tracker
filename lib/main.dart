@@ -259,8 +259,9 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
             actions: [
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
+                  await NotificationService().requestPermissions();
                 },
                 child: const Text('Great!'),
               ),
