@@ -10,10 +10,10 @@
 ## Features
 - Effortless cycle logging with a clean, easy-to-use design
 - Insights - average cycle and average period length
-- Dynamic period prediction: smartly adjusts based on past cycles
-- Static mode: set a fixed period & cycle duration for consistent tracking
-- Customizable reminders: get notified n days before your period starts
-- Offline data transfer between devices
+- Dynamic period prediction - smartly adjusts based on past cycles
+- Static mode - set a fixed period & cycle duration for consistent tracking
+- Customizable reminders - get notified n days before your period starts
+- Offline data transfer between devices (resotre on a )
 - Easter eggs :)
 
 
@@ -23,6 +23,8 @@
   <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
   </a>
+  <br>
+  <small><i>*currently in testing phase, available soon*</i></small>
   <br>
   <br>
   <a href="download/app-release.apk">
@@ -37,7 +39,12 @@
 
 
 ## Gallery
-TODO
+<div align="center">
+<img src="graphics/app/home.png" alt="Home page" width="200px" style="border-radius: 37px"><br>
+<img src="graphics/app/insights.png" alt="Insights page" width="200px" style="border-radius: 37px"><br>
+<img src="graphics/app/profile.png" alt="Profile page" width="200px" style="border-radius: 37px"><br>
+<img src="graphics/app/restore.png" alt="Restore data page" width="200px" style="border-radius: 37px">
+</div>
 
 ## Tech stack
 Built entirely with Flutter, using multiple packages:
@@ -55,12 +62,11 @@ Distributed under the MIT License. See [LICENSE.txt](TODO).
 ## Privacy Policy
 Available  [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
 
-
 ## Contributing
 Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
 
 ## Development
-
+Some useful tips:
 - Running release on device:
 `flutter run --release`
 - Building for release (make sure to update the version before each new release):
