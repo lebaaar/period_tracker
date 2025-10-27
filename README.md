@@ -40,10 +40,10 @@
 
 ## Gallery
 <div align="center">
-<img src="graphics/app/home.png" alt="Home page" width="200px" style="border-radius: 37px"><br>
-<img src="graphics/app/insights.png" alt="Insights page" width="200px" style="border-radius: 37px"><br>
-<img src="graphics/app/profile.png" alt="Profile page" width="200px" style="border-radius: 37px"><br>
-<img src="graphics/app/restore.png" alt="Restore data page" width="200px" style="border-radius: 37px">
+<img src="graphics/app/home.png" alt="Home page" width="200px">
+<img src="graphics/app/insights.png" alt="Insights page" width="200px">
+<img src="graphics/app/profile.png" alt="Profile page" width="200px">
+<img src="graphics/app/restore.png" alt="Restore data page" width="200px">
 </div>
 
 ## Tech stack
