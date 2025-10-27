@@ -88,19 +88,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ElevatedButton(
-                              onPressed: () async {
-                                await NotificationService()
-                                    .requestPermissions();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                              ),
-                              child: Text('Add Period'),
-                            ),
                             Text(
                               'Next period:',
                               style: Theme.of(context).textTheme.bodyMedium,

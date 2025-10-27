@@ -216,7 +216,6 @@ class RestoreHelpPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
