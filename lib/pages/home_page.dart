@@ -7,6 +7,7 @@ import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
@@ -87,6 +88,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                await NotificationService()
+                                    .requestPermissions();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                              ),
+                              child: Text('Add Period'),
+                            ),
                             Text(
                               'Next period:',
                               style: Theme.of(context).textTheme.bodyMedium,
