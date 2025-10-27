@@ -24,7 +24,7 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final DatabaseService _db = DatabaseService(); // TODO - repository pattern
+  final DatabaseService _db = DatabaseService();
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();

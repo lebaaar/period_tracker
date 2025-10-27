@@ -195,7 +195,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     setState(() => _loading = true);
 
     try {
-      // TODO: get rid of async gaps
       final success = await ApplicationDataService().restoreFromBackup(
         _sharedFileContent!,
       );
