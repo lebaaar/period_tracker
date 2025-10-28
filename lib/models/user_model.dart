@@ -5,13 +5,7 @@ class User {
   final int periodLength;
   final DateTime lastPeriodDate; // TODO - remove unused field
 
-  User({
-    this.id,
-    this.name,
-    required this.cycleLength,
-    required this.periodLength,
-    required this.lastPeriodDate,
-  });
+  User({this.id, this.name, required this.cycleLength, required this.periodLength, required this.lastPeriodDate});
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(

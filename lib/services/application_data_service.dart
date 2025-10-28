@@ -12,8 +12,7 @@ import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 class ApplicationDataService {
-  static final ApplicationDataService _instance =
-      ApplicationDataService._constructor();
+  static final ApplicationDataService _instance = ApplicationDataService._constructor();
 
   factory ApplicationDataService() {
     return _instance;
@@ -38,11 +37,7 @@ class ApplicationDataService {
   /// @param file The XFile object representing the backup file to be shared
   /// @returns true if sharing was successful, false otherwise
   Future<bool> shareBackup(XFile file) async {
-    final params = ShareParams(
-      subject: kBackupEmailTitle,
-      text: kBackupEmailText,
-      files: [file],
-    );
+    final params = ShareParams(subject: kBackupEmailTitle, text: kBackupEmailText, files: [file]);
 
     final result = await SharePlus.instance.share(params);
     if (result.status == ShareResultStatus.success) {
@@ -74,16 +69,10 @@ class ApplicationDataService {
       'version': (await PackageInfo.fromPlatform()).version,
       'buildNumber': (await PackageInfo.fromPlatform()).buildNumber,
       'timestamp': DateTime.now().toIso8601String(),
-      'database': {
-        'periods': periods.map((period) => period.toMap()).toList(),
-        'user': user?.toMap(),
-        'settings': settings.toMap(),
-      },
+      'database': {'periods': periods.map((period) => period.toMap()).toList(), 'user': user?.toMap(), 'settings': settings.toMap()},
       'sharedPreferences': sharedPrefsData,
     };
-    final String jsonString = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(backupData);
+    final String jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
     return jsonString;
   }
@@ -121,13 +110,9 @@ class ApplicationDataService {
       // Load database data
       final Map<String, dynamic> database = backupData['database'];
       final User user = User.fromMap(database['user'] as Map<String, dynamic>);
-      final Settings settings = Settings.fromMap(
-        database['settings'] as Map<String, dynamic>,
-      );
+      final Settings settings = Settings.fromMap(database['settings'] as Map<String, dynamic>);
       final List<dynamic> periodsList = database['periods'] as List<dynamic>;
-      final List<Period> periods = periodsList
-          .map((periodMap) => Period.fromMap(periodMap as Map<String, dynamic>))
-          .toList();
+      final List<Period> periods = periodsList.map((periodMap) => Period.fromMap(periodMap as Map<String, dynamic>)).toList();
 
       // Restore user data
       await databaseService.insertUser(user);
@@ -141,8 +126,7 @@ class ApplicationDataService {
       }
 
       // Restore shared preferences data
-      final Map<String, dynamic> sharedPrefsData =
-          backupData['sharedPreferences'] as Map<String, dynamic>;
+      final Map<String, dynamic> sharedPrefsData = backupData['sharedPreferences'] as Map<String, dynamic>;
 
       if (backupData['sharedPreferences'] == null) {
         return true;
@@ -191,13 +175,7 @@ class ApplicationDataService {
   /// @param data The Map representation of the backup data
   /// @returns true if the backup data structure is valid, false otherwise
   bool isBackupDataValid(Map<String, dynamic> data) {
-    final requiredKeys = {
-      'version',
-      'buildNumber',
-      'timestamp',
-      'database',
-      'sharedPreferences',
-    };
+    final requiredKeys = {'version', 'buildNumber', 'timestamp', 'database', 'sharedPreferences'};
     for (String key in requiredKeys) {
       if (!data.containsKey(key)) {
         return false;

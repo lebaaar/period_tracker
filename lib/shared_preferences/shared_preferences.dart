@@ -23,14 +23,9 @@ Future<bool> getDisplayVersionDetails() async {
 }
 
 // animal_generator_unlocked
-Future<void> setAnimalGeneratorUnlockedValue(
-  bool animalGeneratorUnlockedValue,
-) async {
+Future<void> setAnimalGeneratorUnlockedValue(bool animalGeneratorUnlockedValue) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool(
-    'animal_generator_unlocked',
-    animalGeneratorUnlockedValue,
-  );
+  await prefs.setBool('animal_generator_unlocked', animalGeneratorUnlockedValue);
 }
 
 Future<bool> getAnimalGeneratorUnlocked() async {

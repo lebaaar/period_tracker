@@ -26,28 +26,26 @@ class NotificationService {
 
   final DatabaseService _db = DatabaseService();
 
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  final AndroidNotificationDetails _androidNotificationDetails =
-      AndroidNotificationDetails(
-        kNotificationChannelId,
-        kNotificationChannelName,
-        channelDescription: kNotificationChannelDescription,
-        color: colorScheme.primary,
-        importance: Importance.high,
-        priority: Priority.high,
-        playSound: true,
-        enableVibration: true,
-        visibility: NotificationVisibility.private,
-        // actions: <AndroidNotificationAction>[
-        //   const AndroidNotificationAction(
-        //     'log',
-        //     'Log period',
-        //     showsUserInterface: true,
-        //   ),
-        // ],
-      );
+  final AndroidNotificationDetails _androidNotificationDetails = AndroidNotificationDetails(
+    kNotificationChannelId,
+    kNotificationChannelName,
+    channelDescription: kNotificationChannelDescription,
+    color: colorScheme.primary,
+    importance: Importance.high,
+    priority: Priority.high,
+    playSound: true,
+    enableVibration: true,
+    visibility: NotificationVisibility.private,
+    // actions: <AndroidNotificationAction>[
+    //   const AndroidNotificationAction(
+    //     'log',
+    //     'Log period',
+    //     showsUserInterface: true,
+    //   ),
+    // ],
+  );
 
   Future<void> init() async {
     // Init timezones
@@ -55,8 +53,7 @@ class NotificationService {
     // final String name = DateTime.now().timeZoneName;
     tz.setLocalLocation(tz.getLocation('Europe/Ljubljana')); // TODO
 
-    const AndroidInitializationSettings androidInit =
-        AndroidInitializationSettings('@drawable/ic_stat_notify');
+    const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@drawable/ic_stat_notify');
 
     await _flutterLocalNotificationsPlugin.initialize(
       InitializationSettings(android: androidInit),
@@ -76,9 +73,7 @@ class NotificationService {
   Future<bool> requestPermissions() async {
     // Android 13+
     final androidPlugin = NotificationService()._flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     final granted = await androidPlugin?.requestNotificationsPermission();
     if (granted != true) {
       return false;
@@ -92,21 +87,14 @@ class NotificationService {
   /// @param body Body text of the notification.
   /// @param scheduledDate Date and time when the notification should be shown.
   /// @param type Type of the notification (used for payload).
-  Future<void> scheduleNotification(
-    int id,
-    String title,
-    String body,
-    DateTime scheduledDate,
-    NotificationType type,
-  ) async {
+  Future<void> scheduleNotification(int id, String title, String body, DateTime scheduledDate, NotificationType type) async {
     // Check if notifications are enabled
     final Settings settings = await _db.getSettings();
     bool notificationsEnabled = settings.notificationsEnabled;
     if (!notificationsEnabled) return;
 
     String? payload;
-    if (type == NotificationType.logReminder ||
-        type == NotificationType.periodToday) {
+    if (type == NotificationType.logReminder || type == NotificationType.periodToday) {
       payload = '/log';
     }
 
@@ -125,11 +113,7 @@ class NotificationService {
   /// @param nextPeriodStartDate The start date of the next period.
   /// @param sendNotificationsDaysBefore Number of days before the period to send notifications.
   /// @param notificationTime Time of day to send the notifications.
-  Future<void> scheduleNotificationsForNextPeriod(
-    DateTime? nextPeriodStartDate,
-    int sendNotificationsDaysBefore,
-    TimeOfDay notificationTime,
-  ) async {
+  Future<void> scheduleNotificationsForNextPeriod(DateTime? nextPeriodStartDate, int sendNotificationsDaysBefore, TimeOfDay notificationTime) async {
     // Cancel existing notifications
     await cancelAllNotifications();
 
@@ -152,10 +136,8 @@ class NotificationService {
 
       if (scheduledDate.isBefore(DateTime.now())) continue;
 
-      String notificationTitle =
-          PeriodStatusMessageHelper.getNotificationTitleMessage(i);
-      String notificationBody =
-          PeriodStatusMessageHelper.getNotificationBodyMessage(i);
+      String notificationTitle = PeriodStatusMessageHelper.getNotificationTitleMessage(i);
+      String notificationBody = PeriodStatusMessageHelper.getNotificationBodyMessage(i);
 
       await scheduleNotification(
         i,

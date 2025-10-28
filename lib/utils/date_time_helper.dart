@@ -29,22 +29,15 @@ class DateTimeHelper {
   }
 
   static bool isSameDay(DateTime date1, DateTime date2) {
-    return date1.year == date2.year &&
-        date1.month == date2.month &&
-        date1.day == date2.day;
+    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
   }
 
-  static bool dayBetweenDates(
-    DateTime checkDate,
-    DateTime startDate,
-    DateTime endDate,
-  ) {
+  static bool dayBetweenDates(DateTime checkDate, DateTime startDate, DateTime endDate) {
     checkDate = stripTime(checkDate);
     startDate = stripTime(startDate);
     endDate = stripTime(endDate);
 
-    return (checkDate.isAtSameMomentAs(startDate) ||
-            checkDate.isAfter(startDate)) &&
+    return (checkDate.isAtSameMomentAs(startDate) || checkDate.isAfter(startDate)) &&
         (checkDate.isAtSameMomentAs(endDate) || checkDate.isBefore(endDate));
   }
 

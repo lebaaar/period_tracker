@@ -66,9 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)',
-          ),
+          content: Text('Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -78,12 +76,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!cycleValid) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text('Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)'), behavior: SnackBarBehavior.floating),
       );
       return false;
     }
@@ -101,15 +94,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Welcome!',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
+                Text('Welcome!', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 12),
-                Text(
-                  'Let\'s start with your name',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text('Let\'s start with your name', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _nameController,
@@ -119,19 +106,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     hintText: 'Your name',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(kBorderRadius),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
                     ),
                   ),
                   textInputAction: TextInputAction.next,
                   onSubmitted: (_) {
                     FocusScope.of(context).unfocus();
-                    _controller.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
-                    );
+                    _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
                     FocusScope.of(context).requestFocus(_periodLengthFocusNode);
                   },
                 ),
@@ -139,25 +120,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           InkWell(
-            splashColor: Theme.of(
-              context,
-            ).colorScheme.primary.withValues(alpha: 0.33),
+            splashColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.33),
             onTap: () => context.go('/onboarding/restore'),
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
-                  Text(
-                    'Already have an account?',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  Text(
-                    'Restore data',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
+                  Text('Already have an account?', style: Theme.of(context).textTheme.bodySmall),
+                  Text('Restore data', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.primary)),
                 ],
               ),
             ),
@@ -177,10 +148,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Cycle Info',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              Text('Cycle Info', style: Theme.of(context).textTheme.headlineMedium),
               IconButton(
                 icon: const Icon(Icons.help_outline),
                 color: Theme.of(context).colorScheme.tertiary,
@@ -193,23 +161,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)\n',
-                          ),
-                          Text(
-                            'Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)',
-                          ),
+                          Text('Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)\n'),
+                          Text('Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)'),
                         ],
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('OK'),
-                        ),
-                      ],
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.primaryContainer,
+                      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                     ),
                   );
                 },
@@ -217,26 +174,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'Enter your cycle and period lengths in days',
-            textAlign: TextAlign.center,
-          ),
+          Text('Enter your cycle and period lengths in days', textAlign: TextAlign.center),
           const SizedBox(height: 20),
           TextField(
             controller: _periodLengthController,
             focusNode: _periodLengthFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: false,
-              signed: false,
-            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
             decoration: InputDecoration(
               hintText: 'Average period length',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
               ),
             ),
             textInputAction: TextInputAction.next,
@@ -248,18 +196,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           TextField(
             controller: _cycleLengthController,
             focusNode: _cycleLengthFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: false,
-              signed: false,
-            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
             decoration: InputDecoration(
               hintText: 'Average cycle length',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
               ),
             ),
             textInputAction: TextInputAction.next,
@@ -274,10 +216,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               // kle
               FocusScope.of(context).unfocus();
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                _controller.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeIn,
-                );
+                _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
               });
             },
           ),
@@ -292,15 +231,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Last Period',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
+          Text('Last Period', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 12),
-          Text(
-            'Select the date your last period started',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text('Select the date your last period started', style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 20),
           Builder(
             builder: (context) {
@@ -319,9 +252,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            _lastPeriodDate == null
-                ? 'No date selected'
-                : 'My last period started ${DateTimeHelper.displayDate(_lastPeriodDate!)}',
+            _lastPeriodDate == null ? 'No date selected' : 'My last period started ${DateTimeHelper.displayDate(_lastPeriodDate!)}',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
@@ -341,11 +272,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _currentPage = index;
             });
           },
-          children: [
-            _buildNameInputPage(),
-            _buildCycleInfoPage(),
-            _buildLastPeriodDatePage(),
-          ],
+          children: [_buildNameInputPage(), _buildCycleInfoPage(), _buildLastPeriodDatePage()],
         ),
         bottomSheet: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -355,25 +282,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPressed: () {
                   switch (_currentPage) {
                     case 1:
-                      _controller.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeIn,
-                      );
+                      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
                       break;
                     case 2:
-                      _controller.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeIn,
-                      );
+                      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
                       break;
                   }
                 },
-                child: Text(
-                  'Back',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                ),
+                child: Text('Back', style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
               ),
             Row(
               children: List.generate(
@@ -383,9 +299,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: _currentPage == index
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.secondary,
+                    color: _currentPage == index ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -397,10 +311,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   case 0:
                     FocusScope.of(context).requestFocus(_periodLengthFocusNode);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _controller.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeIn,
-                      );
+                      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
                     });
                     break;
                   case 1:
@@ -409,10 +320,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     FocusScope.of(context).unfocus();
 
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _controller.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeIn,
-                      );
+                      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
                     });
                     break;
                   case 2:
@@ -421,12 +329,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       if (_lastPeriodDate == null) {
                         ScaffoldMessenger.of(context).clearSnackBars();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please select the start day of your last period',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                          ),
+                          const SnackBar(content: Text('Please select the start day of your last period'), behavior: SnackBarBehavior.floating),
                         );
                         return;
                       }
@@ -449,29 +352,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }
 
                     // Set initial period
-                    final DateTime start = DateTime.utc(
-                      _lastPeriodDate!.year,
-                      _lastPeriodDate!.month,
-                      _lastPeriodDate!.day,
-                    );
-                    final DateTime end = start.add(
-                      Duration(
-                        days: int.parse(_periodLengthController.text) - 1,
-                      ),
-                    );
+                    final DateTime start = DateTime.utc(_lastPeriodDate!.year, _lastPeriodDate!.month, _lastPeriodDate!.day);
+                    final DateTime end = start.add(Duration(days: int.parse(_periodLengthController.text) - 1));
 
-                    final period = Period(
-                      startDate: start,
-                      endDate: end,
-                      notes: '',
-                    );
+                    final period = Period(startDate: start, endDate: end, notes: '');
 
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
 
                     // Request notification permission
-                    final bool result = await NotificationService()
-                        .requestPermissions();
+                    final bool result = await NotificationService().requestPermissions();
 
                     await context.read<SettingsProvider>().insertSettings(
                       Settings(

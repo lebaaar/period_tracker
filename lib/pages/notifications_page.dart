@@ -21,20 +21,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final settings = context.watch<SettingsProvider>().settings;
-    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
-      settings?.predictionMode == 'dynamic',
-      user?.cycleLength,
-    );
+    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Notifications',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        title: Text('Notifications', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -48,27 +42,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
             : ListView(
                 padding: const EdgeInsets.all(8),
                 children: [
-                  _buildListTile(
-                    settings,
-                    'notifications_days_before',
-                    nextPeriodDate,
-                  ),
-                  _buildListTile(
-                    settings,
-                    'notifications_time',
-                    nextPeriodDate,
-                  ),
+                  _buildListTile(settings, 'notifications_days_before', nextPeriodDate),
+                  _buildListTile(settings, 'notifications_time', nextPeriodDate),
                 ],
               ),
       ),
     );
   }
 
-  Widget _buildListTile(
-    Settings settings,
-    String tileType,
-    DateTime? nextPeriodDate,
-  ) {
+  Widget _buildListTile(Settings settings, String tileType, DateTime? nextPeriodDate) {
     String title;
     String subtitle;
 
@@ -82,20 +64,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
         subtitle = DateTimeHelper.displayTime(settings.notificationTime);
         break;
       default:
-        throw ArgumentError(
-          '''Invalid tile type: $tileType. Should be one of the following:
-          "notifications_days_before", "notifications_time".''',
-        );
+        throw ArgumentError('''Invalid tile type: $tileType. Should be one of the following:
+          "notifications_days_before", "notifications_time".''');
     }
 
     return ListTile(
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      subtitle: Text(
-        subtitle,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.tertiary,
-        ),
-      ),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.tertiary)),
       trailing: Icon(Icons.chevron_right_rounded),
       onTap: () {
         switch (tileType) {
@@ -104,12 +79,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               // Validate input
               if (newDays.isEmpty || int.tryParse(newDays) == null) {
                 ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter a valid number'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Please enter a valid number'), behavior: SnackBarBehavior.floating));
               }
 
               // Check max days before
@@ -117,64 +89,43 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      'Notifications can only be sent up to $kMaxNotificationsDaysBefore days before the period starts',
-                    ),
+                    content: Text('Notifications can only be sent up to $kMaxNotificationsDaysBefore days before the period starts'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
                 return;
               }
 
-              await context.read<SettingsProvider>().updateSettings(
-                notificationDaysBefore: int.parse(newDays),
-              );
+              await context.read<SettingsProvider>().updateSettings(notificationDaysBefore: int.parse(newDays));
               // schedule notifications for next period
-              NotificationService().scheduleNotificationsForNextPeriod(
-                nextPeriodDate,
-                int.parse(newDays),
-                settings.notificationTime,
-              );
+              NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, int.parse(newDays), settings.notificationTime);
             });
             break;
           case 'notifications_time':
             _showEditCycleLengthDialog(settings, (newLength) async {
               await context.read<SettingsProvider>().updateSettings(
-                notificationTime: TimeOfDay(
-                  hour: int.parse(newLength.split(':')[0]),
-                  minute: int.parse(newLength.split(':')[1]),
-                ),
+                notificationTime: TimeOfDay(hour: int.parse(newLength.split(':')[0]), minute: int.parse(newLength.split(':')[1])),
               );
 
               // schedule notifications for next period
               NotificationService().scheduleNotificationsForNextPeriod(
                 nextPeriodDate,
                 settings.notificationDaysBefore,
-                TimeOfDay(
-                  hour: int.parse(newLength.split(':')[0]),
-                  minute: int.parse(newLength.split(':')[1]),
-                ),
+                TimeOfDay(hour: int.parse(newLength.split(':')[0]), minute: int.parse(newLength.split(':')[1])),
               );
             });
             break;
           default:
-            throw ArgumentError(
-              '''Invalid tile type: $tileType. Should be one the following:
-              "notifications_days_before", "notifications_time".''',
-            );
+            throw ArgumentError('''Invalid tile type: $tileType. Should be one the following:
+              "notifications_days_before", "notifications_time".''');
         }
       },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
   }
 
-  void _showEditNotificationDaysBeforeDialog(
-    Settings settings,
-    Function(String) onSave,
-  ) {
-    final TextEditingController controller = TextEditingController(
-      text: settings.notificationDaysBefore.toString(),
-    );
+  void _showEditNotificationDaysBeforeDialog(Settings settings, Function(String) onSave) {
+    final TextEditingController controller = TextEditingController(text: settings.notificationDaysBefore.toString());
     showDialog(
       context: context,
       builder: (context) {
@@ -182,26 +133,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
           title: const Text('Notification days before period'),
           content: TextField(
             controller: controller,
-            keyboardType: TextInputType.numberWithOptions(
-              decimal: false,
-              signed: false,
-            ),
+            keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
               ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -224,10 +167,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       initialTime: settings.notificationTime,
       initialEntryMode: TimePickerEntryMode.dial,
       builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        );
+        return MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!);
       },
     ).then((TimeOfDay? time) {
       if (time != null) {

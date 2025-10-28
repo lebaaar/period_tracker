@@ -53,10 +53,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Doggy Generator',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        title: Text('Doggy Generator', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -72,16 +69,10 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: DropdownButtonFormField<DogBreed>(
-                decoration: const InputDecoration(
-                  labelText: 'Select Dog Breed',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: 'Select Dog Breed', border: OutlineInputBorder()),
                 initialValue: selectedDogBreed,
                 items: DogBreed.values.map((breed) {
-                  return DropdownMenuItem<DogBreed>(
-                    value: breed,
-                    child: Text(breed.display),
-                  );
+                  return DropdownMenuItem<DogBreed>(value: breed, child: Text(breed.display));
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
@@ -108,9 +99,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.fontSize,
+                                fontSize: Theme.of(context).textTheme.headlineSmall?.fontSize,
                               ),
                             ),
                             SizedBox(height: 8),
@@ -119,9 +108,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium?.fontSize,
+                                fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
                               ),
                             ),
                           ],
@@ -132,36 +119,24 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: GestureDetector(
                                 onTap: () {
+                                  ScaffoldMessenger.of(context).clearSnackBars();
                                   ScaffoldMessenger.of(
                                     context,
-                                  ).clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Good doggy! 🐶'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
+                                  ).showSnackBar(const SnackBar(content: Text('Good doggy! 🐶'), behavior: SnackBarBehavior.floating));
                                 },
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    kBorderRadius,
-                                  ),
+                                  borderRadius: BorderRadius.circular(kBorderRadius),
                                   child: Image.network(
                                     imageUrl!,
                                     height: 300,
                                     fit: BoxFit.cover,
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return const Center(
-                                            child: CircularProgressIndicator(),
-                                          );
-                                        },
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(Icons.error, size: 80),
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child;
+                                      }
+                                      return const Center(child: CircularProgressIndicator());
+                                    },
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 80),
                                   ),
                                 ),
                               ),
@@ -186,9 +161,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
               style: TextButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(kBorderRadius),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kBorderRadius)),
               ),
               child: const Text('Next doggy'),
             ),

@@ -67,10 +67,8 @@ class SettingsProvider extends ChangeNotifier {
       id: _settings!.id,
       predictionMode: predictionMode ?? _settings!.predictionMode,
       darkMode: darkMode ?? _settings!.darkMode,
-      notificationsEnabled:
-          notificationsEnabled ?? _settings!.notificationsEnabled,
-      notificationDaysBefore:
-          notificationDaysBefore ?? _settings!.notificationDaysBefore,
+      notificationsEnabled: notificationsEnabled ?? _settings!.notificationsEnabled,
+      notificationDaysBefore: notificationDaysBefore ?? _settings!.notificationDaysBefore,
       notificationTime: notificationTime ?? _settings!.notificationTime,
     );
 

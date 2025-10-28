@@ -43,18 +43,13 @@ class PeriodProvider extends ChangeNotifier {
   /// @param dynamicPeriodPrediction Whether to use dynamic prediction based on average cycle length
   /// @param userCycleLength The user's set cycle length (used if dynamic prediction is false)
   /// @returns The predicted next period start date, or null if not enough data
-  DateTime? getNextPeriodDate(
-    bool dynamicPeriodPrediction,
-    int? userCycleLength,
-  ) {
+  DateTime? getNextPeriodDate(bool dynamicPeriodPrediction, int? userCycleLength) {
     if (periods.isEmpty) return null;
     if (periods.length < 2) {
       // Not enough data to predict next period - only one period logged
       // Use the provided userCycleLength
       // Case when user gets not enough data to predict the next period right after onboarding
-      return periods.last.startDate.add(
-        Duration(days: userCycleLength ?? kDefaultCycleLength),
-      );
+      return periods.last.startDate.add(Duration(days: userCycleLength ?? kDefaultCycleLength));
     }
     periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     if (dynamicPeriodPrediction) {
@@ -70,16 +65,10 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns the next 3 expected period start dates
-  List<DateTime> getNext3PeriodDates(
-    bool dynamicPredictionMode,
-    int? userCycleLength,
-  ) {
+  List<DateTime> getNext3PeriodDates(bool dynamicPredictionMode, int? userCycleLength) {
     List<DateTime> upcomingPeriods = [];
 
-    DateTime? firstPeriod = getNextPeriodDate(
-      dynamicPredictionMode,
-      userCycleLength,
-    );
+    DateTime? firstPeriod = getNextPeriodDate(dynamicPredictionMode, userCycleLength);
     if (firstPeriod == null) return upcomingPeriods;
 
     upcomingPeriods.add(firstPeriod);
@@ -112,14 +101,8 @@ class PeriodProvider extends ChangeNotifier {
 
     // Normalize period dates to UTC date only for consistent comparison
     final normalizedPeriods = _periods.map((p) {
-      final startDate = DateTime.utc(
-        p.startDate.year,
-        p.startDate.month,
-        p.startDate.day,
-      );
-      final endDate = p.endDate != null
-          ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day)
-          : null;
+      final startDate = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
+      final endDate = p.endDate != null ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day) : null;
       return {'period': p, 'start': startDate, 'end': endDate};
     }).toList();
 
@@ -132,8 +115,7 @@ class PeriodProvider extends ChangeNotifier {
     Map<String, dynamic>? lastPeriodData;
     for (var periodData in normalizedPeriods) {
       final startDate = periodData['start'] as DateTime;
-      if (targetDate.isAtSameMomentAs(startDate) ||
-          targetDate.isAfter(startDate)) {
+      if (targetDate.isAtSameMomentAs(startDate) || targetDate.isAfter(startDate)) {
         lastPeriodData = periodData;
       } else {
         break;
@@ -152,19 +134,12 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns a status message (e.g., late, on track)
-  PeriodStatusMessage getStatusMessage(
-    Color defaultColor,
-    DateTime? nextPeriodDate,
-  ) {
-    PeriodStatusMessage status = PeriodStatusMessage(
-      text: '',
-      color: defaultColor,
-    );
+  PeriodStatusMessage getStatusMessage(Color defaultColor, DateTime? nextPeriodDate) {
+    PeriodStatusMessage status = PeriodStatusMessage(text: '', color: defaultColor);
 
     if (_periods.isEmpty || nextPeriodDate == null) {
       // in this case status bar on home page is hidden
-      status.text =
-          'Start by tapping the + button below to log your most recent period';
+      status.text = 'Start by tapping the + button below to log your most recent period';
       return status;
     }
 
@@ -178,8 +153,7 @@ class PeriodProvider extends ChangeNotifier {
     final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
     // Check if currently in period
-    if (today.isAfter(lastStart.subtract(Duration(days: 1))) &&
-        today.isBefore(lastEnd.add(Duration(days: 1)))) {
+    if (today.isAfter(lastStart.subtract(Duration(days: 1))) && today.isBefore(lastEnd.add(Duration(days: 1)))) {
       status.text = 'Currently in period';
       return status;
     }
@@ -194,10 +168,7 @@ class PeriodProvider extends ChangeNotifier {
     // Only consider periods with both start and end dates
     final completed = _periods.where((p) => p.endDate != null).toList();
     if (completed.isEmpty) return null;
-    final lengths = completed
-        .map((p) => p.endDate!.difference(p.startDate).inDays + 1)
-        .where((days) => days > 0)
-        .toList();
+    final lengths = completed.map((p) => p.endDate!.difference(p.startDate).inDays + 1).where((days) => days > 0).toList();
     if (lengths.isEmpty) return null;
     return lengths.reduce((a, b) => a + b) / lengths.length;
   }
@@ -210,16 +181,13 @@ class PeriodProvider extends ChangeNotifier {
       // returns null if userCycleLength is null
       return userCycleLength?.toDouble();
     }
-    final sorted = List<Period>.from(periods)
-      ..sort((a, b) => a.startDate.compareTo(b.startDate));
+    final sorted = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
     List<int> cycles = [];
     if (useRecent6 == true && sorted.length > 6) {
       sorted.removeRange(0, sorted.length - 6);
     }
     for (int i = 1; i < sorted.length; i++) {
-      cycles.add(
-        sorted[i].startDate.difference(sorted[i - 1].startDate).inDays,
-      );
+      cycles.add(sorted[i].startDate.difference(sorted[i - 1].startDate).inDays);
     }
     if (cycles.isEmpty) return null;
     return cycles.reduce((a, b) => a + b) / cycles.length;
@@ -243,10 +211,7 @@ class PeriodProvider extends ChangeNotifier {
 
     Period? period = PeriodService.getPeriodInDate(checkDate, periods);
     if (period == null) {
-      return Text(
-        'Cycle Day: $cycleDay',
-        style: Theme.of(context).textTheme.bodyMedium,
-      );
+      return Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium);
     }
 
     final String notes;
@@ -259,10 +224,7 @@ class PeriodProvider extends ChangeNotifier {
     return Center(
       child: Column(
         children: [
-          Text(
-            'Cycle Day: $cycleDay',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium),
           SizedBox(height: 4),
           Text(
             'Selected period: ${DateTimeHelper.displayDate(period.startDate)} - '

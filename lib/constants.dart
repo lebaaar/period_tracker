@@ -76,8 +76,7 @@ final String kNotificationsTableName = 'notifications';
 // Notification constants
 final String kNotificationChannelId = 'period_tracker_channel';
 final String kNotificationChannelName = 'Period Tracker Notifications';
-final String kNotificationChannelDescription =
-    'Notifications for Period Tracker';
+final String kNotificationChannelDescription = 'Notifications for Period Tracker';
 final int kDefaultNotificationsDaysBefore = 3;
 final int kMaxNotificationsDaysBefore = 14;
 final int kDefaultNotificationHour = 8;

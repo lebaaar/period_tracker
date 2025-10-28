@@ -21,10 +21,7 @@ enum DogBreed {
   bulldog_boston("bulldog/boston", "Boston Bulldog"),
   bulldog_english("bulldog/english", "English Bulldog"),
   bulldog_french("bulldog/french", "French Bulldog"),
-  bullterrier_staffordshire(
-    "bullterrier/staffordshire",
-    "Staffordshire Bullterrier",
-  ),
+  bullterrier_staffordshire("bullterrier/staffordshire", "Staffordshire Bullterrier"),
   cattledog_australian("cattledog/australian", "Australian Cattledog"),
   cavapoo("cavapoo", "Cavapoo"),
   chihuahua("chihuahua", "Chihuahua"),

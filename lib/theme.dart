@@ -45,89 +45,25 @@ final ColorScheme colorScheme = ColorScheme.dark(
 );
 
 final textTheme = TextTheme(
-  bodyLarge: GoogleFonts.lexend(
-    fontSize: 16,
-    color: colorScheme.onSurface,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-  ),
-  bodyMedium: GoogleFonts.lexend(
-    fontSize: 14,
-    color: colorScheme.onSurface,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-  ),
-  bodySmall: GoogleFonts.lexend(
-    fontSize: 12,
-    color: colorScheme.onSurface,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-  ),
-  titleLarge: GoogleFonts.lexend(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  titleMedium: GoogleFonts.lexend(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  titleSmall: GoogleFonts.lexend(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  labelLarge: GoogleFonts.lexend(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  labelMedium: GoogleFonts.lexend(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  labelSmall: GoogleFonts.lexend(
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  headlineLarge: GoogleFonts.lexend(
-    fontSize: 32,
-    fontWeight: FontWeight.bold,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  headlineMedium: GoogleFonts.lexend(
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
-  headlineSmall: GoogleFonts.lexend(
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-    color: colorScheme.onSurface,
-    letterSpacing: 0,
-  ),
+  bodyLarge: GoogleFonts.lexend(fontSize: 16, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
+  bodyMedium: GoogleFonts.lexend(fontSize: 14, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
+  bodySmall: GoogleFonts.lexend(fontSize: 12, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
+  titleLarge: GoogleFonts.lexend(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
+  titleMedium: GoogleFonts.lexend(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface, letterSpacing: 0),
+  titleSmall: GoogleFonts.lexend(fontSize: 16, fontWeight: FontWeight.w500, color: colorScheme.onSurface, letterSpacing: 0),
+  labelLarge: GoogleFonts.lexend(fontSize: 14, fontWeight: FontWeight.w500, color: colorScheme.onSurface, letterSpacing: 0),
+  labelMedium: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.w400, color: colorScheme.onSurface, letterSpacing: 0),
+  labelSmall: GoogleFonts.lexend(fontSize: 10, fontWeight: FontWeight.w400, color: colorScheme.onSurface, letterSpacing: 0),
+  headlineLarge: GoogleFonts.lexend(fontSize: 32, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
+  headlineMedium: GoogleFonts.lexend(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
+  headlineSmall: GoogleFonts.lexend(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
 );
 
 final appBarTheme = AppBarTheme(
   backgroundColor: colorScheme.primary,
   foregroundColor: colorScheme.onPrimary,
   scrolledUnderElevation: 0,
-  titleTextStyle: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-    color: colorScheme.onPrimary,
-  ),
+  titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
 );
 
 final ThemeData appTheme = ThemeData(

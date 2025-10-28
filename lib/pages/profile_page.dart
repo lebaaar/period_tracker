@@ -84,10 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
-    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
-      settings?.predictionMode == 'dynamic',
-      user?.cycleLength,
-    );
+    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
 
     return SafeArea(
       child: user == null || settings == null
@@ -96,11 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfileContent(
-    User user,
-    Settings settings,
-    DateTime? nextPeriodDate,
-  ) {
+  Widget _buildProfileContent(User user, Settings settings, DateTime? nextPeriodDate) {
     return ListView(
       children: [
         const SizedBox(height: 16),
@@ -110,9 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text(
-                    'Do you really want to have a profile picture in a period tracking app?',
-                  ),
+                  content: Text('Do you really want to have a profile picture in a period tracking app?'),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -120,21 +111,12 @@ class _ProfilePageState extends State<ProfilePage> {
             child: CircleAvatar(
               radius: 48,
               backgroundColor: Theme.of(context).colorScheme.secondary,
-              child: Icon(
-                Icons.person_rounded,
-                size: 48,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
+              child: Icon(Icons.person_rounded, size: 48, color: Theme.of(context).colorScheme.onPrimaryContainer),
             ),
           ),
         ),
         const SizedBox(height: 16),
-        Center(
-          child: Text(
-            _getUserName(user),
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
+        Center(child: Text(_getUserName(user), style: Theme.of(context).textTheme.titleLarge)),
         const SizedBox(height: 34),
         SectionTitle('Personal Information'),
         _buildListTile(user, settings, 'name'),
@@ -142,31 +124,24 @@ class _ProfilePageState extends State<ProfilePage> {
         SectionTitle('Notifications'),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
-            final bool notificationsEnabled =
-                settingsProvider.settings?.notificationsEnabled ?? false;
+            final bool notificationsEnabled = settingsProvider.settings?.notificationsEnabled ?? false;
             return Column(
               children: [
-                _buildSwitchTile(
-                  'Enable notifications',
-                  'Receive reminders for your next period',
-                  notificationsEnabled,
-                  (value) {
-                    settingsProvider.setNotificationEnabled(value);
-                    if (value) {
-                      // reschedule notifications
-                      NotificationService().scheduleNotificationsForNextPeriod(
-                        nextPeriodDate,
-                        settings.notificationDaysBefore,
-                        settings.notificationTime,
-                      );
-                    } else {
-                      // cancel all notifications
-                      NotificationService().cancelAllNotifications();
-                    }
-                  },
-                ),
-                if (notificationsEnabled)
-                  _buildListTile(user, settings, 'notifications'),
+                _buildSwitchTile('Enable notifications', 'Receive reminders for your next period', notificationsEnabled, (value) {
+                  settingsProvider.setNotificationEnabled(value);
+                  if (value) {
+                    // reschedule notifications
+                    NotificationService().scheduleNotificationsForNextPeriod(
+                      nextPeriodDate,
+                      settings.notificationDaysBefore,
+                      settings.notificationTime,
+                    );
+                  } else {
+                    // cancel all notifications
+                    NotificationService().cancelAllNotifications();
+                  }
+                }),
+                if (notificationsEnabled) _buildListTile(user, settings, 'notifications'),
               ],
             );
           },
@@ -200,11 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.tertiary,
-                              ),
+                              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
                               child: const Text('Cancel'),
                             ),
                             TextButton(
@@ -213,43 +184,25 @@ class _ProfilePageState extends State<ProfilePage> {
                                 settingsProvider.setPredictionMode(mode);
 
                                 // nextPeriodDate changes here, reschedule notifications
-                                nextPeriodDate = context
-                                    .read<PeriodProvider>()
-                                    .getNextPeriodDate(
-                                      mode == 'dynamic',
-                                      user.cycleLength,
-                                    );
-                                NotificationService()
-                                    .scheduleNotificationsForNextPeriod(
-                                      nextPeriodDate,
-                                      settings.notificationDaysBefore,
-                                      settings.notificationTime,
-                                    );
+                                nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(mode == 'dynamic', user.cycleLength);
+                                NotificationService().scheduleNotificationsForNextPeriod(
+                                  nextPeriodDate,
+                                  settings.notificationDaysBefore,
+                                  settings.notificationTime,
+                                );
                                 Navigator.of(context).pop();
                               },
                               child: const Text('Confirm'),
                             ),
                           ],
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primaryContainer,
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                         );
                       },
                     );
                   },
                 ),
-                _buildListTile(
-                  user,
-                  settings,
-                  'period_length',
-                  isDisabled: predictionMode == 'dynamic',
-                ),
-                _buildListTile(
-                  user,
-                  settings,
-                  'cycle_length',
-                  isDisabled: predictionMode == 'dynamic',
-                ),
+                _buildListTile(user, settings, 'period_length', isDisabled: predictionMode == 'dynamic'),
+                _buildListTile(user, settings, 'cycle_length', isDisabled: predictionMode == 'dynamic'),
               ],
             );
           },
@@ -259,13 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildListTile(user, settings, 'transfer'),
         _buildListTile(user, settings, 'delete'),
         const SizedBox(height: 24),
-        if (_showVersionDetails)
-          Center(
-            child: Text(
-              'Made with ❤️ for Nina',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
+        if (_showVersionDetails) Center(child: Text('Made with ❤️ for Nina', style: Theme.of(context).textTheme.bodySmall)),
         Center(
           child: GestureDetector(
             onTap: _onVersionTapped,
@@ -273,10 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
               future: _packageInfoFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    padding: const EdgeInsets.all(8),
-                    child: const CircularProgressIndicator(),
-                  );
+                  return Container(padding: const EdgeInsets.all(8), child: const CircularProgressIndicator());
                 }
                 if (snapshot.hasError || !snapshot.hasData) {
                   return const SizedBox();
@@ -295,10 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Column(
             children: [
               Center(
-                child: ElevatedButton(
-                  onPressed: () => context.push('/animal'),
-                  child: const Text("To the doggy generator!"),
-                ),
+                child: ElevatedButton(onPressed: () => context.push('/animal'), child: const Text("To the doggy generator!")),
               ),
             ],
           ),
@@ -306,12 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildListTile(
-    User user,
-    Settings? settings,
-    String tileType, {
-    bool isDisabled = false,
-  }) {
+  Widget _buildListTile(User user, Settings? settings, String tileType, {bool isDisabled = false}) {
     String title;
     String subtitle;
 
@@ -334,41 +270,31 @@ class _ProfilePageState extends State<ProfilePage> {
         break;
       case 'transfer':
         title = 'Transfer Data';
-        subtitle =
-            'Save all your data in a backup file for transfer on another device';
+        subtitle = 'Save all your data in a backup file for transfer on another device';
         break;
       case 'delete':
         title = 'Delete Account';
         subtitle = 'Permanently delete your account and all data';
         break;
       default:
-        throw ArgumentError(
-          '''Invalid tile type: $tileType. Should be
-          "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''',
-        );
+        throw ArgumentError('''Invalid tile type: $tileType. Should be
+          "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''');
     }
 
     return ListTile(
       title: Text(
         title,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: isDisabled
-              ? Theme.of(context).disabledColor
-              : Theme.of(context).textTheme.bodyLarge?.color,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: isDisabled ? Theme.of(context).disabledColor : Theme.of(context).textTheme.bodyLarge?.color),
       ),
       subtitle: Text(
         subtitle,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: isDisabled
-              ? Theme.of(context).disabledColor
-              : Theme.of(context).colorScheme.tertiary,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: isDisabled ? Theme.of(context).disabledColor : Theme.of(context).colorScheme.tertiary),
       ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: isDisabled ? Theme.of(context).disabledColor : null,
-      ),
+      trailing: Icon(Icons.chevron_right_rounded, color: isDisabled ? Theme.of(context).disabledColor : null),
       onTap: isDisabled
           ? null
           : () {
@@ -393,12 +319,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
 
                     // update nextPeriodDate if prediction mode is static
-                    DateTime? nextPeriodDate = context
-                        .read<PeriodProvider>()
-                        .getNextPeriodDate(
-                          settings?.predictionMode == 'dynamic',
-                          int.parse(newLength),
-                        );
+                    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+                      settings?.predictionMode == 'dynamic',
+                      int.parse(newLength),
+                    );
                     NotificationService().scheduleNotificationsForNextPeriod(
                       nextPeriodDate,
                       settings!.notificationDaysBefore,
@@ -430,30 +354,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   _showDeleteAccountDialog();
                   break;
                 default:
-                  throw ArgumentError(
-                    '''Invalid tile type: $tileType. Should be one the following:
-              "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''',
-                  );
+                  throw ArgumentError('''Invalid tile type: $tileType. Should be one the following:
+              "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''');
               }
             },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
   }
 
-  Widget _buildSwitchTile(
-    String title,
-    String subtitle,
-    bool value,
-    Function(bool) onChanged,
-  ) {
+  Widget _buildSwitchTile(String title, String subtitle, bool value, Function(bool) onChanged) {
     return SwitchListTile(
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      subtitle: Text(
-        subtitle,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.tertiary,
-        ),
-      ),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.tertiary)),
       value: value,
       onChanged: onChanged,
       activeThumbColor: Theme.of(context).colorScheme.primary,
@@ -463,41 +375,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _exportData() async {
     try {
-      final String backupContent = await ApplicationDataService()
-          .createBackupFileContent();
-      final XFile backupFile = await ApplicationDataService()
-          .exportBackupToFile(backupContent);
+      final String backupContent = await ApplicationDataService().createBackupFileContent();
+      final XFile backupFile = await ApplicationDataService().exportBackupToFile(backupContent);
 
-      final bool emailSent = await ApplicationDataService().shareBackup(
-        backupFile,
-      );
+      final bool emailSent = await ApplicationDataService().shareBackup(backupFile);
       if (!mounted) return;
       if (emailSent) {
         ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Backup file sent successfully'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Backup file sent successfully'), behavior: SnackBarBehavior.floating));
       } else {
         ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Warning: backup file not sent'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Warning: backup file not sent'), behavior: SnackBarBehavior.floating));
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to export backup :('),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to export backup :('), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -517,19 +414,14 @@ class _ProfilePageState extends State<ProfilePage> {
               hintText: 'Your name',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
               ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -560,37 +452,25 @@ class _ProfilePageState extends State<ProfilePage> {
               hintText: 'Average cycle length',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
               ),
             ),
-            keyboardType: TextInputType.numberWithOptions(
-              decimal: false,
-              signed: false,
-            ),
+            keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                if (!PeriodService.validateCycleLength(
-                  int.tryParse(_cycleLengthController.text),
-                )) {
+                if (!PeriodService.validateCycleLength(int.tryParse(_cycleLengthController.text))) {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        'Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)',
-                      ),
+                      content: Text('Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -622,37 +502,25 @@ class _ProfilePageState extends State<ProfilePage> {
               hintText: 'Average period length',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
               ),
             ),
-            keyboardType: TextInputType.numberWithOptions(
-              decimal: false,
-              signed: false,
-            ),
+            keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                if (!PeriodService.validatePeriodLength(
-                  int.tryParse(_periodLengthController.text),
-                )) {
+                if (!PeriodService.validatePeriodLength(int.tryParse(_periodLengthController.text))) {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        'Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)',
-                      ),
+                      content: Text('Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -710,9 +578,7 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -736,15 +602,11 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Delete Account'),
-          content: const Text(
-            'Are you sure you want to delete your account? This action cannot be undone.',
-          ),
+          content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -752,12 +614,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 await ApplicationDataService().clearAppData();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Account deleted successfully'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Account deleted successfully'), behavior: SnackBarBehavior.floating));
                   context.go('/onboarding');
                 }
               },

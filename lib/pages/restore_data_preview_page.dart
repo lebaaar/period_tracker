@@ -76,9 +76,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         });
         return;
       }
-      _sharedFileContent = ApplicationDataService().parseBackupFile(
-        fileContent,
-      );
+      _sharedFileContent = ApplicationDataService().parseBackupFile(fileContent);
       if (_sharedFileContent == null) {
         setState(() {
           _sharedFileContent = null;
@@ -96,9 +94,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       }
 
       // verify backup data structure and content
-      final bool validBackupData = ApplicationDataService().isBackupDataValid(
-        _sharedFileContent!,
-      );
+      final bool validBackupData = ApplicationDataService().isBackupDataValid(_sharedFileContent!);
       if (!validBackupData) {
         setState(() {
           _sharedFileContent = null;
@@ -110,11 +106,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
       // verify version compatibility
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      final bool compatible = ApplicationDataService()
-          .verifyVersionCompatibility(
-            _sharedFileContent!['version'] as String,
-            packageInfo.version,
-          );
+      final bool compatible = ApplicationDataService().verifyVersionCompatibility(_sharedFileContent!['version'] as String, packageInfo.version);
       if (!compatible) {
         setState(() {
           _sharedFileContent = null;
@@ -128,15 +120,11 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         _sharedFileContent = _sharedFileContent!;
         _loading = false;
         _name = _sharedFileContent!['database']['user']['name'];
-        _periods = (_sharedFileContent!['database']['periods'])
-            .map((e) => Period.fromMap(e as Map<String, dynamic>))
-            .toList();
+        _periods = (_sharedFileContent!['database']['periods']).map((e) => Period.fromMap(e as Map<String, dynamic>)).toList();
       });
 
       // show alert if onboarding is complete and we have a valid shared file
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _maybeShowOnboardingAlert(),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowOnboardingAlert());
     } catch (e) {
       setState(() {
         _sharedFileContent = null;
@@ -166,9 +154,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
                 Navigator.of(context).pop();
                 context.go(_onBoardingComplete ? '/' : '/onboarding');
               },
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.tertiary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
               child: const Text('No, exit restore'),
             ),
             TextButton(
@@ -195,9 +181,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     setState(() => _loading = true);
 
     try {
-      final success = await ApplicationDataService().restoreFromBackup(
-        _sharedFileContent!,
-      );
+      final success = await ApplicationDataService().restoreFromBackup(_sharedFileContent!);
 
       // wait a moment to show the spinner
       await Future.delayed(const Duration(milliseconds: 2000));
@@ -227,9 +211,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text("Cannot Open Email App"),
-          content: const Text(
-            "No email apps installed on this device. Please install an email app to contact support.",
-          ),
+          content: const Text("No email apps installed on this device. Please install an email app to contact support."),
           actions: [
             TextButton(
               child: const Text("OK"),
@@ -246,9 +228,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
   Future<void> openEmail() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final String encodedContent = _sharedFileContent != null
-        ? EncryptionService().base64Encode(_sharedFileContent.toString())
-        : 'N/A';
+    final String encodedContent = _sharedFileContent != null ? EncryptionService().base64Encode(_sharedFileContent.toString()) : 'N/A';
 
     final EmailContent emailContent = EmailContent(
       to: [kContactEmail],
@@ -270,22 +250,16 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
     OpenMailAppResult result;
 
     try {
-      result = await OpenMail.composeNewEmailInMailApp(
-        nativePickerTitle: 'Select email app to contact support',
-        emailContent: emailContent,
-      );
+      result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);
 
       if (!result.didOpen && !result.canOpen) {
         showNoMailAppsDialog(context);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred while trying to open email app'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -323,9 +297,7 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: Theme.of(
-                                context,
-                              ).textTheme.headlineSmall?.fontSize,
+                              fontSize: Theme.of(context).textTheme.headlineSmall?.fontSize,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -336,28 +308,18 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                                 Text(
                                   errorText,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                  ),
+                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                                 ),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      'If the issue persists ',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium,
-                                    ),
+                                    Text('If the issue persists ', style: Theme.of(context).textTheme.bodyMedium),
                                     TextButton(
                                       style: TextButton.styleFrom(
                                         padding: EdgeInsets.zero,
                                         minimumSize: const Size(0, 0),
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                         alignment: Alignment.centerLeft,
                                       ),
                                       onPressed: () => openEmail(),
@@ -365,12 +327,8 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                                         'contact support',
                                         style: TextStyle(
                                           decoration: TextDecoration.underline,
-                                          decorationColor: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
+                                          decorationColor: Theme.of(context).colorScheme.onSurface,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                         ),
                                       ),
                                     ),
@@ -382,9 +340,7 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              context.go(
-                                _onBoardingComplete ? '/' : '/onboarding',
-                              );
+                              context.go(_onBoardingComplete ? '/' : '/onboarding');
                             },
                             child: Text('Exit restore'),
                           ),
@@ -395,28 +351,18 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                               minimumSize: const Size(0, 0),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            onPressed: () => setState(
-                              () => _showErrorDetails = !_showErrorDetails,
-                            ),
+                            onPressed: () => setState(() => _showErrorDetails = !_showErrorDetails),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  _showErrorDetails
-                                      ? 'Hide details'
-                                      : 'Show details',
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.tertiary,
-                                  ),
+                                  _showErrorDetails ? 'Hide details' : 'Show details',
+                                  style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
                                 ),
                                 const SizedBox(width: 6),
                                 Icon(
-                                  _showErrorDetails
-                                      ? Icons.expand_less
-                                      : Icons.expand_more,
+                                  _showErrorDetails ? Icons.expand_less : Icons.expand_more,
                                   color: Theme.of(context).colorScheme.tertiary,
                                   size: 18,
                                 ),
@@ -426,21 +372,14 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                           AnimatedCrossFade(
                             firstChild: const SizedBox.shrink(),
                             secondChild: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 8.0,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                               child: Text(
                                 _error ?? 'Unknown error',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                ),
+                                style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
                               ),
                             ),
-                            crossFadeState: _showErrorDetails
-                                ? CrossFadeState.showSecond
-                                : CrossFadeState.showFirst,
+                            crossFadeState: _showErrorDetails ? CrossFadeState.showSecond : CrossFadeState.showFirst,
                             duration: const Duration(milliseconds: 200),
                           ),
                           const SizedBox(width: 6),
@@ -454,54 +393,33 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                             Column(
                               children: [
                                 Text(
-                                  _name == null || _name!.isEmpty
-                                      ? 'Welcome!'
-                                      : 'Welcome $_name!',
+                                  _name == null || _name!.isEmpty ? 'Welcome!' : 'Welcome $_name!',
                                   textAlign: TextAlign.center,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineSmall,
+                                  style: Theme.of(context).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 14),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                   child: Text(
                                     textAlign: TextAlign.center,
                                     '$restoreSummaryOverwrite\n'
                                     'Only proceed if you are sure you want to replace your existing data with the data in the $kBackupFileName file.',
                                   ),
                                 ),
-                                ElevatedButton(
-                                  onPressed: _restoreData,
-                                  child: const Text('Restore my data'),
-                                ),
+                                ElevatedButton(onPressed: _restoreData, child: const Text('Restore my data')),
                                 const SizedBox(height: 50),
                                 InkWell(
-                                  splashColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withValues(alpha: 0.33),
+                                  splashColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.33),
                                   onTap: () => context.go('/'),
                                   borderRadius: BorderRadius.circular(8),
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
-                                        const Text(
-                                          'Want to keep your existing data?',
-                                        ),
-                                        Text(
-                                          'Exit restore',
-                                          style: TextStyle(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                          ),
-                                        ),
+                                        const Text('Want to keep your existing data?'),
+                                        Text('Exit restore', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                                       ],
                                     ),
                                   ),
@@ -512,53 +430,29 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
                             Column(
                               children: [
                                 Text(
-                                  _name == null || _name!.isEmpty
-                                      ? 'Welcome back!'
-                                      : 'Welcome back $_name!',
+                                  _name == null || _name!.isEmpty ? 'Welcome back!' : 'Welcome back $_name!',
                                   textAlign: TextAlign.center,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineSmall,
+                                  style: Theme.of(context).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 14),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Text(
-                                    restoreSummary,
-                                    textAlign: TextAlign.center,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Text(restoreSummary, textAlign: TextAlign.center),
                                 ),
-                                ElevatedButton(
-                                  onPressed: _restoreData,
-                                  child: const Text('Restore my data'),
-                                ),
+                                ElevatedButton(onPressed: _restoreData, child: const Text('Restore my data')),
                                 const SizedBox(height: 50),
                                 InkWell(
-                                  splashColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withValues(alpha: 0.33),
+                                  splashColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.33),
                                   onTap: () => context.go('/onboarding'),
                                   borderRadius: BorderRadius.circular(8),
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
-                                        const Text(
-                                          'Want to start fresh instead?',
-                                        ),
-                                        Text(
-                                          'Start fresh',
-                                          style: TextStyle(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                          ),
-                                        ),
+                                        const Text('Want to start fresh instead?'),
+                                        Text('Start fresh', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                                       ],
                                     ),
                                   ),

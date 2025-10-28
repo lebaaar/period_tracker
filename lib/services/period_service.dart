@@ -3,31 +3,20 @@ import 'package:period_tracker/models/period_model.dart';
 
 class PeriodService {
   static bool validateCycleLength(int? cycleLength) {
-    if (cycleLength == null ||
-        cycleLength.isNegative ||
-        cycleLength > kMaxCycleLength ||
-        cycleLength < kMinCycleLength) {
+    if (cycleLength == null || cycleLength.isNegative || cycleLength > kMaxCycleLength || cycleLength < kMinCycleLength) {
       return false;
     }
     return true;
   }
 
   static bool validatePeriodLength(int? periodLength) {
-    if (periodLength == null ||
-        periodLength.isNegative ||
-        periodLength > kMaxPeriodLength ||
-        periodLength < kMinPeriodLength) {
+    if (periodLength == null || periodLength.isNegative || periodLength > kMaxPeriodLength || periodLength < kMinPeriodLength) {
       return false;
     }
     return true;
   }
 
-  static bool isOverlappingPeriod(
-    DateTime newStartDate,
-    List<Period> periods, {
-    DateTime? newEndDate,
-    int? excludeId,
-  }) {
+  static bool isOverlappingPeriod(DateTime newStartDate, List<Period> periods, {DateTime? newEndDate, int? excludeId}) {
     final endDate = newEndDate ?? newStartDate;
     for (final period in periods) {
       if (excludeId != null && period.id == excludeId) continue;
@@ -42,39 +31,20 @@ class PeriodService {
   }
 
   static bool isStartDay(DateTime day, List<Period> periods) {
-    return periods.any(
-      (p) =>
-          p.startDate.year == day.year &&
-          p.startDate.month == day.month &&
-          p.startDate.day == day.day,
-    );
+    return periods.any((p) => p.startDate.year == day.year && p.startDate.month == day.month && p.startDate.day == day.day);
   }
 
   static bool isEndDay(DateTime day, List<Period> periods) {
-    return periods.any(
-      (p) =>
-          p.endDate != null &&
-          p.endDate!.year == day.year &&
-          p.endDate!.month == day.month &&
-          p.endDate!.day == day.day,
-    );
+    return periods.any((p) => p.endDate != null && p.endDate!.year == day.year && p.endDate!.month == day.month && p.endDate!.day == day.day);
   }
 
   static Period? getPeriodInDate(DateTime date, List<Period> periods) {
     final checkDate = DateTime.utc(date.year, date.month, date.day);
     Period? period;
     for (var p in periods) {
-      final periodStart = DateTime.utc(
-        p.startDate.year,
-        p.startDate.month,
-        p.startDate.day,
-      );
+      final periodStart = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
       // hardcoded period.endDate! - no support for ongoing periods in v1
-      final periodEnd = DateTime.utc(
-        p.endDate!.year,
-        p.endDate!.month,
-        p.endDate!.day,
-      );
+      final periodEnd = DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day);
 
       if (checkDate.isAtSameMomentAs(periodStart) ||
           checkDate.isAtSameMomentAs(periodEnd) ||
