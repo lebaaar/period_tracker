@@ -40,7 +40,7 @@ class Settings {
       'id': id,
       'predictionMode': predictionMode,
       'darkMode': darkMode ? 1 : 0,
-      'notificationsEnabled': notificationsEnabled ? 1 : 0,
+      'notificationEnabled': notificationsEnabled ? 1 : 0,
       'notificationDaysBefore': notificationDaysBefore,
       'notificationTime': '${notificationTime.hour}:${notificationTime.minute}',
     };
