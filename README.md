@@ -56,7 +56,7 @@ Built entirely with Flutter, using multiple packages:
 - ...
 
 ## License
-Distributed under the MIT License. See [LICENSE.txt](TODO).
+Distributed under the MIT License. See [LICENSE.txt](/LICENSE.txt).
 
 ## Privacy Policy
 Available  [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
