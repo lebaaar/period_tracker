@@ -106,7 +106,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Please enter a valid number.'),
+                    content: Text('Please enter a valid number'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -114,10 +114,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
               // Check max days before
               if (int.parse(newDays) > kMaxNotificationsDaysBefore) {
+                ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Notifications can only be sent up to $kMaxNotificationsDaysBefore days before the period starts.',
+                      'Notifications can only be sent up to $kMaxNotificationsDaysBefore days before the period starts',
                     ),
                     behavior: SnackBarBehavior.floating,
                   ),

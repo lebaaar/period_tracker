@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
@@ -94,41 +95,74 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Welcome!', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 12),
-          Text(
-            'Let\'s start with your name',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _nameController,
-            focusNode: _nameFocusNode,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: 'Your name',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 1,
+          // Centered content
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Welcome!',
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
+                const SizedBox(height: 12),
+                Text(
+                  'Let\'s start with your name',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _nameController,
+                  focusNode: _nameFocusNode,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: 'Your name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(kBorderRadius),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) {
+                    FocusScope.of(context).unfocus();
+                    _controller.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                    FocusScope.of(context).requestFocus(_periodLengthFocusNode);
+                  },
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            splashColor: Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: 0.33),
+            onTap: () => context.go('/onboarding/restore'),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text(
+                    'Already have an account?',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  Text(
+                    'Restore data',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
               ),
             ),
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) {
-              // Close keyboard before navigating
-              FocusScope.of(context).unfocus();
-              _controller.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
-              // Move focus to the period length input and open keyboard
-              FocusScope.of(context).requestFocus(_periodLengthFocusNode);
-            },
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -160,11 +194,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '• Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)',
+                            'Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)\n',
                           ),
-                          SizedBox(height: 12),
                           Text(
-                            '• Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)',
+                            'Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)',
                           ),
                         ],
                       ),
@@ -390,7 +423,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'Please select the start day of your last period.',
+                              'Please select the start day of your last period',
                             ),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -435,12 +468,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
-                    await context.read<SettingsProvider>().loadSettings();
 
                     // Request notification permission
                     final bool result = await NotificationService()
                         .requestPermissions();
-                    if (!result) await setNotificationsValue(false);
+
+                    await context.read<SettingsProvider>().insertSettings(
+                      Settings(
+                        id: 1,
+                        predictionMode: 'dynamic',
+                        darkMode: true,
+                        notificationsEnabled: result,
+                        notificationDaysBefore: 3,
+                        notificationTime: const TimeOfDay(hour: 8, minute: 0),
+                      ),
+                    );
 
                     // Disable version details by default
                     await setDisplayVersionDetailsValue(false);

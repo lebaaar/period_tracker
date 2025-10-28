@@ -104,7 +104,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Failed to fetch doggy image 😢',
+                              'Failed to fetch doggy image :(',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface,

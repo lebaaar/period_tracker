@@ -13,7 +13,12 @@ import 'package:period_tracker/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const PeriodTrackerApp(showOnboarding: false));
+    await tester.pumpWidget(
+      const PeriodTrackerApp(
+        showOnboarding: false,
+        displayRestoreSuccess: false,
+      ),
+    );
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
