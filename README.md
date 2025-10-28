@@ -51,7 +51,7 @@ Built entirely with Flutter, using multiple packages:
 - `go_router` - navigation
 - `provider` - state management
 - `flutter_local_notifications` - local notifications
-- `table_calendar` - interactivem customizable calendars
+- `table_calendar` - interactive customizable calendars
 - `sqflite` - local database
 - `shared_preferences` - lightweight key–value data persistence
 - ...
