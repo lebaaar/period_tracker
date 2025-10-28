@@ -407,7 +407,31 @@ class _InsightsPageState extends State<InsightsPage> {
             ],
           ),
         ),
-        onTap: () {},
+        onTap: () {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          switch (title) {
+            case "Average Cycle Length":
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Your average cycle length based on all the logged periods is $value days',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              break;
+            case "Average Period Length":
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Your average period length based on all the logged periods is $value days',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              break;
+          }
+        },
       ),
     );
   }

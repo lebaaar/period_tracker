@@ -39,30 +39,33 @@ class PeriodProvider extends ChangeNotifier {
     await fetchPeriods();
   }
 
-  // Returns the next expected period start date based on average cycle length
+  /// Returns the next expected period start date based on the last 6 logged periods average cycle length
+  /// @param dynamicPeriodPrediction Whether to use dynamic prediction based on average cycle length
+  /// @param userCycleLength The user's set cycle length (used if dynamic prediction is false)
+  /// @returns The predicted next period start date, or null if not enough data
   DateTime? getNextPeriodDate(
     bool dynamicPeriodPrediction,
     int? userCycleLength,
   ) {
-    if (_periods.isEmpty) return null;
-    if (_periods.length < 2) {
+    if (periods.isEmpty) return null;
+    if (periods.length < 2) {
       // Not enough data to predict next period - only one period logged
       // Use the provided userCycleLength
       // Case when user gets not enough data to predict the next period right after onboarding
-      return _periods.last.startDate.add(
+      return periods.last.startDate.add(
         Duration(days: userCycleLength ?? kDefaultCycleLength),
       );
     }
     periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     if (dynamicPeriodPrediction) {
       // dynamic prediction based on average cycle length
-      final avgCycle = getAverageCycleLength();
+      final avgCycle = getAverageCycleLength(useRecent6: true);
       if (avgCycle == null) return null;
-      return _periods.last.startDate.add(Duration(days: avgCycle.round()));
+      return periods.last.startDate.add(Duration(days: avgCycle.round()));
     } else {
       // static prediction based on last period and user's cycle length
       if (userCycleLength == null) return null;
-      return _periods.last.startDate.add(Duration(days: userCycleLength));
+      return periods.last.startDate.add(Duration(days: userCycleLength));
     }
   }
 
@@ -200,16 +203,19 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns average cycle length in days
-  double? getAverageCycleLength({int? userCycleLength}) {
-    if (_periods.isEmpty) return null;
-    if (_periods.length < 2) {
+  double? getAverageCycleLength({int? userCycleLength, bool? useRecent6}) {
+    if (periods.isEmpty) return null;
+    if (periods.length < 2) {
       // not enough data to calculate average cycle length - use the user provided cycle length if available
       // returns null if userCycleLength is null
       return userCycleLength?.toDouble();
     }
-    final sorted = List<Period>.from(_periods)
+    final sorted = List<Period>.from(periods)
       ..sort((a, b) => a.startDate.compareTo(b.startDate));
     List<int> cycles = [];
+    if (useRecent6 == true && sorted.length > 6) {
+      sorted.removeRange(0, sorted.length - 6);
+    }
     for (int i = 1; i < sorted.length; i++) {
       cycles.add(
         sorted[i].startDate.difference(sorted[i - 1].startDate).inDays,
