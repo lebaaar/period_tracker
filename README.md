@@ -13,9 +13,8 @@
 - Dynamic period prediction - smartly adjusts based on past cycles
 - Static mode - set a fixed period & cycle duration for consistent tracking
 - Customizable reminders - get notified n days before your period starts
-- Offline data transfer between devices (resotre on a )
+- Offline data transfer between devices (restore on a new device)
 - Easter eggs :)
-
 
 ## Download
 
