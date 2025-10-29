@@ -156,10 +156,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       // reschedule notifications
                       await NotificationService()
                           .scheduleNotificationsForNextPeriod(
-                        nextPeriodDate,
-                        settings.notificationDaysBefore,
-                        settings.notificationTime,
-                      );
+                            nextPeriodDate,
+                            settings.notificationDaysBefore,
+                            settings.notificationTime,
+                          );
                     } else {
                       // cancel all notifications
                       await NotificationService().cancelAllNotifications();
@@ -402,10 +402,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         );
                     await NotificationService()
                         .scheduleNotificationsForNextPeriod(
-                      nextPeriodDate,
-                      settings!.notificationDaysBefore,
-                      settings.notificationTime,
-                    );
+                          nextPeriodDate,
+                          settings!.notificationDaysBefore,
+                          settings.notificationTime,
+                        );
                   });
                   break;
                 case 'period_length':
@@ -751,7 +751,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             TextButton(
               onPressed: () async {
+                // delete account data
                 await ApplicationDataService().clearAppData();
+
+                // remove schedules notifications
+                await NotificationService().cancelAllNotifications();
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
