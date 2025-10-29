@@ -134,7 +134,7 @@ class NotificationService {
     await cancelAllNotifications();
 
     if (nextPeriodStartDate == null) {
-      NotificationService().cancelAllNotifications();
+      await cancelAllNotifications();
       return;
     }
 
@@ -170,5 +170,13 @@ class NotificationService {
   /// Cancels all scheduled notifications.
   Future<void> cancelAllNotifications() async {
     await _flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  /// Helper method to retrieve all pending notifications.
+  /// @return A list of pending notification requests.
+  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    final List<PendingNotificationRequest> pendingNotifications =
+        await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    return pendingNotifications;
   }
 }

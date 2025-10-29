@@ -130,7 +130,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 notificationDaysBefore: int.parse(newDays),
               );
               // schedule notifications for next period
-              NotificationService().scheduleNotificationsForNextPeriod(
+              await NotificationService().scheduleNotificationsForNextPeriod(
                 nextPeriodDate,
                 int.parse(newDays),
                 settings.notificationTime,
@@ -147,7 +147,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               );
 
               // schedule notifications for next period
-              NotificationService().scheduleNotificationsForNextPeriod(
+              await NotificationService().scheduleNotificationsForNextPeriod(
                 nextPeriodDate,
                 settings.notificationDaysBefore,
                 TimeOfDay(

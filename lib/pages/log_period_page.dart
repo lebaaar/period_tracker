@@ -144,7 +144,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
             settings?.predictionMode == 'dynamic',
             context.read<UserProvider>().user?.cycleLength,
           );
-      NotificationService().scheduleNotificationsForNextPeriod(
+      await NotificationService().scheduleNotificationsForNextPeriod(
         nextPeriodDate,
         settings!.notificationDaysBefore,
         settings.notificationTime,
@@ -168,7 +168,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       settings?.predictionMode == 'dynamic',
       context.read<UserProvider>().user?.cycleLength,
     );
-    NotificationService().scheduleNotificationsForNextPeriod(
+    await NotificationService().scheduleNotificationsForNextPeriod(
       nextPeriodDate,
       settings!.notificationDaysBefore,
       settings.notificationTime,
@@ -339,11 +339,12 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     settings?.predictionMode == 'dynamic',
                     user?.cycleLength,
                   );
-                  NotificationService().scheduleNotificationsForNextPeriod(
-                    nextPeriodDate,
-                    settings!.notificationDaysBefore,
-                    settings.notificationTime,
-                  );
+                  await NotificationService()
+                      .scheduleNotificationsForNextPeriod(
+                        nextPeriodDate,
+                        settings!.notificationDaysBefore,
+                        settings.notificationTime,
+                      );
 
                   context.go('/');
                 }
