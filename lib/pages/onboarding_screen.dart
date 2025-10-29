@@ -484,6 +484,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     );
 
+                    // schedule notifications for next period
+                    final User? user = Provider.of<UserProvider>(
+                      context,
+                      listen: false,
+                    ).user;
+                    Settings? settings = Provider.of<SettingsProvider>(
+                      context,
+                      listen: false,
+                    ).settings;
+                    DateTime? nextPeriodStartDate =
+                        Provider.of<PeriodProvider>(
+                          context,
+                          listen: false,
+                        ).getNextPeriodDate(
+                          settings?.predictionMode == 'dynamic',
+                          user?.cycleLength,
+                        );
+
+                    await NotificationService()
+                        .scheduleNotificationsForNextPeriod(
+                          nextPeriodStartDate,
+                          settings!.notificationDaysBefore,
+                          settings.notificationTime,
+                    );
+
                     // Disable version details by default
                     await setDisplayVersionDetailsValue(false);
 
