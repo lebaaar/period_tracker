@@ -150,18 +150,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   'Enable notifications',
                   'Receive reminders for your next period',
                   notificationsEnabled,
-                  (value) {
+                  (value) async {
                     settingsProvider.setNotificationEnabled(value);
                     if (value) {
                       // reschedule notifications
-                      NotificationService().scheduleNotificationsForNextPeriod(
-                        nextPeriodDate,
-                        settings.notificationDaysBefore,
-                        settings.notificationTime,
-                      );
+                      await NotificationService()
+                          .scheduleNotificationsForNextPeriod(
+                            nextPeriodDate,
+                            settings.notificationDaysBefore,
+                            settings.notificationTime,
+                          );
                     } else {
                       // cancel all notifications
-                      NotificationService().cancelAllNotifications();
+                      await NotificationService().cancelAllNotifications();
                     }
                   },
                 ),
@@ -208,7 +209,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: const Text('Cancel'),
                             ),
                             TextButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 String mode = value ? 'dynamic' : 'static';
                                 settingsProvider.setPredictionMode(mode);
 
@@ -219,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       mode == 'dynamic',
                                       user.cycleLength,
                                     );
-                                NotificationService()
+                                await NotificationService()
                                     .scheduleNotificationsForNextPeriod(
                                       nextPeriodDate,
                                       settings.notificationDaysBefore,
@@ -384,7 +385,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   });
                   break;
                 case 'cycle_length':
-                  _showEditCycleLengthDialog(user, (newLength) {
+                  _showEditCycleLengthDialog(user, (newLength) async {
                     context.read<UserProvider>().updateUser(
                       cycleLength: int.parse(newLength),
                       name: user.name,
@@ -399,11 +400,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           settings?.predictionMode == 'dynamic',
                           int.parse(newLength),
                         );
-                    NotificationService().scheduleNotificationsForNextPeriod(
-                      nextPeriodDate,
-                      settings!.notificationDaysBefore,
-                      settings.notificationTime,
-                    );
+                    await NotificationService()
+                        .scheduleNotificationsForNextPeriod(
+                          nextPeriodDate,
+                          settings!.notificationDaysBefore,
+                          settings.notificationTime,
+                        );
                   });
                   break;
                 case 'period_length':
@@ -749,7 +751,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             TextButton(
               onPressed: () async {
+                // delete account data
                 await ApplicationDataService().clearAppData();
+
+                // remove schedules notifications
+                await NotificationService().cancelAllNotifications();
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(

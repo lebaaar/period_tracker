@@ -249,11 +249,11 @@ class PeriodProvider extends ChangeNotifier {
       );
     }
 
-    final String notes;
+    final String? notes;
     if (period.notes != null && period.notes!.isNotEmpty) {
       notes = 'Notes: ${period.notes!}';
     } else {
-      notes = 'No notes about this period';
+      notes = null;
     }
 
     return Center(
@@ -270,7 +270,7 @@ class PeriodProvider extends ChangeNotifier {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 4),
-          Text(notes, textAlign: TextAlign.center),
+          if (notes != null) Text(notes, textAlign: TextAlign.center),
         ],
       ),
     );

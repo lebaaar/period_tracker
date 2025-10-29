@@ -6,10 +6,17 @@ import 'package:open_mail/open_mail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
+import 'package:period_tracker/models/user_model.dart';
+import 'package:period_tracker/providers/period_provider.dart';
+import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/encryption_service.dart';
+import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/utils/file_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:restart_app/restart_app.dart';
 
 class RestoreDataPreviewPage extends StatefulWidget {
@@ -204,6 +211,32 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
       if (success) {
         await setDisplayRestoreSuccess(true);
+
+        // schedule notifications
+        final User? user = Provider.of<UserProvider>(
+          context,
+          listen: false,
+        ).user;
+        Settings? settings = Provider.of<SettingsProvider>(
+          context,
+          listen: false,
+        ).settings;
+
+        DateTime? nextPeriodStartDate =
+            Provider.of<PeriodProvider>(
+              context,
+              listen: false,
+            ).getNextPeriodDate(
+              settings?.predictionMode == 'dynamic',
+              user?.cycleLength,
+            );
+
+        await NotificationService().scheduleNotificationsForNextPeriod(
+          nextPeriodStartDate,
+          settings!.notificationDaysBefore,
+          settings.notificationTime,
+        );
+
         setState(() {
           _loading = false;
         });
