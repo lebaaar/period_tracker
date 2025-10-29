@@ -212,7 +212,12 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       if (success) {
         await setDisplayRestoreSuccess(true);
 
-        // schedule notifications
+        // load data into providers
+        await context.read<PeriodProvider>().fetchPeriods();
+        await context.read<SettingsProvider>().loadSettings();
+        await context.read<UserProvider>().fetchUser();
+
+        // get user, settings
         final User? user = Provider.of<UserProvider>(
           context,
           listen: false,
@@ -221,7 +226,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
           context,
           listen: false,
         ).settings;
-
         DateTime? nextPeriodStartDate =
             Provider.of<PeriodProvider>(
               context,
@@ -231,11 +235,13 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
               user?.cycleLength,
             );
 
-        await NotificationService().scheduleNotificationsForNextPeriod(
-          nextPeriodStartDate,
-          settings!.notificationDaysBefore,
-          settings.notificationTime,
-        );
+        if (nextPeriodStartDate != null && settings != null) {
+          await NotificationService().scheduleNotificationsForNextPeriod(
+            nextPeriodStartDate,
+            settings.notificationDaysBefore,
+            settings.notificationTime,
+          );
+        }
 
         setState(() {
           _loading = false;

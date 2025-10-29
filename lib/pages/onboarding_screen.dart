@@ -436,17 +436,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     await setOnboardingValue(true);
 
                     // Save user to database
-                    if (context.mounted) {
-                      await context.read<UserProvider>().insertUser(
-                        User(
-                          id: 1,
-                          name: _nameController.text.trim(),
-                          cycleLength: int.parse(_cycleLengthController.text),
-                          periodLength: int.parse(_periodLengthController.text),
-                          lastPeriodDate: _lastPeriodDate!,
-                        ),
-                      );
-                    }
+                    await context.read<UserProvider>().insertUser(
+                      User(
+                        id: 1,
+                        name: _nameController.text.trim(),
+                        cycleLength: int.parse(_cycleLengthController.text),
+                        periodLength: int.parse(_periodLengthController.text),
+                        lastPeriodDate: _lastPeriodDate!,
+                      ),
+                    );
+                    await context.read<UserProvider>().fetchUser();
 
                     // Set initial period
                     final DateTime start = DateTime.utc(
@@ -459,13 +458,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         days: int.parse(_periodLengthController.text) - 1,
                       ),
                     );
-
                     final period = Period(
                       startDate: start,
                       endDate: end,
                       notes: '',
                     );
-
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
 
@@ -483,6 +480,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         notificationTime: const TimeOfDay(hour: 8, minute: 0),
                       ),
                     );
+                    await context.read<SettingsProvider>().loadSettings();
 
                     // schedule notifications for next period
                     final User? user = Provider.of<UserProvider>(
@@ -502,12 +500,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           user?.cycleLength,
                         );
 
-                    await NotificationService()
-                        .scheduleNotificationsForNextPeriod(
-                          nextPeriodStartDate,
-                          settings!.notificationDaysBefore,
-                          settings.notificationTime,
-                    );
+                    if (nextPeriodStartDate != null && settings != null) {
+                      await NotificationService()
+                          .scheduleNotificationsForNextPeriod(
+                            nextPeriodStartDate,
+                            settings.notificationDaysBefore,
+                            settings.notificationTime,
+                          );
+                    }
 
                     // Disable version details by default
                     await setDisplayVersionDetailsValue(false);
