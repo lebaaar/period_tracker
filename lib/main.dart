@@ -53,8 +53,8 @@ Future<void> main() async {
   );
 
   final bool onBoardingComplete = await getOnboardingComplete();
-  final bool displayRestoreSuccess = await getDisplayRestoreSuccess();
-  if (displayRestoreSuccess) {
+  final bool isAfterRestore = await getDisplayRestoreSuccess();
+  if (isAfterRestore) {
     await clearDisplayRestoreSuccess();
   }
 
@@ -67,7 +67,7 @@ Future<void> main() async {
       ],
       child: PeriodTrackerApp(
         showOnboarding: !onBoardingComplete,
-        displayRestoreSuccess: displayRestoreSuccess,
+        isAfterRestore: isAfterRestore,
       ),
     ),
   );
@@ -75,11 +75,11 @@ Future<void> main() async {
 
 class PeriodTrackerApp extends StatefulWidget {
   final bool showOnboarding;
-  final bool displayRestoreSuccess;
+  final bool isAfterRestore;
   const PeriodTrackerApp({
     super.key,
     required this.showOnboarding,
-    required this.displayRestoreSuccess,
+    required this.isAfterRestore,
   });
 
   @override
@@ -141,9 +141,8 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => MainNavigation(
-            displayRestoreSuccess: widget.displayRestoreSuccess,
-          ),
+          builder: (context, state) =>
+              MainNavigation(isAfterRestore: widget.isAfterRestore),
           routes: [
             GoRoute(
               path: 'log',
@@ -215,9 +214,7 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
       errorBuilder: (context, state) {
         return widget.showOnboarding
             ? const OnboardingScreen()
-            : MainNavigation(
-                displayRestoreSuccess: widget.displayRestoreSuccess,
-              );
+            : MainNavigation(isAfterRestore: widget.isAfterRestore);
       },
     );
 
@@ -233,9 +230,9 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
 }
 
 class MainNavigation extends StatefulWidget {
-  final bool displayRestoreSuccess;
+  final bool isAfterRestore;
 
-  const MainNavigation({super.key, required this.displayRestoreSuccess});
+  const MainNavigation({super.key, required this.isAfterRestore});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -247,7 +244,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
-    if (widget.displayRestoreSuccess) {
+    if (widget.isAfterRestore) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog(
           context: context,
