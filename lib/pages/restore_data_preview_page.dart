@@ -202,22 +202,12 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         await context.read<UserProvider>().fetchUser();
 
         // get user, settings
-        final User? user = Provider.of<UserProvider>(
+        final User? user = Provider.of<UserProvider>(context, listen: false).user;
+        Settings? settings = Provider.of<SettingsProvider>(context, listen: false).settings;
+        DateTime? nextPeriodStartDate = Provider.of<PeriodProvider>(
           context,
           listen: false,
-        ).user;
-        Settings? settings = Provider.of<SettingsProvider>(
-          context,
-          listen: false,
-        ).settings;
-        DateTime? nextPeriodStartDate =
-            Provider.of<PeriodProvider>(
-              context,
-              listen: false,
-            ).getNextPeriodDate(
-              settings?.predictionMode == 'dynamic',
-              user?.cycleLength,
-            );
+        ).getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
 
         if (nextPeriodStartDate != null && settings != null) {
           await NotificationService().scheduleNotificationsForNextPeriod(

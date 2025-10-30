@@ -112,7 +112,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         context.read<UserProvider>().user?.cycleLength,
       );
       await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
-      NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
       Navigator.of(context).pop();
       return;

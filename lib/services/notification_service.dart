@@ -157,8 +157,7 @@ class NotificationService {
   /// Helper method to retrieve all pending notifications.
   /// @return A list of pending notification requests.
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    final List<PendingNotificationRequest> pendingNotifications =
-        await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    final List<PendingNotificationRequest> pendingNotifications = await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
     return pendingNotifications;
   }
 }
