@@ -111,6 +111,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         settings?.predictionMode == 'dynamic',
         context.read<UserProvider>().user?.cycleLength,
       );
+      await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
       NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
       Navigator.of(context).pop();
@@ -127,7 +128,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       settings?.predictionMode == 'dynamic',
       context.read<UserProvider>().user?.cycleLength,
     );
-    NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
+    await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
     Navigator.of(context).pop();
   }
@@ -263,7 +264,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   // nextPeriodDate changes here because period was removed
                   // update nextPeriodDate
                   DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
-                  NotificationService().scheduleNotificationsForNextPeriod(
+                  await NotificationService().scheduleNotificationsForNextPeriod(
                     nextPeriodDate,
                     settings!.notificationDaysBefore,
                     settings.notificationTime,

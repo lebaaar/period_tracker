@@ -127,18 +127,18 @@ class _ProfilePageState extends State<ProfilePage> {
             final bool notificationsEnabled = settingsProvider.settings?.notificationsEnabled ?? false;
             return Column(
               children: [
-                _buildSwitchTile('Enable notifications', 'Receive reminders for your next period', notificationsEnabled, (value) {
+                _buildSwitchTile('Enable notifications', 'Receive reminders for your next period', notificationsEnabled, (value) async {
                   settingsProvider.setNotificationEnabled(value);
                   if (value) {
                     // reschedule notifications
-                    NotificationService().scheduleNotificationsForNextPeriod(
+                    await NotificationService().scheduleNotificationsForNextPeriod(
                       nextPeriodDate,
                       settings.notificationDaysBefore,
                       settings.notificationTime,
                     );
                   } else {
                     // cancel all notifications
-                    NotificationService().cancelAllNotifications();
+                    await NotificationService().cancelAllNotifications();
                   }
                 }),
                 if (notificationsEnabled) _buildListTile(user, settings, 'notifications'),
@@ -179,13 +179,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: const Text('Cancel'),
                             ),
                             TextButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 String mode = value ? 'dynamic' : 'static';
                                 settingsProvider.setPredictionMode(mode);
 
                                 // nextPeriodDate changes here, reschedule notifications
                                 nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(mode == 'dynamic', user.cycleLength);
-                                NotificationService().scheduleNotificationsForNextPeriod(
+                                await NotificationService().scheduleNotificationsForNextPeriod(
                                   nextPeriodDate,
                                   settings.notificationDaysBefore,
                                   settings.notificationTime,
@@ -310,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   });
                   break;
                 case 'cycle_length':
-                  _showEditCycleLengthDialog(user, (newLength) {
+                  _showEditCycleLengthDialog(user, (newLength) async {
                     context.read<UserProvider>().updateUser(
                       cycleLength: int.parse(newLength),
                       name: user.name,
@@ -323,7 +323,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       settings?.predictionMode == 'dynamic',
                       int.parse(newLength),
                     );
-                    NotificationService().scheduleNotificationsForNextPeriod(
+                    await NotificationService().scheduleNotificationsForNextPeriod(
                       nextPeriodDate,
                       settings!.notificationDaysBefore,
                       settings.notificationTime,
@@ -611,7 +611,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             TextButton(
               onPressed: () async {
+                // delete account data
                 await ApplicationDataService().clearAppData();
+
+                // remove schedules notifications
+                await NotificationService().cancelAllNotifications();
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(

@@ -98,7 +98,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
               await context.read<SettingsProvider>().updateSettings(notificationDaysBefore: int.parse(newDays));
               // schedule notifications for next period
-              NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, int.parse(newDays), settings.notificationTime);
+              await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, int.parse(newDays), settings.notificationTime);
             });
             break;
           case 'notifications_time':
@@ -108,7 +108,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               );
 
               // schedule notifications for next period
-              NotificationService().scheduleNotificationsForNextPeriod(
+              await NotificationService().scheduleNotificationsForNextPeriod(
                 nextPeriodDate,
                 settings.notificationDaysBefore,
                 TimeOfDay(hour: int.parse(newLength.split(':')[0]), minute: int.parse(newLength.split(':')[1])),

@@ -49,7 +49,7 @@ Future<void> clearFileShared() async {
   await prefs.remove('file_shared');
 }
 
-// display_restore_success
+// display_restore_success - isAfterRestore flag in code
 Future<void> setDisplayRestoreSuccess(bool displayRestoreSuccess) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('display_restore_success', displayRestoreSuccess);
