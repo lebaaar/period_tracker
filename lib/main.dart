@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -188,7 +189,7 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
 
     // disable landscape mode
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    return MaterialApp.router(title: 'Period Tracker', theme: appTheme, routerConfig: router, debugShowCheckedModeBanner: false);
+    return MaterialApp.router(title: 'Period Tracker', theme: appTheme, routerConfig: router, debugShowCheckedModeBanner: kDebugMode);
   }
 }
 
