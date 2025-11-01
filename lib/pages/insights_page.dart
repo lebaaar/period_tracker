@@ -224,7 +224,9 @@ class _InsightsPageState extends State<InsightsPage> {
                       dateSortedPeriods.sort((a, b) => a.startDate.compareTo(b.startDate));
 
                       final int dateIndex = dateSortedPeriods.indexOf(period);
-                      if (dateIndex > 0) cycleLength = period.startDate.difference(dateSortedPeriods[dateIndex - 1].startDate).inDays;
+                      if (dateIndex > 0) {
+                        cycleLength = period.startDate.difference(dateSortedPeriods[dateIndex - 1].startDate).inDays;
+                      }
 
                       return ListTile(
                         leading: Icon(Icons.calendar_month_rounded, color: Theme.of(context).colorScheme.primary),
@@ -244,10 +246,9 @@ class _InsightsPageState extends State<InsightsPage> {
                             if ((_currentSortOption == SortOption.cycleLengthShortest || _currentSortOption == SortOption.cycleLengthLongest))
                               Text(
                                 cycleLength != null ? 'Cycle: $cycleLength day${cycleLength == 1 ? '' : 's'}' : 'First Period',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cycleLength != null ? Theme.of(context).colorScheme.tertiary : Theme.of(context).colorScheme.tertiary,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.w500),
                               ),
                           ],
                         ),
