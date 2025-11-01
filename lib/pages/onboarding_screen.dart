@@ -353,7 +353,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Set initial period
                     final DateTime start = DateTime.utc(_lastPeriodDate!.year, _lastPeriodDate!.month, _lastPeriodDate!.day);
                     final DateTime end = start.add(Duration(days: int.parse(_periodLengthController.text) - 1));
-                    final period = Period(startDate: start, endDate: end, notes: '');
+                    final Period period = Period(startDate: start, endDate: end, notes: '');
                     await context.read<PeriodProvider>().insertPeriod(period);
                     await context.read<PeriodProvider>().fetchPeriods();
 
@@ -374,8 +374,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     // schedule notifications for next period
                     final User? user = Provider.of<UserProvider>(context, listen: false).user;
-                    Settings? settings = Provider.of<SettingsProvider>(context, listen: false).settings;
-                    DateTime? nextPeriodStartDate = Provider.of<PeriodProvider>(
+                    final Settings? settings = Provider.of<SettingsProvider>(context, listen: false).settings;
+                    final DateTime? nextPeriodStartDate = Provider.of<PeriodProvider>(
                       context,
                       listen: false,
                     ).getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);

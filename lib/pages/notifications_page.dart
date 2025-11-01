@@ -20,8 +20,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
-    final settings = context.watch<SettingsProvider>().settings;
-    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
+    final Settings? settings = context.watch<SettingsProvider>().settings;
+    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -51,8 +51,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Widget _buildListTile(Settings settings, String tileType, DateTime? nextPeriodDate) {
-    String title;
-    String subtitle;
+    final String title;
+    final String subtitle;
 
     switch (tileType) {
       case 'notifications_days_before':
@@ -133,7 +133,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           title: const Text('Notification days before period'),
           content: TextField(
             controller: controller,
-            keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
+            keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(kBorderRadius),

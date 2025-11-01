@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
-    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
+    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
 
     return SafeArea(
       child: user == null || settings == null
@@ -248,8 +248,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildListTile(User user, Settings? settings, String tileType, {bool isDisabled = false}) {
-    String title;
-    String subtitle;
+    final String title;
+    final String subtitle;
 
     switch (tileType) {
       case 'name':
@@ -319,7 +319,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
 
                     // update nextPeriodDate if prediction mode is static
-                    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+                    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
                       settings?.predictionMode == 'dynamic',
                       int.parse(newLength),
                     );

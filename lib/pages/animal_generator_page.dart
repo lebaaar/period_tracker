@@ -12,30 +12,30 @@ class AnimalGeneratorPage extends StatefulWidget {
 }
 
 class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
-  String? imageUrl;
-  bool isLoadingImage = false;
-  DogBreed selectedDogBreed = DogBreed.doberman;
-  bool displayError = false;
+  String? _imageUrl;
+  bool _isLoadingImage = false;
+  DogBreed _selectedDogBreed = DogBreed.doberman;
+  bool _displayError = false;
 
   Future<void> fetchImage(DogBreed dogBreed) async {
-    setState(() => isLoadingImage = true);
+    setState(() => _isLoadingImage = true);
     try {
       final url = await AnimalImageService().getRandomDogImage(dogBreed);
       if (!mounted) return;
       setState(() {
-        imageUrl = url;
-        displayError = false;
+        _imageUrl = url;
+        _displayError = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        displayError = true;
+        _displayError = true;
       });
     } finally {
       // ignore: control_flow_in_finally
       if (!mounted) return;
       setState(() {
-        isLoadingImage = false;
+        _isLoadingImage = false;
       });
     }
   }
@@ -43,7 +43,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
   @override
   void initState() {
     super.initState();
-    fetchImage(selectedDogBreed);
+    fetchImage(_selectedDogBreed);
   }
 
   @override
@@ -70,14 +70,14 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: DropdownButtonFormField<DogBreed>(
                 decoration: const InputDecoration(labelText: 'Select Dog Breed', border: OutlineInputBorder()),
-                initialValue: selectedDogBreed,
+                initialValue: _selectedDogBreed,
                 items: DogBreed.values.map((breed) {
                   return DropdownMenuItem<DogBreed>(value: breed, child: Text(breed.display));
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {
-                      selectedDogBreed = value;
+                      _selectedDogBreed = value;
                     });
                     fetchImage(value);
                   }
@@ -86,9 +86,9 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
             ),
             Expanded(
               child: Center(
-                child: isLoadingImage
+                child: _isLoadingImage
                     ? const CircularProgressIndicator()
-                    : displayError
+                    : _displayError
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
@@ -114,7 +114,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                           ],
                         ),
                       )
-                    : (imageUrl != null
+                    : (_imageUrl != null
                           ? Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: GestureDetector(
@@ -127,7 +127,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(kBorderRadius),
                                   child: Image.network(
-                                    imageUrl!,
+                                    _imageUrl!,
                                     height: 300,
                                     fit: BoxFit.cover,
                                     loadingBuilder: (context, child, loadingProgress) {
@@ -154,7 +154,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
             child: ElevatedButton(
               onPressed: () {
                 // Use the enum value directly for API call (its .name is used in the service)
-                fetchImage(selectedDogBreed);
+                fetchImage(_selectedDogBreed);
               },
               style: TextButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,

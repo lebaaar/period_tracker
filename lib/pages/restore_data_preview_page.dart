@@ -203,8 +203,8 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
 
         // get user, settings
         final User? user = Provider.of<UserProvider>(context, listen: false).user;
-        Settings? settings = Provider.of<SettingsProvider>(context, listen: false).settings;
-        DateTime? nextPeriodStartDate = Provider.of<PeriodProvider>(
+        final Settings? settings = Provider.of<SettingsProvider>(context, listen: false).settings;
+        final DateTime? nextPeriodStartDate = Provider.of<PeriodProvider>(
           context,
           listen: false,
         ).getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
@@ -276,7 +276,7 @@ I'm having an issue with restoring data in the Period Tracker app. Here are the 
 [OS version: ${Platform.operatingSystemVersion}]
 [Backup content: $encodedContent]''',
     );
-    OpenMailAppResult result;
+    final OpenMailAppResult result;
 
     try {
       result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);

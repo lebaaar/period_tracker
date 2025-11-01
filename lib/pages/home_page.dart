@@ -34,21 +34,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final periodProvider = Provider.of<PeriodProvider>(context);
-    List<Period> periods = context.watch<PeriodProvider>().periods;
+    final List<Period> periods = context.watch<PeriodProvider>().periods;
     final Settings? settings = context.watch<SettingsProvider>().settings;
     final User? user = context.watch<UserProvider>().user;
 
     final List<DateTime> next3PeriodDates = periodProvider.getNext3PeriodDates(settings?.predictionMode == 'dynamic', user?.cycleLength);
     final DateTime? nextPeriodDate = next3PeriodDates.isNotEmpty ? next3PeriodDates[0] : null;
 
-    DateTime tempDate = DateTime.now();
-    final currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.utc(tempDate.year, tempDate.month, tempDate.day));
-    final avgCycleLength = periodProvider.getAverageCycleLength(
-      userCycleLength: user?.cycleLength, // provide userCycleLength if available
-    );
+    final DateTime now = DateTime.now();
+    final int currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.utc(now.year, now.month, now.day));
+    final double? avgCycleLength = periodProvider.getAverageCycleLength(userCycleLength: user?.cycleLength); // provide userCycleLength if available
     final status = periodProvider.getStatusMessage(Theme.of(context).colorScheme.tertiary, nextPeriodDate);
 
-    bool showProgressBar = avgCycleLength != null;
+    final bool showProgressBar = avgCycleLength != null;
     double progress = 0;
     if (avgCycleLength != null && avgCycleLength > 0) {
       progress = currentCycleDay / avgCycleLength;
@@ -149,21 +147,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Period? period = PeriodService.getPeriodInDate(_selectedDay, periods);
-          bool isEditing = period != null;
+          final Period? selectedPeriod = PeriodService.getPeriodInDate(_selectedDay, periods);
+          final bool isEditing = selectedPeriod != null;
 
           if (isEditing) {
-            // Find the period being edited
-            final Period? period = PeriodService.getPeriodInDate(_selectedDay, periods);
-            if (period == null) {
-              // This should never happen, just in case
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error: Could not find period to edit, please try again later'), behavior: SnackBarBehavior.floating),
-              );
-              return;
-            }
-            context.go('/log?isEditing=$isEditing&periodId=${period.id}&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}');
+            context.go('/log?isEditing=$isEditing&periodId=${selectedPeriod.id}&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}');
             return;
           }
           context.go('/log?isEditing=false&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}');

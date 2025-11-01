@@ -92,9 +92,9 @@ class _InsightsPageState extends State<InsightsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final periodProvider = Provider.of<PeriodProvider>(context);
-    List<Period> periods = context.watch<PeriodProvider>().periods;
-    List<Period> sortedPeriods = _sortPeriods(periods, _currentSortOption);
+    final PeriodProvider periodProvider = Provider.of<PeriodProvider>(context);
+    final List<Period> periods = context.watch<PeriodProvider>().periods;
+    final List<Period> sortedPeriods = _sortPeriods(periods, _currentSortOption);
 
     return SafeArea(
       child: periods.isEmpty
@@ -214,19 +214,17 @@ class _InsightsPageState extends State<InsightsPage> {
                 Expanded(
                   child: ListView(
                     children: sortedPeriods.map((period) {
-                      int? periodLength = period.endDate != null ? period.endDate!.difference(period.startDate).inDays + 1 : null;
+                      final int? periodLength = period.endDate != null ? period.endDate!.difference(period.startDate).inDays + 1 : null;
 
                       // Calculate cycle length for this period (if not the first one chronologically)
                       int? cycleLength;
 
                       // Always use date-sorted periods to find the chronologically previous period
-                      List<Period> dateSortedPeriods = List.from(periods);
+                      final List<Period> dateSortedPeriods = List.from(periods);
                       dateSortedPeriods.sort((a, b) => a.startDate.compareTo(b.startDate));
 
-                      int dateIndex = dateSortedPeriods.indexOf(period);
-                      if (dateIndex > 0) {
-                        cycleLength = period.startDate.difference(dateSortedPeriods[dateIndex - 1].startDate).inDays;
-                      }
+                      final int dateIndex = dateSortedPeriods.indexOf(period);
+                      if (dateIndex > 0) cycleLength = period.startDate.difference(dateSortedPeriods[dateIndex - 1].startDate).inDays;
 
                       return ListTile(
                         leading: Icon(Icons.calendar_month_rounded, color: Theme.of(context).colorScheme.primary),

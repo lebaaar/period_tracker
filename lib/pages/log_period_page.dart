@@ -29,10 +29,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   late final TextEditingController _notesController;
   late final FocusNode _notesFocusNode;
 
-  DateTime today = DateTime.now();
-  DateTime? rangeStart;
-  DateTime? rangeEnd;
-  DateTime focusedDay = DateTime.now();
+  late DateTime _today;
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
+  late DateTime _focusedDay;
 
   bool _initialLoad = true;
   DateTime? _initialRangeStart;
@@ -44,7 +44,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   void _onSave(BuildContext context, Settings? settings) async {
     // Check if range is selected
-    if (rangeStart == null || rangeEnd == null) {
+    if (_rangeStart == null || _rangeEnd == null) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a period range'), behavior: SnackBarBehavior.floating));
       return;
@@ -53,9 +53,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     // Check for overlapping periods
     final periods = context.read<PeriodProvider>().periods;
     final hasOverlap = PeriodService.isOverlappingPeriod(
-      rangeStart!,
+      _rangeStart!,
       periods,
-      newEndDate: rangeEnd,
+      newEndDate: _rangeEnd,
       excludeId: isEditing && period != null ? period!.id : null,
     );
     if (hasOverlap) {
@@ -66,12 +66,12 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
-    DateTime now = DateTime.now();
-    DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
-    DateTime rangeStartCheck = DateTime.utc(rangeStart!.year, rangeStart!.month, rangeStart!.day);
+    final DateTime now = DateTime.now();
+    final DateTime rangeStartCheck = DateTime.utc(_rangeStart!.year, _rangeStart!.month, _rangeStart!.day);
+    final DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
 
     // Check if period is in the future
-    final isInFuture = rangeStartCheck.isAfter(checkDate);
+    final bool isInFuture = rangeStartCheck.isAfter(checkDate);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(
@@ -81,11 +81,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     }
 
     // Check minimum days between periods
-    final sortedPeriods = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
-    for (final p in sortedPeriods) {
+    final List<Period> sortedPeriods = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+    for (final Period p in sortedPeriods) {
       if (isEditing && period != null && p.id == period!.id) continue;
-      final gapBefore = rangeStart!.difference(p.endDate ?? p.startDate).inDays;
-      final gapAfter = (p.startDate.difference(rangeEnd!).inDays);
+      final int gapBefore = _rangeStart!.difference(p.endDate ?? p.startDate).inDays;
+      final int gapAfter = (p.startDate.difference(_rangeEnd!).inDays);
       if (gapBefore >= 0 && gapBefore < kMinDaysBetweenPeriods || gapAfter >= 0 && gapAfter < kMinDaysBetweenPeriods) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -97,17 +97,17 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
     // Check if editing an existing period
     if (isEditing && period != null) {
-      final updatedPeriod = Period(
+      final Period updatedPeriod = Period(
         id: period!.id,
-        startDate: DateTime.utc(rangeStart!.year, rangeStart!.month, rangeStart!.day),
-        endDate: DateTime.utc(rangeEnd!.year, rangeEnd!.month, rangeEnd!.day),
+        startDate: DateTime.utc(_rangeStart!.year, _rangeStart!.month, _rangeStart!.day),
+        endDate: DateTime.utc(_rangeEnd!.year, _rangeEnd!.month, _rangeEnd!.day),
         notes: _notesController.text,
       );
       await context.read<PeriodProvider>().updatePeriod(updatedPeriod);
 
       // nextPeriodDate changes here because an existing period is updated
       // schedule notifications for next period
-      DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+      final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
         settings?.predictionMode == 'dynamic',
         context.read<UserProvider>().user?.cycleLength,
       );
@@ -117,13 +117,13 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
-    Period newPeriod = Period(startDate: rangeStart!, endDate: rangeEnd!, notes: _notesController.text);
+    final Period newPeriod = Period(startDate: _rangeStart!, endDate: _rangeEnd!, notes: _notesController.text);
     await context.read<PeriodProvider>().insertPeriod(newPeriod);
     await context.read<PeriodProvider>().fetchPeriods();
 
     // nextPeriodDate changes here because a new period is added
     // schedule notifications for next period
-    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
       settings?.predictionMode == 'dynamic',
       context.read<UserProvider>().user?.cycleLength,
     );
@@ -134,9 +134,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   bool isPageDirty() {
     if (isEditing && period != null) {
-      return rangeStart != _initialRangeStart || rangeEnd != _initialRangeEnd || _notesController.text != _initialNotes;
+      return _rangeStart != _initialRangeStart || _rangeEnd != _initialRangeEnd || _notesController.text != _initialNotes;
     }
-    return rangeStart != null && rangeEnd != null && (_notesController.text.isNotEmpty || _notesController.text != '');
+    return _rangeStart != null && _rangeEnd != null && (_notesController.text.isNotEmpty || _notesController.text != '');
   }
 
   void _scrollToTop() {
@@ -153,6 +153,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     _notesController = TextEditingController();
     _scrollController = ScrollController();
     _notesFocusNode = FocusNode();
+    _today = DateTime.now();
+    _focusedDay = DateTime.now();
 
     _notesFocusNode.addListener(() {
       if (!_notesFocusNode.hasFocus) {
@@ -160,15 +162,15 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       }
     });
 
-    focusedDay = widget.focusedDay ?? today;
-    rangeStart = widget.focusedDay ?? today;
+    _focusedDay = widget.focusedDay ?? _today;
+    _rangeStart = widget.focusedDay ?? _today;
     if (isEditing && period != null) {
-      rangeStart = period!.startDate;
-      rangeEnd = period!.endDate;
+      _rangeStart = period!.startDate;
+      _rangeEnd = period!.endDate;
       _notesController.text = period!.notes ?? '';
     }
-    _initialRangeStart = rangeStart;
-    _initialRangeEnd = rangeEnd;
+    _initialRangeStart = _rangeStart;
+    _initialRangeEnd = _rangeEnd;
     _initialNotes = _notesController.text;
   }
 
@@ -183,12 +185,12 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
-    final periodProvider = Provider.of<PeriodProvider>(context);
+    final PeriodProvider periodProvider = Provider.of<PeriodProvider>(context);
 
-    if (_initialLoad && !isEditing && user != null && rangeStart != null) {
+    if (_initialLoad && !isEditing && user != null && _rangeStart != null) {
       _initialLoad = false;
       setState(() {
-        rangeEnd = rangeStart!.add(Duration(days: user.periodLength - 1));
+        _rangeEnd = _rangeStart!.add(Duration(days: user.periodLength - 1));
       });
     }
 
@@ -286,11 +288,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 startingDayOfWeek: StartingDayOfWeek.monday,
                 firstDay: kFirstCalendarDay,
                 lastDay: kLastCalendarDay,
-                focusedDay: focusedDay,
+                focusedDay: _focusedDay,
                 calendarFormat: CalendarFormat.month,
                 rangeSelectionMode: RangeSelectionMode.toggledOn,
-                rangeStartDay: rangeStart,
-                rangeEndDay: rangeEnd,
+                rangeStartDay: _rangeStart,
+                rangeEndDay: _rangeEnd,
                 daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
                 daysOfWeekStyle: DaysOfWeekStyle(
                   weekdayStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
@@ -320,15 +322,15 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 ),
                 onRangeSelected: (start, end, newFocusedDay) {
                   setState(() {
-                    rangeStart = start;
-                    rangeEnd = end;
-                    focusedDay = newFocusedDay;
+                    _rangeStart = start;
+                    _rangeEnd = end;
+                    _focusedDay = newFocusedDay;
                   });
                 },
                 onDaySelected: (selectedDay, newFocusedDay) {
                   setState(() {
-                    today = selectedDay;
-                    focusedDay = newFocusedDay;
+                    _today = selectedDay;
+                    _focusedDay = newFocusedDay;
                   });
                 },
               ),
