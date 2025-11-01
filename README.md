@@ -44,23 +44,16 @@
 </div>
 
 
-## License
-Distributed under the MIT License. See [LICENSE.txt](/LICENSE.txt).
+## Legal
+All data is stored locally on your device and is never transmitted. Complete privacy policy is available [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
 
-## Privacy Policy
-Available  [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
-
-## Contributing
-Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
+Distributed under the [MIT License](/LICENSE.txt).
 
 ## Development
-Period Tracker is built entirely with Flutter.
+Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
 
-Development requirements:
-- Flutter 3 or higher
-- Android Studio (for Android emulator)
-
-To get started:
+Period Tracker is built entirely with Flutter. To get started:
+- Install Flutter 3 or higher and Android Studio (needed for Android emulator)
 - Fork & clone the repository
 - Install dependencies: `flutter pub get`
 - Create a branch and name it like "*feature/issueId/short-desc*" for features or "*bugfix/issueId/short-desc*" for bugfixes.<br>
@@ -77,7 +70,7 @@ To run the app in debug mode use:<br>
 ### Release build
 To run app in release mode you will need `android/key.properties` file. Structure of this file can be found in `example-key.properties` file.
 
-To run the app in release mode ru:n<br>
+To run the app in release mode run:<br>
 `flutter run --release`
 
 To prepare app for publishing run:<br>
