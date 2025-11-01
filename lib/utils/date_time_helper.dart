@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class DateTimeHelper {
   static String displayDate(DateTime date) {
-    date = date.toLocal();
-    String year = date.year.toString();
-    String month = date.month.toString();
-    String day = date.day.toString();
+    final DateTime localDate = date.toLocal();
+    final String year = localDate.year.toString();
+    final String month = localDate.month.toString();
+    final String day = localDate.day.toString();
 
     return '$day.$month.$year';
   }
@@ -24,7 +24,7 @@ class DateTimeHelper {
   }
 
   static bool isLastDayOfMonth(DateTime date) {
-    final nextDay = date.add(const Duration(days: 1));
+    final DateTime nextDay = date.add(const Duration(days: 1));
     return nextDay.day == 1;
   }
 
@@ -33,12 +33,12 @@ class DateTimeHelper {
   }
 
   static bool dayBetweenDates(DateTime checkDate, DateTime startDate, DateTime endDate) {
-    checkDate = stripTime(checkDate);
-    startDate = stripTime(startDate);
-    endDate = stripTime(endDate);
+    final DateTime strippedCheckDate = stripTime(checkDate);
+    final DateTime strippedStartDate = stripTime(startDate);
+    final DateTime strippedEndDate = stripTime(endDate);
 
-    return (checkDate.isAtSameMomentAs(startDate) || checkDate.isAfter(startDate)) &&
-        (checkDate.isAtSameMomentAs(endDate) || checkDate.isBefore(endDate));
+    return (strippedCheckDate.isAtSameMomentAs(strippedStartDate) || strippedCheckDate.isAfter(strippedStartDate)) &&
+        (strippedCheckDate.isAtSameMomentAs(strippedEndDate) || strippedCheckDate.isBefore(strippedEndDate));
   }
 
   static DateTime stripTime(DateTime date) {

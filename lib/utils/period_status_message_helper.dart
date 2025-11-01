@@ -3,7 +3,7 @@ import 'package:period_tracker/utils/period_status_message.dart';
 
 class PeriodStatusMessageHelper {
   static PeriodStatusMessage getPeriodStatusMessage(int daysUntilNextPeriod) {
-    PeriodStatusMessage status = PeriodStatusMessage(text: '', color: Colors.green);
+    final PeriodStatusMessage status = PeriodStatusMessage(text: '', color: Colors.green);
     if (daysUntilNextPeriod < 0) {
       status.text = "Period is ${-daysUntilNextPeriod} day${-daysUntilNextPeriod != 1 ? 's' : ''} late";
       status.color = Colors.red;

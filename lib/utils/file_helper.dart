@@ -7,11 +7,12 @@ class FileHelper {
     }
 
     // check if file exists
-    if (!await File(filePath).exists()) {
+    final File fileToCheck = File(filePath);
+    if (!await fileToCheck.exists()) {
       return null;
     }
 
-    final file = File(filePath);
+    final File file = File(filePath);
     if (!await file.exists()) {
       return null;
     }
