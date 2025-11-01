@@ -66,17 +66,17 @@ class PeriodProvider extends ChangeNotifier {
 
   // Returns the next 3 expected period start dates
   List<DateTime> getNext3PeriodDates(bool dynamicPredictionMode, int? userCycleLength) {
-    List<DateTime> upcomingPeriods = [];
+    final List<DateTime> upcomingPeriods = [];
 
-    DateTime? firstPeriod = getNextPeriodDate(dynamicPredictionMode, userCycleLength);
+    final DateTime? firstPeriod = getNextPeriodDate(dynamicPredictionMode, userCycleLength);
     if (firstPeriod == null) return upcomingPeriods;
 
     upcomingPeriods.add(firstPeriod);
 
     // Calculate cycle length based on mode
-    int cycleLength;
+    final int cycleLength;
     if (dynamicPredictionMode) {
-      final avgCycle = getAverageCycleLength();
+      final double? avgCycle = getAverageCycleLength();
       cycleLength = avgCycle?.round() ?? userCycleLength ?? kDefaultCycleLength;
     } else {
       cycleLength = userCycleLength ?? kDefaultCycleLength;
@@ -101,8 +101,8 @@ class PeriodProvider extends ChangeNotifier {
 
     // Normalize period dates to UTC date only for consistent comparison
     final normalizedPeriods = _periods.map((p) {
-      final startDate = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
-      final endDate = p.endDate != null ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day) : null;
+      final DateTime startDate = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
+      final DateTime? endDate = p.endDate != null ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day) : null;
       return {'period': p, 'start': startDate, 'end': endDate};
     }).toList();
 
@@ -124,10 +124,10 @@ class PeriodProvider extends ChangeNotifier {
 
     if (lastPeriodData == null) return 0;
 
-    final start = lastPeriodData['start'] as DateTime;
+    final DateTime start = lastPeriodData['start'] as DateTime;
 
     // Calculate days from the start of the most recent period
-    int daysSinceStart = targetDate.difference(start).inDays + 1;
+    final int daysSinceStart = targetDate.difference(start).inDays + 1;
 
     // Ensure we return at least day 1 if we're on or after the start date
     return daysSinceStart > 0 ? daysSinceStart : 1;
@@ -147,9 +147,9 @@ class PeriodProvider extends ChangeNotifier {
 
     _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     final lastPeriod = _periods.last;
-    final lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
-    final lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
-    final now = DateTime.now();
+    final DateTime lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
+    final DateTime lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
+    final DateTime now = DateTime.now();
     final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
     // Check if currently in period
@@ -158,7 +158,7 @@ class PeriodProvider extends ChangeNotifier {
       return status;
     }
 
-    final daysUntilNext = nextPeriodDate.difference(today).inDays;
+    final int daysUntilNext = nextPeriodDate.difference(today).inDays;
 
     return PeriodStatusMessageHelper.getPeriodStatusMessage(daysUntilNext);
   }
@@ -181,8 +181,8 @@ class PeriodProvider extends ChangeNotifier {
       // returns null if userCycleLength is null
       return userCycleLength?.toDouble();
     }
-    final sorted = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
-    List<int> cycles = [];
+    final List<Period> sorted = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+    final List<int> cycles = [];
     if (useRecent6 == true && sorted.length > 6) {
       sorted.removeRange(0, sorted.length - 6);
     }
@@ -204,12 +204,12 @@ class PeriodProvider extends ChangeNotifier {
   // Returns a widget or data for a specific date (customize as needed)
   Widget getDataForDate(DateTime date, BuildContext context) {
     // find period for the date
-    final checkDate = DateTime.utc(date.year, date.month, date.day);
-    int cycleDay = getCurrentCycleDay(checkDate);
+    final DateTime checkDate = DateTime.utc(date.year, date.month, date.day);
+    final int cycleDay = getCurrentCycleDay(checkDate);
     // Selected date is before first period
     if (cycleDay <= 0) return Container();
 
-    Period? period = PeriodService.getPeriodInDate(checkDate, periods);
+    final Period? period = PeriodService.getPeriodInDate(checkDate, periods);
     if (period == null) {
       return Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium);
     }

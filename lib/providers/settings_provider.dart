@@ -63,7 +63,7 @@ class SettingsProvider extends ChangeNotifier {
   }) async {
     if (_settings == null) return;
 
-    final updatedSettings = Settings(
+    final Settings updatedSettings = Settings(
       id: _settings!.id,
       predictionMode: predictionMode ?? _settings!.predictionMode,
       darkMode: darkMode ?? _settings!.darkMode,
