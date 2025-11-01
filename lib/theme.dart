@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // icon color: FF91C5
-final ColorScheme colorScheme = ColorScheme.dark(
+const ColorScheme colorScheme = ColorScheme.dark(
   brightness: Brightness.dark,
 
   primary: Color(0xFFFF91C5), // #ff91c5
@@ -44,7 +44,7 @@ final ColorScheme colorScheme = ColorScheme.dark(
   inversePrimary: Color(0xFF98406F),
 );
 
-final textTheme = TextTheme(
+final TextTheme textTheme = TextTheme(
   bodyLarge: GoogleFonts.lexend(fontSize: 16, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
   bodyMedium: GoogleFonts.lexend(fontSize: 14, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
   bodySmall: GoogleFonts.lexend(fontSize: 12, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
@@ -59,7 +59,7 @@ final textTheme = TextTheme(
   headlineSmall: GoogleFonts.lexend(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
 );
 
-final appBarTheme = AppBarTheme(
+final AppBarTheme appBarTheme = AppBarTheme(
   backgroundColor: colorScheme.primary,
   foregroundColor: colorScheme.onPrimary,
   scrolledUnderElevation: 0,

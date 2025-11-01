@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
@@ -133,10 +134,12 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
             GoRoute(
               path: 'log',
               builder: (context, state) {
-                final isEditing = state.uri.queryParameters['isEditing'] == 'true';
-                final periodId = state.uri.queryParameters['periodId'];
-                final period = periodId != null ? context.read<PeriodProvider>().getPeriodById(int.parse(periodId)) : null;
-                final focusedDay = state.uri.queryParameters['focusedDay'] != null ? DateTime.parse(state.uri.queryParameters['focusedDay']!) : null;
+                final bool isEditing = state.uri.queryParameters['isEditing'] == 'true';
+                final String? periodId = state.uri.queryParameters['periodId'];
+                final Period? period = periodId != null ? context.read<PeriodProvider>().getPeriodById(int.parse(periodId)) : null;
+                final DateTime? focusedDay = state.uri.queryParameters['focusedDay'] != null
+                    ? DateTime.parse(state.uri.queryParameters['focusedDay']!)
+                    : null;
                 return LogPeriodPage(isEditing: isEditing, period: period, focusedDay: focusedDay);
               },
             ),
@@ -172,7 +175,7 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
         ),
       ],
       redirect: (context, state) async {
-        bool fileShared = await getFileShared() == true;
+        final bool fileShared = await getFileShared() == true;
         if (_sharedFiles.isNotEmpty && fileShared) {
           return '/restore';
         }
@@ -228,7 +231,7 @@ class _MainNavigationState extends State<MainNavigation> {
     }
   }
 
-  final pages = [HomePage(), InsightsPage(), ProfilePage()];
+  final List<Widget> pages = [HomePage(), InsightsPage(), ProfilePage()];
   final List<String> appBarTitles = ['Home', 'Insights', 'Profile'];
 
   @override
