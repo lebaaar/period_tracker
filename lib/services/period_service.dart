@@ -17,11 +17,11 @@ class PeriodService {
   }
 
   static bool isOverlappingPeriod(DateTime newStartDate, List<Period> periods, {DateTime? newEndDate, int? excludeId}) {
-    final endDate = newEndDate ?? newStartDate;
-    for (final period in periods) {
+    final DateTime endDate = newEndDate ?? newStartDate;
+    for (final Period period in periods) {
       if (excludeId != null && period.id == excludeId) continue;
-      final start = period.startDate;
-      final end = period.endDate ?? period.startDate;
+      final DateTime start = period.startDate;
+      final DateTime end = period.endDate ?? period.startDate;
       // Overlap if ranges intersect (inclusive)
       if (!(endDate.isBefore(start) || newStartDate.isAfter(end))) {
         return true;
@@ -39,12 +39,12 @@ class PeriodService {
   }
 
   static Period? getPeriodInDate(DateTime date, List<Period> periods) {
-    final checkDate = DateTime.utc(date.year, date.month, date.day);
+    final DateTime checkDate = DateTime.utc(date.year, date.month, date.day);
     Period? period;
-    for (var p in periods) {
-      final periodStart = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
+    for (final Period p in periods) {
+      final DateTime periodStart = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
       // hardcoded period.endDate! - no support for ongoing periods in v1
-      final periodEnd = DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day);
+      final DateTime periodEnd = DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day);
 
       if (checkDate.isAtSameMomentAs(periodStart) ||
           checkDate.isAtSameMomentAs(periodEnd) ||

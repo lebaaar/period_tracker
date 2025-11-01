@@ -121,7 +121,7 @@ class ApplicationDataService {
       await databaseService.insertSettings(settings);
 
       // Restore periods data
-      for (var period in periods) {
+      for (final Period period in periods) {
         await databaseService.insertPeriod(period);
       }
 
@@ -132,9 +132,9 @@ class ApplicationDataService {
         return true;
       }
 
-      for (var entry in sharedPrefsData.entries) {
-        final key = entry.key;
-        final value = entry.value;
+      for (final MapEntry<String, dynamic> entry in sharedPrefsData.entries) {
+        final String key = entry.key;
+        final dynamic value = entry.value;
         switch (key) {
           case 'onboarding_complete':
             setOnboardingValue(value as bool);
@@ -175,8 +175,8 @@ class ApplicationDataService {
   /// @param data The Map representation of the backup data
   /// @returns true if the backup data structure is valid, false otherwise
   bool isBackupDataValid(Map<String, dynamic> data) {
-    final requiredKeys = {'version', 'buildNumber', 'timestamp', 'database', 'sharedPreferences'};
-    for (String key in requiredKeys) {
+    final Set<String> requiredKeys = {'version', 'buildNumber', 'timestamp', 'database', 'sharedPreferences'};
+    for (final String key in requiredKeys) {
       if (!data.containsKey(key)) {
         return false;
       }
@@ -185,8 +185,8 @@ class ApplicationDataService {
     final dbContent = data['database'];
     if (dbContent is! Map<String, dynamic>) return false;
 
-    final dbRequiredKeys = {'periods', 'user', 'settings'};
-    for (String key in dbRequiredKeys) {
+    final Set<String> dbRequiredKeys = {'periods', 'user', 'settings'};
+    for (final String key in dbRequiredKeys) {
       if (!dbContent.containsKey(key)) {
         return false;
       }
@@ -195,7 +195,7 @@ class ApplicationDataService {
     // try parsing periods
     final periods = dbContent['periods'];
     if (periods is! List<dynamic>) return false;
-    for (var period in periods) {
+    for (final dynamic period in periods) {
       if (period is! Map<String, dynamic>) return false;
       try {
         Period.fromMap(period);

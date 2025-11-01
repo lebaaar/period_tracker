@@ -125,7 +125,7 @@ class NotificationService {
     if (nextPeriodStartDate.isBefore(DateTime.now())) return;
 
     // Schedule new notifications
-    for (var i = 0; i <= sendNotificationsDaysBefore; i++) {
+    for (int i = 0; i <= sendNotificationsDaysBefore; i++) {
       final DateTime scheduledDate = DateTime(
         nextPeriodStartDate.year,
         nextPeriodStartDate.month,
@@ -136,8 +136,8 @@ class NotificationService {
 
       if (scheduledDate.isBefore(DateTime.now())) continue;
 
-      String notificationTitle = PeriodStatusMessageHelper.getNotificationTitleMessage(i);
-      String notificationBody = PeriodStatusMessageHelper.getNotificationBodyMessage(i);
+      final String notificationTitle = PeriodStatusMessageHelper.getNotificationTitleMessage(i);
+      final String notificationBody = PeriodStatusMessageHelper.getNotificationBodyMessage(i);
 
       await scheduleNotification(
         i,
