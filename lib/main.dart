@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
@@ -25,8 +27,7 @@ import 'pages/insights_page.dart';
 import 'pages/log_period_page.dart';
 import 'pages/profile_page.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,16 +38,11 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent, // Background behind status bar (top)
-      statusBarBrightness:
-          Brightness.dark, // iOS: dark status bar content (light icons/text)
-      statusBarIconBrightness:
-          Brightness.light, // Android: light icons (dark background)
-      systemNavigationBarColor:
-          Colors.black, // Android: background color of bottom navigation bar
-      systemNavigationBarDividerColor:
-          Colors.black, // Android: divider above navbar (optional)
-      systemNavigationBarIconBrightness:
-          Brightness.light, // Android: light icons for dark navbar
+      statusBarBrightness: Brightness.dark, // iOS: dark status bar content (light icons/text)
+      statusBarIconBrightness: Brightness.light, // Android: light icons (dark background)
+      systemNavigationBarColor: Colors.black, // Android: background color of bottom navigation bar
+      systemNavigationBarDividerColor: Colors.black, // Android: divider above navbar (optional)
+      systemNavigationBarIconBrightness: Brightness.light, // Android: light icons for dark navbar
       systemStatusBarContrastEnforced: false, // Allow custom navbar styling
       systemNavigationBarContrastEnforced: false, // Allow custom navbar styling
     ),
@@ -65,10 +61,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      child: PeriodTrackerApp(
-        showOnboarding: !onBoardingComplete,
-        isAfterRestore: isAfterRestore,
-      ),
+      child: PeriodTrackerApp(showOnboarding: !onBoardingComplete, isAfterRestore: isAfterRestore),
     ),
   );
 }
@@ -76,11 +69,7 @@ Future<void> main() async {
 class PeriodTrackerApp extends StatefulWidget {
   final bool showOnboarding;
   final bool isAfterRestore;
-  const PeriodTrackerApp({
-    super.key,
-    required this.showOnboarding,
-    required this.isAfterRestore,
-  });
+  const PeriodTrackerApp({super.key, required this.showOnboarding, required this.isAfterRestore});
 
   @override
   State<PeriodTrackerApp> createState() => _PeriodTrackerAppState();
@@ -141,29 +130,18 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) =>
-              MainNavigation(isAfterRestore: widget.isAfterRestore),
+          builder: (context, state) => MainNavigation(isAfterRestore: widget.isAfterRestore),
           routes: [
             GoRoute(
               path: 'log',
               builder: (context, state) {
-                final isEditing =
-                    state.uri.queryParameters['isEditing'] == 'true';
-                final periodId = state.uri.queryParameters['periodId'];
-                final period = periodId != null
-                    ? context.read<PeriodProvider>().getPeriodById(
-                        int.parse(periodId),
-                      )
-                    : null;
-                final focusedDay =
-                    state.uri.queryParameters['focusedDay'] != null
+                final bool isEditing = state.uri.queryParameters['isEditing'] == 'true';
+                final String? periodId = state.uri.queryParameters['periodId'];
+                final Period? period = periodId != null ? context.read<PeriodProvider>().getPeriodById(int.parse(periodId)) : null;
+                final DateTime? focusedDay = state.uri.queryParameters['focusedDay'] != null
                     ? DateTime.parse(state.uri.queryParameters['focusedDay']!)
                     : null;
-                return LogPeriodPage(
-                  isEditing: isEditing,
-                  period: period,
-                  focusedDay: focusedDay,
-                );
+                return LogPeriodPage(isEditing: isEditing, period: period, focusedDay: focusedDay);
               },
             ),
             GoRoute(
@@ -183,49 +161,35 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
         GoRoute(
           path: '/onboarding',
           builder: (context, state) => const OnboardingScreen(),
-          routes: [
-            GoRoute(
-              path: 'restore',
-              builder: (context, state) => const OnboardingRestoreDataPage(),
-            ),
-          ],
+          routes: [GoRoute(path: 'restore', builder: (context, state) => const OnboardingRestoreDataPage())],
         ),
         GoRoute(
           path: '/help',
           builder: (context, state) {
-            final String initialTab =
-                state.uri.queryParameters['initialPage'] ?? 'restore';
+            final String initialTab = state.uri.queryParameters['initialPage'] ?? 'restore';
             return RestoreHelpPage(initialTab: initialTab);
           },
         ),
         GoRoute(
           path: '/restore',
-          builder: (context, state) =>
-              RestoreDataPreviewPage(sharedFiles: _sharedFiles),
+          builder: (context, state) => RestoreDataPreviewPage(sharedFiles: _sharedFiles),
         ),
       ],
       redirect: (context, state) async {
-        bool fileShared = await getFileShared() == true;
+        final bool fileShared = await getFileShared() == true;
         if (_sharedFiles.isNotEmpty && fileShared) {
           return '/restore';
         }
         return null; // no redirection
       },
       errorBuilder: (context, state) {
-        return widget.showOnboarding
-            ? const OnboardingScreen()
-            : MainNavigation(isAfterRestore: widget.isAfterRestore);
+        return widget.showOnboarding ? const OnboardingScreen() : MainNavigation(isAfterRestore: widget.isAfterRestore);
       },
     );
 
     // disable landscape mode
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    return MaterialApp.router(
-      title: 'Period Tracker',
-      theme: appTheme,
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
-    );
+    return MaterialApp.router(title: 'Period Tracker', theme: appTheme, routerConfig: router, debugShowCheckedModeBanner: kDebugMode);
   }
 }
 
@@ -251,9 +215,7 @@ class _MainNavigationState extends State<MainNavigation> {
           barrierDismissible: false,
           builder: (context) => AlertDialog(
             title: const Text('Data restored successfully 🎉'),
-            content: Text(
-              'All your data has been successfully restored from the $kBackupFileName file',
-            ),
+            content: Text('All your data has been successfully restored from the $kBackupFileName file'),
             actions: [
               TextButton(
                 onPressed: () async {
@@ -270,52 +232,37 @@ class _MainNavigationState extends State<MainNavigation> {
     }
   }
 
-  final pages = [HomePage(), InsightsPage(), ProfilePage()];
+  final List<Widget> pages = [HomePage(), InsightsPage(), ProfilePage()];
   final List<String> appBarTitles = ['Home', 'Insights', 'Profile'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          appBarTitles[_selectedIndex],
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        title: Text(appBarTitles[_selectedIndex], style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         backgroundColor: Colors.transparent,
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: pages[_selectedIndex],
-        ),
+        child: Padding(padding: EdgeInsets.all(8.0), child: pages[_selectedIndex]),
       ),
       bottomNavigationBar: NavigationBar(
         destinations: <Widget>[
           NavigationDestination(
             icon: Icon(Icons.home_rounded),
-            selectedIcon: Icon(
-              Icons.home_rounded,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
+            selectedIcon: Icon(Icons.home_rounded, color: Theme.of(context).colorScheme.onPrimary),
             label: 'Home',
             tooltip: null,
           ),
           NavigationDestination(
             icon: Icon(Icons.bar_chart_rounded),
-            selectedIcon: Icon(
-              Icons.bar_chart_rounded,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
+            selectedIcon: Icon(Icons.bar_chart_rounded, color: Theme.of(context).colorScheme.onPrimary),
             label: 'Insights',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_rounded),
-            selectedIcon: Icon(
-              Icons.person_rounded,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
+            selectedIcon: Icon(Icons.person_rounded, color: Theme.of(context).colorScheme.onPrimary),
             label: 'Profile',
           ),
         ],

@@ -18,12 +18,7 @@ class LogPeriodPage extends StatefulWidget {
   final bool isEditing;
   final Period? period;
   final DateTime? focusedDay;
-  const LogPeriodPage({
-    super.key,
-    required this.isEditing,
-    this.period,
-    this.focusedDay,
-  });
+  const LogPeriodPage({super.key, required this.isEditing, this.period, this.focusedDay});
 
   @override
   State<LogPeriodPage> createState() => _LogPeriodPageState();
@@ -34,10 +29,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   late final TextEditingController _notesController;
   late final FocusNode _notesFocusNode;
 
-  DateTime today = DateTime.now();
-  DateTime? rangeStart;
-  DateTime? rangeEnd;
-  DateTime focusedDay = DateTime.now();
+  late DateTime _today;
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
+  late DateTime _focusedDay;
 
   bool _initialLoad = true;
   DateTime? _initialRangeStart;
@@ -49,74 +44,52 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
   void _onSave(BuildContext context, Settings? settings) async {
     // Check if range is selected
-    if (rangeStart == null || rangeEnd == null) {
+    if (_rangeStart == null || _rangeEnd == null) {
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a period range'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a period range'), behavior: SnackBarBehavior.floating));
       return;
     }
 
     // Check for overlapping periods
     final periods = context.read<PeriodProvider>().periods;
     final hasOverlap = PeriodService.isOverlappingPeriod(
-      rangeStart!,
+      _rangeStart!,
       periods,
-      newEndDate: rangeEnd,
+      newEndDate: _rangeEnd,
       excludeId: isEditing && period != null ? period!.id : null,
     );
     if (hasOverlap) {
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('The selected period overlaps with an existing one'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('The selected period overlaps with an existing one'), behavior: SnackBarBehavior.floating));
       return;
     }
 
-    DateTime now = DateTime.now();
-    DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
-    DateTime rangeStartCheck = DateTime.utc(
-      rangeStart!.year,
-      rangeStart!.month,
-      rangeStart!.day,
-    );
+    final DateTime now = DateTime.now();
+    final DateTime rangeStartCheck = DateTime.utc(_rangeStart!.year, _rangeStart!.month, _rangeStart!.day);
+    final DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
 
     // Check if period is in the future
-    final isInFuture = rangeStartCheck.isAfter(checkDate);
+    final bool isInFuture = rangeStartCheck.isAfter(checkDate);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('The start date cannot be in the future.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('The start date cannot be in the future.'), behavior: SnackBarBehavior.floating));
       return;
     }
 
     // Check minimum days between periods
-    final sortedPeriods = List<Period>.from(periods)
-      ..sort((a, b) => a.startDate.compareTo(b.startDate));
-    for (final p in sortedPeriods) {
+    final List<Period> sortedPeriods = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+    for (final Period p in sortedPeriods) {
       if (isEditing && period != null && p.id == period!.id) continue;
-      final gapBefore = rangeStart!.difference(p.endDate ?? p.startDate).inDays;
-      final gapAfter = (p.startDate.difference(rangeEnd!).inDays);
-      if (gapBefore >= 0 && gapBefore < kMinDaysBetweenPeriods ||
-          gapAfter >= 0 && gapAfter < kMinDaysBetweenPeriods) {
+      final int gapBefore = _rangeStart!.difference(p.endDate ?? p.startDate).inDays;
+      final int gapAfter = (p.startDate.difference(_rangeEnd!).inDays);
+      if (gapBefore >= 0 && gapBefore < kMinDaysBetweenPeriods || gapAfter >= 0 && gapAfter < kMinDaysBetweenPeriods) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'There must be at least $kMinDaysBetweenPeriods days between periods',
-            ),
-            behavior: SnackBarBehavior.floating,
-          ),
+          SnackBar(content: Text('There must be at least $kMinDaysBetweenPeriods days between periods'), behavior: SnackBarBehavior.floating),
         );
         return;
       }
@@ -124,78 +97,52 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
     // Check if editing an existing period
     if (isEditing && period != null) {
-      final updatedPeriod = Period(
+      final Period updatedPeriod = Period(
         id: period!.id,
-        startDate: DateTime.utc(
-          rangeStart!.year,
-          rangeStart!.month,
-          rangeStart!.day,
-        ),
-        endDate: DateTime.utc(rangeEnd!.year, rangeEnd!.month, rangeEnd!.day),
+        startDate: DateTime.utc(_rangeStart!.year, _rangeStart!.month, _rangeStart!.day),
+        endDate: DateTime.utc(_rangeEnd!.year, _rangeEnd!.month, _rangeEnd!.day),
         notes: _notesController.text,
       );
       await context.read<PeriodProvider>().updatePeriod(updatedPeriod);
 
       // nextPeriodDate changes here because an existing period is updated
       // schedule notifications for next period
-      DateTime? nextPeriodDate = context
-          .read<PeriodProvider>()
-          .getNextPeriodDate(
-            settings?.predictionMode == 'dynamic',
-            context.read<UserProvider>().user?.cycleLength,
-          );
-      await NotificationService().scheduleNotificationsForNextPeriod(
-        nextPeriodDate,
-        settings!.notificationDaysBefore,
-        settings.notificationTime,
+      final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+        settings?.predictionMode == 'dynamic',
+        context.read<UserProvider>().user?.cycleLength,
       );
+      await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
       Navigator.of(context).pop();
       return;
     }
 
-    Period newPeriod = Period(
-      startDate: rangeStart!,
-      endDate: rangeEnd!,
-      notes: _notesController.text,
-    );
+    final Period newPeriod = Period(startDate: _rangeStart!, endDate: _rangeEnd!, notes: _notesController.text);
     await context.read<PeriodProvider>().insertPeriod(newPeriod);
     await context.read<PeriodProvider>().fetchPeriods();
 
     // nextPeriodDate changes here because a new period is added
     // schedule notifications for next period
-    DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
+    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
       settings?.predictionMode == 'dynamic',
       context.read<UserProvider>().user?.cycleLength,
     );
-    await NotificationService().scheduleNotificationsForNextPeriod(
-      nextPeriodDate,
-      settings!.notificationDaysBefore,
-      settings.notificationTime,
-    );
+    await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
     Navigator.of(context).pop();
   }
 
   bool isPageDirty() {
     if (isEditing && period != null) {
-      return rangeStart != _initialRangeStart ||
-          rangeEnd != _initialRangeEnd ||
-          _notesController.text != _initialNotes;
+      return _rangeStart != _initialRangeStart || _rangeEnd != _initialRangeEnd || _notesController.text != _initialNotes;
     }
-    return rangeStart != null &&
-        rangeEnd != null &&
-        (_notesController.text.isNotEmpty || _notesController.text != '');
+    return _rangeStart != null && _rangeEnd != null && (_notesController.text.isNotEmpty || _notesController.text != '');
   }
 
   void _scrollToTop() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.minScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        _scrollController.animateTo(_scrollController.position.minScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
   }
@@ -206,6 +153,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     _notesController = TextEditingController();
     _scrollController = ScrollController();
     _notesFocusNode = FocusNode();
+    _today = DateTime.now();
+    _focusedDay = DateTime.now();
 
     _notesFocusNode.addListener(() {
       if (!_notesFocusNode.hasFocus) {
@@ -213,15 +162,15 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       }
     });
 
-    focusedDay = widget.focusedDay ?? today;
-    rangeStart = widget.focusedDay ?? today;
+    _focusedDay = widget.focusedDay ?? _today;
+    _rangeStart = widget.focusedDay ?? _today;
     if (isEditing && period != null) {
-      rangeStart = period!.startDate;
-      rangeEnd = period!.endDate;
+      _rangeStart = period!.startDate;
+      _rangeEnd = period!.endDate;
       _notesController.text = period!.notes ?? '';
     }
-    _initialRangeStart = rangeStart;
-    _initialRangeEnd = rangeEnd;
+    _initialRangeStart = _rangeStart;
+    _initialRangeEnd = _rangeEnd;
     _initialNotes = _notesController.text;
   }
 
@@ -236,12 +185,12 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
-    final periodProvider = Provider.of<PeriodProvider>(context);
+    final PeriodProvider periodProvider = Provider.of<PeriodProvider>(context);
 
-    if (_initialLoad && !isEditing && user != null && rangeStart != null) {
+    if (_initialLoad && !isEditing && user != null && _rangeStart != null) {
       _initialLoad = false;
       setState(() {
-        rangeEnd = rangeStart!.add(Duration(days: user.periodLength - 1));
+        _rangeEnd = _rangeStart!.add(Duration(days: user.periodLength - 1));
       });
     }
 
@@ -251,10 +200,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          isEditing ? 'Edit Period' : 'Add Period',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        title: Text(isEditing ? 'Edit Period' : 'Add Period', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -268,9 +214,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   content: const Text('Do you want to discard changes?'),
                   actions: [
                     TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.tertiary,
-                      ),
+                      style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text('Cancel'),
                     ),
@@ -282,9 +226,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                       child: const Text('Discard'),
                     ),
                   ],
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 ),
               );
             } else {
@@ -303,48 +245,31 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Delete Period'),
-                    content: const Text(
-                      'Are you sure you want to delete this period entry?',
-                    ),
+                    content: const Text('Are you sure you want to delete this period entry?'),
                     actions: [
                       TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.tertiary,
-                        ),
+                        style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
                         onPressed: () => Navigator.of(context).pop(false),
                         child: const Text('Cancel'),
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Delete'),
-                      ),
+                      TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
                     ],
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                   ),
                 );
 
                 if (confirm == true) {
                   Navigator.of(context).pop();
-                  await context.read<PeriodProvider>().deletePeriod(
-                    period!.id!,
-                  );
+                  await context.read<PeriodProvider>().deletePeriod(period!.id!);
 
                   // nextPeriodDate changes here because period was removed
                   // update nextPeriodDate
-                  DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(
-                    settings?.predictionMode == 'dynamic',
-                    user?.cycleLength,
+                  DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
+                  await NotificationService().scheduleNotificationsForNextPeriod(
+                    nextPeriodDate,
+                    settings!.notificationDaysBefore,
+                    settings.notificationTime,
                   );
-                  await NotificationService()
-                      .scheduleNotificationsForNextPeriod(
-                        nextPeriodDate,
-                        settings!.notificationDaysBefore,
-                        settings.notificationTime,
-                      );
 
                   context.go('/');
                 }
@@ -363,46 +288,25 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 startingDayOfWeek: StartingDayOfWeek.monday,
                 firstDay: kFirstCalendarDay,
                 lastDay: kLastCalendarDay,
-                focusedDay: focusedDay,
+                focusedDay: _focusedDay,
                 calendarFormat: CalendarFormat.month,
                 rangeSelectionMode: RangeSelectionMode.toggledOn,
-                rangeStartDay: rangeStart,
-                rangeEndDay: rangeEnd,
+                rangeStartDay: _rangeStart,
+                rangeEndDay: _rangeEnd,
                 daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
                 daysOfWeekStyle: DaysOfWeekStyle(
-                  weekdayStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                  weekendStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
+                  weekdayStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+                  weekendStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
                 ),
                 calendarStyle: CalendarStyle(
                   rangeHighlightColor: Theme.of(context).colorScheme.secondary,
-                  rangeStartDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  rangeStartTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  rangeEndDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  rangeEndTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  withinRangeTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  weekendTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                  rangeStartDecoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+                  rangeStartTextStyle: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  rangeEndDecoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+                  rangeEndTextStyle: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  withinRangeTextStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  todayDecoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+                  weekendTextStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 calendarBuilders: CalendarBuilders(
                   todayBuilder: (context, day, focusedDay) {
@@ -410,10 +314,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                       margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.secondary,
-                          width: 2,
-                        ),
+                        border: Border.all(color: Theme.of(context).colorScheme.secondary, width: 2),
                       ),
                       child: Center(child: Text('${day.day}')),
                     );
@@ -421,15 +322,15 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 ),
                 onRangeSelected: (start, end, newFocusedDay) {
                   setState(() {
-                    rangeStart = start;
-                    rangeEnd = end;
-                    focusedDay = newFocusedDay;
+                    _rangeStart = start;
+                    _rangeEnd = end;
+                    _focusedDay = newFocusedDay;
                   });
                 },
                 onDaySelected: (selectedDay, newFocusedDay) {
                   setState(() {
-                    today = selectedDay;
-                    focusedDay = newFocusedDay;
+                    _today = selectedDay;
+                    _focusedDay = newFocusedDay;
                   });
                 },
               ),
@@ -444,16 +345,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                     hintText: 'Add notes about this period',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(kBorderRadius),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
                     ),
                   ),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize),
                   onChanged: (value) {},
                 ),
               ),
@@ -461,13 +356,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(
-                    children: [
-                      const Text(
-                        'You need a break from all that scrolling... 🐶',
-                      ),
-                    ],
-                  ),
+                  Column(children: [const Text('You need a break from all that scrolling... 🐶')]),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () async {
@@ -493,9 +382,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
               style: TextButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(kBorderRadius),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kBorderRadius)),
               ),
               child: const Text('Save'),
             ),

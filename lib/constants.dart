@@ -1,11 +1,11 @@
 import 'package:flutter/rendering.dart';
 import 'package:period_tracker/theme.dart';
 
-final String kPackageName = 'com.lebaaar.period_tracker';
+const String kPackageName = 'com.lebaaar.period_tracker';
 
 // UI
-final double kBorderRadius = 12;
-final double kTableCalendarDaysOfTheWeekHeight = 30;
+const double kBorderRadius = 12;
+const double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2020, 1, 1);
@@ -55,38 +55,37 @@ final Gradient kUpcomingSelectedPeriodLastMonthDayGradient = LinearGradient(
 );
 
 // Default cycle and period lengths
-final int kDefaultCycleLength = 28;
-final int kDefaultPeriodLength = 5;
-final int kMinCycleLength = 7;
-final int kMaxCycleLength = 90;
-final int kMinPeriodLength = 1;
-final int kMaxPeriodLength = 15;
-final int kMinDaysBetweenPeriods = 2;
+const int kDefaultCycleLength = 28;
+const int kDefaultPeriodLength = 5;
+const int kMinCycleLength = 7;
+const int kMaxCycleLength = 90;
+const int kMinPeriodLength = 1;
+const int kMaxPeriodLength = 15;
+const int kMinDaysBetweenPeriods = 2;
 
 // Default user name
-final String kMysteriousUserName = 'Mysterious User';
+const String kMysteriousUserName = 'Mysterious User';
 
 // Database constants
-final String kDatabaseName = 'period_tracker.db';
-final String kPeriodsTableName = 'periods';
-final String kUserTableName = 'user';
-final String kSettingsTableName = 'settings';
-final String kNotificationsTableName = 'notifications';
+const String kDatabaseName = 'period_tracker.db';
+const String kPeriodsTableName = 'periods';
+const String kUserTableName = 'user';
+const String kSettingsTableName = 'settings';
+const String kNotificationsTableName = 'notifications';
 
 // Notification constants
-final String kNotificationChannelId = 'period_tracker_channel';
-final String kNotificationChannelName = 'Period Tracker Notifications';
-final String kNotificationChannelDescription =
-    'Notifications for Period Tracker';
-final int kDefaultNotificationsDaysBefore = 3;
-final int kMaxNotificationsDaysBefore = 14;
-final int kDefaultNotificationHour = 8;
+const String kNotificationChannelId = 'period_tracker_channel';
+const String kNotificationChannelName = 'Period Tracker Notifications';
+const String kNotificationChannelDescription = 'Notifications for Period Tracker';
+const int kDefaultNotificationsDaysBefore = 3;
+const int kMaxNotificationsDaysBefore = 14;
+const int kDefaultNotificationHour = 8;
 
 // Backup constants
-final String kBackupFileName = 'period_tracker.json';
-final String kBackupMimeType = 'application/json';
-final String kBackupEmailTitle = 'Period Tracker Data';
-final String kBackupEmailText =
+const String kBackupFileName = 'period_tracker.json';
+const String kBackupMimeType = 'application/json';
+const String kBackupEmailTitle = 'Period Tracker Data';
+const String kBackupEmailText =
     '''Attached is your $kBackupFileName file, which contains all your data. This file enables you to restore your data.
 
 To restore your data on a new device:
@@ -96,4 +95,4 @@ To restore your data on a new device:
 4. In the Period Tracker app, click "Restore my data".''';
 
 // Contact
-final String kContactEmail = 'lanlebar6@gmail.com';
+const String kContactEmail = 'lanlebar6@gmail.com';

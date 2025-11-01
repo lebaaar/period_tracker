@@ -28,18 +28,15 @@ class DatabaseService {
   final String _userNameColumnName = 'name';
   final String _userCycleLengthColumnName = 'cycleLength';
   final String _userPeriodLengthColumnName = 'periodLength';
-  final String _userLastPeriodDateColumnName =
-      'lastPeriodDate'; // TODO - remove unused field
-  final String _userDynamicCycleLength =
-      'dynamicCycleLength'; // TODO - remove unused field
+  final String _userLastPeriodDateColumnName = 'lastPeriodDate'; // TODO - remove unused field
+  final String _userDynamicCycleLength = 'dynamicCycleLength'; // TODO - remove unused field
 
   final String _settingsTableName = kSettingsTableName;
   final String _settingsIdColumnName = 'id';
   final String _settingsPredictionModeColumnName = 'predictionMode';
   final String _settingsDarkModeColumnName = 'darkMode';
   final String _settingsNotificationEnabledColumnName = 'notificationEnabled';
-  final String _settingsNotificationDaysBeforeColumnName =
-      'notificationDaysBefore';
+  final String _settingsNotificationDaysBeforeColumnName = 'notificationDaysBefore';
   final String _settingsNotificationTimeColumnName = 'notificationTime';
 
   DatabaseService._constructor();
@@ -50,14 +47,10 @@ class DatabaseService {
   }
 
   Future<Database> getDatabase() async {
-    final databaseDirPath = await getDatabasesPath();
-    final databasePath = p.join(databaseDirPath, _databaseName);
+    final String databaseDirPath = await getDatabasesPath();
+    final String databasePath = p.join(databaseDirPath, _databaseName);
 
-    _database = await openDatabase(
-      databasePath,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-    );
+    _database = await openDatabase(databasePath, version: _databaseVersion, onCreate: _onCreate);
     return _database!;
   }
 
@@ -109,40 +102,23 @@ class DatabaseService {
 
   Future<int> insertPeriod(Period period) async {
     final db = await database;
-    return await db.insert(
-      _periodsTableName,
-      period.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return await db.insert(_periodsTableName, period.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<int> deletePeriod(int id) async {
     final db = await database;
-    return await db.delete(
-      _periodsTableName,
-      where: '$_periodsIdColumnName = ?',
-      whereArgs: [id],
-    );
+    return await db.delete(_periodsTableName, where: '$_periodsIdColumnName = ?', whereArgs: [id]);
   }
 
   Future<int> updatePeriod(Period period) async {
     final db = await database;
-    return await db.update(
-      _periodsTableName,
-      period.toMap(),
-      where: '$_periodsIdColumnName = ?',
-      whereArgs: [period.id],
-    );
+    return await db.update(_periodsTableName, period.toMap(), where: '$_periodsIdColumnName = ?', whereArgs: [period.id]);
   }
 
   // User methods
   Future<User?> getUser() async {
     final db = await database;
-    final rows = await db.query(
-      _userTableName,
-      where: '$_userIdColumnName = ?',
-      whereArgs: [1],
-    );
+    final rows = await db.query(_userTableName, where: '$_userIdColumnName = ?', whereArgs: [1]);
     if (rows.isNotEmpty) {
       return User.fromMap(rows.first);
     }
@@ -152,11 +128,7 @@ class DatabaseService {
   Future<int> insertUser(User user) async {
     final db = await database;
     final userMap = user.toMap()..['id'] = 1;
-    return await db.insert(
-      _userTableName,
-      userMap,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return await db.insert(_userTableName, userMap, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // Settings methods
@@ -177,11 +149,8 @@ class DatabaseService {
       _settingsIdColumnName: 1,
       _settingsPredictionModeColumnName: settings.predictionMode,
       _settingsDarkModeColumnName: settings.darkMode ? 1 : 0,
-      _settingsNotificationEnabledColumnName: settings.notificationsEnabled
-          ? 1
-          : 0,
-      _settingsNotificationDaysBeforeColumnName:
-          settings.notificationDaysBefore,
+      _settingsNotificationEnabledColumnName: settings.notificationsEnabled ? 1 : 0,
+      _settingsNotificationDaysBeforeColumnName: settings.notificationDaysBefore,
       _settingsNotificationTimeColumnName:
           '${settings.notificationTime.hour.toString().padLeft(2, '0')}:${settings.notificationTime.minute.toString().padLeft(2, '0')}',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -189,11 +158,7 @@ class DatabaseService {
 
   Future<Settings> getSettings() async {
     final db = await database;
-    final rows = await db.query(
-      _settingsTableName,
-      where: '$_settingsIdColumnName = ?',
-      whereArgs: [1],
-    );
+    final rows = await db.query(_settingsTableName, where: '$_settingsIdColumnName = ?', whereArgs: [1]);
     if (rows.isEmpty) {
       // this will only be triggered after deleting app data to reinsert default settings
       await insertDefaultSettings(db);
@@ -204,11 +169,7 @@ class DatabaseService {
 
   Future<bool> getNotificationEnabled() async {
     final db = await database;
-    final rows = await db.query(
-      _settingsTableName,
-      where: '$_settingsIdColumnName = ?',
-      whereArgs: [1],
-    );
+    final rows = await db.query(_settingsTableName, where: '$_settingsIdColumnName = ?', whereArgs: [1]);
     if (rows.isEmpty) return false;
     return rows.first[_settingsNotificationEnabledColumnName] == 1;
   }
@@ -225,12 +186,7 @@ class DatabaseService {
 
   Future<void> updatePredictionMode(String mode) async {
     final db = await database;
-    await db.update(
-      _settingsTableName,
-      {_settingsPredictionModeColumnName: mode},
-      where: '$_settingsIdColumnName = ?',
-      whereArgs: [1],
-    );
+    await db.update(_settingsTableName, {_settingsPredictionModeColumnName: mode}, where: '$_settingsIdColumnName = ?', whereArgs: [1]);
   }
 
   Future<void> updateSettings(Settings settings) async {
@@ -240,8 +196,7 @@ class DatabaseService {
       {
         _settingsPredictionModeColumnName: settings.predictionMode,
         _settingsDarkModeColumnName: settings.darkMode ? 1 : 0,
-        _settingsNotificationDaysBeforeColumnName:
-            settings.notificationDaysBefore,
+        _settingsNotificationDaysBeforeColumnName: settings.notificationDaysBefore,
         _settingsNotificationTimeColumnName:
             '${settings.notificationTime.hour.toString().padLeft(2, '0')}:${settings.notificationTime.minute.toString().padLeft(2, '0')}',
       },

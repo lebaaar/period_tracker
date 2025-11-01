@@ -13,20 +13,13 @@ class Period {
     return Period(
       id: map['id'] as int?,
       startDate: DateTime.parse(map['startDate'] as String),
-      endDate: map['endDate'] != null
-          ? DateTime.parse(map['endDate'] as String)
-          : null,
+      endDate: map['endDate'] != null ? DateTime.parse(map['endDate'] as String) : null,
       notes: map['notes'] as String?,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
-      'notes': notes,
-    };
+    return {'id': id, 'startDate': startDate.toIso8601String(), 'endDate': endDate?.toIso8601String(), 'notes': notes};
   }
 
   @override

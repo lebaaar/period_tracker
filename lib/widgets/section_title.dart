@@ -12,11 +12,7 @@ class SectionTitle extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: padding ?? const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.left,
-        ),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.left),
       ),
     );
   }

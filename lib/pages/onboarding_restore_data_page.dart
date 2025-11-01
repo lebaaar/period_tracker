@@ -11,10 +11,7 @@ class OnboardingRestoreDataPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Restore Data',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        title: Text('Restore Data', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -31,11 +28,7 @@ class OnboardingRestoreDataPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                Icons.restore_rounded,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              Icon(Icons.restore_rounded, size: 100, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -49,18 +42,8 @@ class OnboardingRestoreDataPage extends StatelessWidget {
                 onPressed: () {
                   context.push('/help?initialPage=restore');
                 },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                ),
-                child: Text(
-                  'Need help?',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+                child: Text('Need help?', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
               ),
             ],
           ),

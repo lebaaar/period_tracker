@@ -12,8 +12,7 @@ import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 class ApplicationDataService {
-  static final ApplicationDataService _instance =
-      ApplicationDataService._constructor();
+  static final ApplicationDataService _instance = ApplicationDataService._constructor();
 
   factory ApplicationDataService() {
     return _instance;
@@ -38,11 +37,7 @@ class ApplicationDataService {
   /// @param file The XFile object representing the backup file to be shared
   /// @returns true if sharing was successful, false otherwise
   Future<bool> shareBackup(XFile file) async {
-    final params = ShareParams(
-      subject: kBackupEmailTitle,
-      text: kBackupEmailText,
-      files: [file],
-    );
+    final params = ShareParams(subject: kBackupEmailTitle, text: kBackupEmailText, files: [file]);
 
     final result = await SharePlus.instance.share(params);
     if (result.status == ShareResultStatus.success) {
@@ -74,16 +69,10 @@ class ApplicationDataService {
       'version': (await PackageInfo.fromPlatform()).version,
       'buildNumber': (await PackageInfo.fromPlatform()).buildNumber,
       'timestamp': DateTime.now().toIso8601String(),
-      'database': {
-        'periods': periods.map((period) => period.toMap()).toList(),
-        'user': user?.toMap(),
-        'settings': settings.toMap(),
-      },
+      'database': {'periods': periods.map((period) => period.toMap()).toList(), 'user': user?.toMap(), 'settings': settings.toMap()},
       'sharedPreferences': sharedPrefsData,
     };
-    final String jsonString = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(backupData);
+    final String jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
     return jsonString;
   }
@@ -121,13 +110,9 @@ class ApplicationDataService {
       // Load database data
       final Map<String, dynamic> database = backupData['database'];
       final User user = User.fromMap(database['user'] as Map<String, dynamic>);
-      final Settings settings = Settings.fromMap(
-        database['settings'] as Map<String, dynamic>,
-      );
+      final Settings settings = Settings.fromMap(database['settings'] as Map<String, dynamic>);
       final List<dynamic> periodsList = database['periods'] as List<dynamic>;
-      final List<Period> periods = periodsList
-          .map((periodMap) => Period.fromMap(periodMap as Map<String, dynamic>))
-          .toList();
+      final List<Period> periods = periodsList.map((periodMap) => Period.fromMap(periodMap as Map<String, dynamic>)).toList();
 
       // Restore user data
       await databaseService.insertUser(user);
@@ -136,21 +121,20 @@ class ApplicationDataService {
       await databaseService.insertSettings(settings);
 
       // Restore periods data
-      for (var period in periods) {
+      for (final Period period in periods) {
         await databaseService.insertPeriod(period);
       }
 
       // Restore shared preferences data
-      final Map<String, dynamic> sharedPrefsData =
-          backupData['sharedPreferences'] as Map<String, dynamic>;
+      final Map<String, dynamic> sharedPrefsData = backupData['sharedPreferences'] as Map<String, dynamic>;
 
       if (backupData['sharedPreferences'] == null) {
         return true;
       }
 
-      for (var entry in sharedPrefsData.entries) {
-        final key = entry.key;
-        final value = entry.value;
+      for (final MapEntry<String, dynamic> entry in sharedPrefsData.entries) {
+        final String key = entry.key;
+        final dynamic value = entry.value;
         switch (key) {
           case 'onboarding_complete':
             setOnboardingValue(value as bool);
@@ -191,14 +175,8 @@ class ApplicationDataService {
   /// @param data The Map representation of the backup data
   /// @returns true if the backup data structure is valid, false otherwise
   bool isBackupDataValid(Map<String, dynamic> data) {
-    final requiredKeys = {
-      'version',
-      'buildNumber',
-      'timestamp',
-      'database',
-      'sharedPreferences',
-    };
-    for (String key in requiredKeys) {
+    final Set<String> requiredKeys = {'version', 'buildNumber', 'timestamp', 'database', 'sharedPreferences'};
+    for (final String key in requiredKeys) {
       if (!data.containsKey(key)) {
         return false;
       }
@@ -207,8 +185,8 @@ class ApplicationDataService {
     final dbContent = data['database'];
     if (dbContent is! Map<String, dynamic>) return false;
 
-    final dbRequiredKeys = {'periods', 'user', 'settings'};
-    for (String key in dbRequiredKeys) {
+    final Set<String> dbRequiredKeys = {'periods', 'user', 'settings'};
+    for (final String key in dbRequiredKeys) {
       if (!dbContent.containsKey(key)) {
         return false;
       }
@@ -217,7 +195,7 @@ class ApplicationDataService {
     // try parsing periods
     final periods = dbContent['periods'];
     if (periods is! List<dynamic>) return false;
-    for (var period in periods) {
+    for (final dynamic period in periods) {
       if (period is! Map<String, dynamic>) return false;
       try {
         Period.fromMap(period);

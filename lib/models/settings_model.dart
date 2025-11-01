@@ -20,10 +20,7 @@ class Settings {
   factory Settings.fromMap(Map<String, dynamic> map) {
     // parse notificationTime
     final timeParts = (map['notificationTime'] as String).split(':');
-    final notificationTime = TimeOfDay(
-      hour: int.parse(timeParts[0]),
-      minute: int.parse(timeParts[1]),
-    );
+    final notificationTime = TimeOfDay(hour: int.parse(timeParts[0]), minute: int.parse(timeParts[1]));
 
     return Settings(
       id: map['id'] as int?,
