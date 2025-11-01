@@ -41,9 +41,6 @@ android {
 
     signingConfigs {
         create("release") {
-            if (!keystorePropertiesFile.exists()) {
-                throw GradleException("Keystore file not found: $keystorePropertiesFile")
-            }
             keyAlias = keystoreProperties["keyAlias"]?.toString() ?: ""
             keyPassword = keystoreProperties["keyPassword"]?.toString() ?: ""
             storeFile = keystoreProperties["storeFile"]?.let { file(it) }

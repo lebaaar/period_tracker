@@ -75,7 +75,7 @@ To run the app in debug mode use:<br>
 `flutter run --debug`
 
 ### Release build
-To run app in release mode you will need `key.properties` file in the root of the project. Structure of this file can be found in `example-key.properties` file.
+To run app in release mode you will need `android/key.properties` file. Structure of this file can be found in `example-key.properties` file.
 
 To run the app in release mode ru:n<br>
 `flutter run --release`
