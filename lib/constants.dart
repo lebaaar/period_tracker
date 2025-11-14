@@ -96,3 +96,7 @@ To restore your data on a new device:
 
 // Contact
 const String kContactEmail = 'lanlebar6@gmail.com';
+
+// APIs
+const String kDogApiBase = 'https://dog.ceo/api/breed';
+const String kCatApiBase = 'https://api.thecatapi.com';

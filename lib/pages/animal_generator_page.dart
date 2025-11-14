@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:open_mail/open_mail.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/dog_breed.dart';
 import 'package:period_tracker/services/animal_image_service.dart';
@@ -38,6 +42,60 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
         _isLoadingImage = false;
       });
     }
+  }
+
+  Future<void> openEmail() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    final EmailContent emailContent = EmailContent(
+      to: [kContactEmail],
+      subject: 'Issue with Period Tracker',
+      body:
+          '''
+Hello,
+
+I'm having an issue with fetching doggy images in the Period Tracker app.
+
+[Timestamp: ${DateTime.now()}]
+[Version: ${packageInfo.version}+${packageInfo.buildNumber}]
+[Device: ${Platform.operatingSystem}]
+[OS version: ${Platform.operatingSystemVersion}]''',
+    );
+    final OpenMailAppResult result;
+
+    try {
+      result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);
+
+      if (!result.didOpen && !result.canOpen) {
+        showNoMailAppsDialog(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+    }
+  }
+
+  void showNoMailAppsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Cannot Open Email App"),
+          content: const Text("No email apps installed on this device. Please install an email app to contact support."),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        );
+      },
+    );
   }
 
   @override
@@ -104,12 +162,37 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Make sure you are connected to the internet and try again. If the issue persists, there might be a problem with the API.',
+                              'Make sure you are connected to the internet and try again.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
                               ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('If the issue persists ', style: Theme.of(context).textTheme.bodyMedium),
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    alignment: Alignment.centerLeft,
+                                  ),
+                                  onPressed: () => openEmail(),
+                                  child: Text(
+                                    'contact support',
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                                Text('.'),
+                              ],
                             ),
                           ],
                         ),
