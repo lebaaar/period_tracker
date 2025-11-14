@@ -23,8 +23,6 @@
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
   </a>
   <br>
-  <small><i>*currently in testing phase, available soon*</i></small>
-  <br>
   <br>
   <a href="download/app-release.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="220" alt="Download APK">
