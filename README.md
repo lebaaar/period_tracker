@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Logo" height="60">
+  <img src="images/logo.png" alt="Logo" height="70">
   <h1 align="center">Period Tracker</h1>
 </div>
 
@@ -29,7 +29,7 @@
   </a>
   <br>
   <p align="center">
-  <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because f*ck Apple and their 99$/year membership</i>
+  <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because fuck Apple and their 99$/year membership</i>
   </p>
 </p>
 
