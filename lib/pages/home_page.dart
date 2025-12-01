@@ -43,13 +43,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     final DateTime now = DateTime.now();
     final int currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.utc(now.year, now.month, now.day));
-    final double? avgCycleLength = periodProvider.getAverageCycleLength(userCycleLength: user?.cycleLength); // provide userCycleLength if available
+    double? cycleLength;
+    if (settings?.predictionMode == 'dynamic') {
+      cycleLength = periodProvider.getAverageCycleLength(userCycleLength: user?.cycleLength); // provide userCycleLength if available
+    } else {
+      cycleLength = user?.cycleLength.toDouble();
+    }
+
     final status = periodProvider.getStatusMessage(Theme.of(context).colorScheme.tertiary, nextPeriodDate);
 
-    final bool showProgressBar = avgCycleLength != null;
+    final bool showProgressBar = cycleLength != null;
     double progress = 0;
-    if (avgCycleLength != null && avgCycleLength > 0) {
-      progress = currentCycleDay / avgCycleLength;
+    if (cycleLength != null && cycleLength > 0) {
+      progress = currentCycleDay / cycleLength;
       if (progress > 1) progress = 1;
     }
 
