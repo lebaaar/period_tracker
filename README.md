@@ -3,7 +3,7 @@
   <h1 align="center">Period Tracker</h1>
 </div>
 
-<div>
+<div align="center">
   Period tracking mobile app I built for my girlfriend. She needed a simple app to track her period cycle without all the annoying ads and premium subscription offers. Requires no internet access, all data is stored on device.
 </div>
 
