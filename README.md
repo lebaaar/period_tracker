@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="images/logo.png" alt="Logo" height="70">
+  <img src="images/logo.png" alt="Period Tracker icon" height="70">
   <h1 align="center">Period Tracker</h1>
 </div>
 
@@ -13,7 +13,7 @@
 - Dynamic period prediction - smartly adjusts based on past cycles
 - Static mode - set a fixed period & cycle duration for consistent tracking
 - Customizable reminders - get notified n days before your period starts
-- Offline data transfer between devices (restore on a new device)
+- Offline data transfer between devices (for restoring data on a new device)
 - Easter eggs :)
 
 ## Download
@@ -29,7 +29,7 @@
   </a>
   <br>
   <p align="center">
-  <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because fuck Apple and their 99$/year membership</i>
+    <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because fuck Apple and their $99/year membership</i>
   </p>
 </p>
 
