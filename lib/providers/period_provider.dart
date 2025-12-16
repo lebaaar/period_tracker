@@ -145,15 +145,16 @@ class PeriodProvider extends ChangeNotifier {
 
     status.color = Colors.green;
 
-    _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
-    final lastPeriod = _periods.last;
+    final List<Period> sortedPeriods = List<Period>.from(_periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+
+    final lastPeriod = sortedPeriods.last;
     final DateTime lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
     final DateTime lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
     final DateTime now = DateTime.now();
     final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
     // Check if currently in period
-    if (today.isAfter(lastStart.subtract(Duration(days: 1))) && today.isBefore(lastEnd.add(Duration(days: 1)))) {
+    if (today.isAfter(lastStart) && today.isBefore(lastEnd)) {
       status.text = 'Currently in period';
       return status;
     }
