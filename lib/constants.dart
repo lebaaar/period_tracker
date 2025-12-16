@@ -8,8 +8,8 @@ const double kBorderRadius = 12;
 const double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
-final DateTime kFirstCalendarDay = DateTime.utc(2020, 1, 1);
-final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31);
+final DateTime kFirstCalendarDay = DateTime.utc(2004, 3, 9);
+final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31); // 8 years into the future
 
 // table_calendar specific
 // logged period gradients - gradient the whole background

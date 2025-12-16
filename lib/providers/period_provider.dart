@@ -150,8 +150,10 @@ class PeriodProvider extends ChangeNotifier {
     final lastPeriod = sortedPeriods.last;
     final DateTime lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
     final DateTime lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
+
+    // ensure both nextPeriodDate and today are stripped of time and in UTC
     final DateTime now = DateTime.now();
-    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
     // Check if currently in period
     if (today.isAfter(lastStart) && today.isBefore(lastEnd)) {
@@ -159,9 +161,10 @@ class PeriodProvider extends ChangeNotifier {
       return status;
     }
 
-    final int daysUntilNext = nextPeriodDate.difference(today).inDays;
+    // final int diff = nextPeriodDate.difference(today).inDays; // fails if not entire days
+    final int diff = nextPeriodDate.day - today.day;
 
-    return PeriodStatusMessageHelper.getPeriodStatusMessage(daysUntilNext);
+    return PeriodStatusMessageHelper.getPeriodStatusMessage(diff);
   }
 
   // Returns average period length in days
