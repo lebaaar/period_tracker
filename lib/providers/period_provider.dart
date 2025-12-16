@@ -151,7 +151,7 @@ class PeriodProvider extends ChangeNotifier {
     final DateTime lastStart = DateTimeHelper.stripTime(lastPeriod.startDate);
     final DateTime lastEnd = DateTimeHelper.stripTime(lastPeriod.endDate!);
     final DateTime now = DateTime.now();
-    final DateTime today = DateTime.utc(now.year, now.month, now.day);
+    final DateTime today = DateTime(now.year, now.month, now.day);
 
     // Check if currently in period
     if (today.isAfter(lastStart) && today.isBefore(lastEnd)) {
