@@ -117,7 +117,11 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
-    final Period newPeriod = Period(startDate: _rangeStart!, endDate: _rangeEnd!, notes: _notesController.text);
+    // normalize dates to UTC
+    final DateTime rangeStart = DateTime.utc(_rangeStart!.year, _rangeStart!.month, _rangeStart!.day);
+    final DateTime rangeEnd = DateTime.utc(_rangeEnd!.year, _rangeEnd!.month, _rangeEnd!.day);
+
+    final Period newPeriod = Period(startDate: rangeStart, endDate: rangeEnd, notes: _notesController.text);
     await context.read<PeriodProvider>().insertPeriod(newPeriod);
     await context.read<PeriodProvider>().fetchPeriods();
 
