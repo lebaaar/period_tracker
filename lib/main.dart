@@ -22,6 +22,7 @@ import 'package:period_tracker/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
+import 'pages/debug_page.dart';
 import 'pages/home_page.dart';
 import 'pages/insights_page.dart';
 import 'pages/log_period_page.dart';
@@ -232,8 +233,8 @@ class _MainNavigationState extends State<MainNavigation> {
     }
   }
 
-  final List<Widget> pages = [HomePage(), InsightsPage(), ProfilePage()];
-  final List<String> appBarTitles = ['Home', 'Insights', 'Profile'];
+  final List<Widget> pages = [HomePage(), InsightsPage(), ProfilePage(), DebugPage()];
+  final List<String> appBarTitles = ['Home', 'Insights', 'Profile', 'Debug'];
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +265,11 @@ class _MainNavigationState extends State<MainNavigation> {
             icon: Icon(Icons.person_rounded),
             selectedIcon: Icon(Icons.person_rounded, color: Theme.of(context).colorScheme.onPrimary),
             label: 'Profile',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bug_report),
+            selectedIcon: Icon(Icons.bug_report, color: Theme.of(context).colorScheme.onPrimary),
+            label: 'Debug',
           ),
         ],
         selectedIndex: _selectedIndex,
