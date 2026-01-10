@@ -44,7 +44,7 @@
 ## Legal
 All data is stored locally on your device and is never transmitted. Complete privacy policy is available [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
 
-Distributed under the [MIT License](/LICENSE.txt).
+Distributed under the [GNU General Public License v3](/LICENSE).
 
 ## Development
 Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
