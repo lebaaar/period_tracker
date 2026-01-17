@@ -24,7 +24,7 @@
   </a>
   <br>
   <br>
-  <a href="download/app-release.apk">
+  <a href="https://raw.githubusercontent.com/lebaaar/period_tracker/main/download/app-release.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="220" alt="Download APK">
   </a>
   <br>
