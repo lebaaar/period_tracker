@@ -16,8 +16,7 @@
 - Offline data transfer between devices (for restoring data on a new device)
 - Easter eggs :)
 
-## Download
-
+<h2>Download&nbsp;<img src="https://img.shields.io/badge/Downloads-100%2B-brightgreen" alt="100+ downloads"></h2>
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker" target="_blank">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
@@ -45,7 +44,7 @@
 ## Legal
 All data is stored locally on your device and is never transmitted. Complete privacy policy is available [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
 
-Distributed under the [MIT License](/LICENSE.txt).
+Distributed under the [GNU General Public License v3](/LICENSE).
 
 ## Development
 Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
