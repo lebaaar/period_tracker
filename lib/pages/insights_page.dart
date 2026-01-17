@@ -17,6 +17,8 @@ enum SortOption { dateNewest, dateOldest, periodLengthShortest, periodLengthLong
 
 class _InsightsPageState extends State<InsightsPage> {
   SortOption _currentSortOption = SortOption.dateNewest;
+  bool _showOnlyLast6ForCycleLength = true; // Track whether to show last 6 or all history for cycle length
+  bool _showOnlyLast6ForPeriodLength = true; // Track whether to show last 6 or all history for period length
 
   String _getSortOptionText(SortOption option) {
     switch (option) {
@@ -90,6 +92,16 @@ class _InsightsPageState extends State<InsightsPage> {
     return sortedPeriods;
   }
 
+  void _showToggleMessage(BuildContext context, String statName) {
+    final isCycleLength = statName == 'cycle';
+    final isShowingLast6 = isCycleLength ? _showOnlyLast6ForCycleLength : _showOnlyLast6ForPeriodLength;
+    final displayName = isCycleLength ? 'Cycle Length' : 'Period Length';
+    final message = isShowingLast6 ? 'Average $displayName for the last 6 periods' : 'Average $displayName for all time';
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), behavior: SnackBarBehavior.floating));
+  }
+
   @override
   Widget build(BuildContext context) {
     final PeriodProvider periodProvider = Provider.of<PeriodProvider>(context);
@@ -120,17 +132,37 @@ class _InsightsPageState extends State<InsightsPage> {
               children: [
                 if (periodProvider.getAverageCycleLength() != null && periodProvider.getAveragePeriodLength() != null)
                   SizedBox(
-                    height: 130,
+                    height: 150,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: _statCard(title: "Average Cycle Length", value: periodProvider.getAverageCycleLength()!.toStringAsFixed(1)),
+                          child: _statCard(
+                            title: "Average Cycle Length",
+                            value: periodProvider.getAverageCycleLength(useRecent6: _showOnlyLast6ForCycleLength)?.toStringAsFixed(1) ?? '0.0',
+                            onTap: () {
+                              setState(() {
+                                _showOnlyLast6ForCycleLength = !_showOnlyLast6ForCycleLength;
+                              });
+                              // if 6 > periods logged don't show toggle message
+                              if (periods.length > 6) _showToggleMessage(context, 'cycle');
+                            },
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _statCard(title: "Average Period Length", value: periodProvider.getAveragePeriodLength()!.toStringAsFixed(1)),
+                          child: _statCard(
+                            title: "Average Period Length",
+                            value: periodProvider.getAveragePeriodLength(useRecent6: _showOnlyLast6ForPeriodLength)?.toStringAsFixed(1) ?? '0.0',
+                            onTap: () {
+                              setState(() {
+                                _showOnlyLast6ForPeriodLength = !_showOnlyLast6ForPeriodLength;
+                              });
+                              // if 6 > periods logged don't show toggle message
+                              if (periods.length > 6) _showToggleMessage(context, 'period');
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -268,7 +300,7 @@ class _InsightsPageState extends State<InsightsPage> {
     );
   }
 
-  Widget _statCard({required String title, required String value}) {
+  Widget _statCard({required String title, required String value, required VoidCallback onTap}) {
     return Card(
       clipBehavior: Clip.antiAlias,
       color: Theme.of(context).colorScheme.secondary,
@@ -286,7 +318,7 @@ class _InsightsPageState extends State<InsightsPage> {
             ],
           ),
         ),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }

@@ -165,11 +165,17 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns average period length in days
-  double? getAveragePeriodLength() {
+  double? getAveragePeriodLength({bool? useRecent6}) {
     // Only consider periods with both start and end dates
     final completed = _periods.where((p) => p.endDate != null).toList();
     if (completed.isEmpty) return null;
-    final lengths = completed.map((p) => p.endDate!.difference(p.startDate).inDays + 1).where((days) => days > 0).toList();
+
+    List<Period> periodsToUse = completed;
+    if (useRecent6 == true && completed.length > 6) {
+      periodsToUse = completed.sublist(completed.length - 6);
+    }
+
+    final lengths = periodsToUse.map((p) => p.endDate!.difference(p.startDate).inDays + 1).where((days) => days > 0).toList();
     if (lengths.isEmpty) return null;
     return lengths.reduce((a, b) => a + b) / lengths.length;
   }
