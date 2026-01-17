@@ -63,18 +63,23 @@ Please provide a clear PR description
 
 ### Debug build
 To run the app in debug mode use:<br>
-`flutter run --debug`
+```
+flutter run --debug
+```
 
 ### Release build
 To run app in release mode you will need `android/key.properties` file. Structure of this file can be found in `example-key.properties` file.
 
 To run the app in release mode run:<br>
-`flutter run --release`
+```
+flutter run --release
+```
 
-To prepare app for publishing run:<br>
-`flutter build appbundle --release`
-
-Make sure to update the version and build number before every release.
+To generate the .aab for publishing to Play Store run:
+```
+flutter build appbundle --release
+```
+Don't forget to update the version and build number in `pubspec.yaml` before publishing.
 
 ### Useful tips
 - If you're encountering strange bugs, run `flutter clean` followed by `flutter pub get`
