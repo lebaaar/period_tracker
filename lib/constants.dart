@@ -96,6 +96,8 @@ To restore your data on a new device:
 
 // Contact
 const String kContactEmail = 'lanlebar6@gmail.com';
+const String kKofiUrl = 'https://ko-fi.com/lebaaar';
+const String kGitHubUrl = 'https://github.com/lebaaar/period_tracker';
 
 // APIs
 const String kDogApiBase = 'https://dog.ceo/api/breed';

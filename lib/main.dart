@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/pages/about_page.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
@@ -148,6 +149,12 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
               path: 'notifications',
               builder: (context, state) {
                 return NotificationsPage();
+              },
+            ),
+            GoRoute(
+              path: 'about',
+              builder: (context, state) {
+                return AboutPage();
               },
             ),
             GoRoute(
