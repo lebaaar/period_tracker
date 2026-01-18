@@ -35,16 +35,16 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   void _onVersionTapped() async {
-    if (_showVersionDetails) return;
-
     setState(() {
       _versionTapCount++;
     });
 
     if (_versionTapCount >= 9) {
-      await setDisplayVersionDetailsValue(true);
+      _versionTapCount = 0;
+      final newState = !_showVersionDetails;
+      await setDisplayVersionDetailsValue(newState);
       setState(() {
-        _showVersionDetails = true;
+        _showVersionDetails = newState;
       });
     }
   }
