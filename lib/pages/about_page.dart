@@ -291,7 +291,6 @@ Development details (please don't remove this, as it helps us diagnose the issue
 
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
-    print(uri.toString());
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
