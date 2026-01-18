@@ -219,8 +219,8 @@ class _ProfilePageState extends State<ProfilePage> {
         subtitle = 'Manage your notification settings';
         break;
       case 'about':
-        title = 'About Period Tracker';
-        subtitle = 'Application details, version information, contact developer';
+        title = 'About';
+        subtitle = 'Application details and contact information';
         break;
       case 'transfer':
         title = 'Transfer Data';

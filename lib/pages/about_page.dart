@@ -210,7 +210,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
               context,
               icon: Icons.bug_report_rounded,
               title: 'Report a Bug',
-              subtitle: 'Help us improve the app',
+              subtitle: 'Help improve the app',
               onTap: () => openEmail(true),
             ),
             const SizedBox(height: 24),
