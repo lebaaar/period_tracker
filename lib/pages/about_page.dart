@@ -29,6 +29,7 @@ class _AboutPageState extends State<AboutPage> {
 
   Future<void> _loadDisplayVersionPreference() async {
     final saved = await getDisplayVersionDetails();
+    if (!mounted) return;
     setState(() {
       _showVersionDetails = saved;
     });
@@ -43,6 +44,7 @@ class _AboutPageState extends State<AboutPage> {
       _versionTapCount = 0;
       final newState = !_showVersionDetails;
       await setDisplayVersionDetailsValue(newState);
+      if (!mounted) return;
       setState(() {
         _showVersionDetails = newState;
       });
@@ -163,8 +165,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
                                   width: 20,
                                   child: IconButton(
                                     onPressed: () => _checkForUpdates(),
-                                    icon: Icon(Icons.system_update_rounded, size: 14),
-                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.system_update_rounded, size: 14),
                                     constraints: const BoxConstraints(),
                                     tooltip: 'Check for updates',
                                   ),
@@ -245,10 +246,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: isPrimary ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.primaryContainer,
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Theme.of(context).colorScheme.primaryContainer),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
