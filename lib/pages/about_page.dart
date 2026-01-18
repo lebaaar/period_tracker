@@ -166,6 +166,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
                                   child: IconButton(
                                     onPressed: () => _checkForUpdates(),
                                     icon: const Icon(Icons.system_update_rounded, size: 14),
+                                    padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
                                     tooltip: 'Check for updates',
                                   ),
