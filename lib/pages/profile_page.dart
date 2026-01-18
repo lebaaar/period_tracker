@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
@@ -23,19 +22,15 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late final _packageInfoFuture = PackageInfo.fromPlatform();
   late final TextEditingController _nameController;
   late final TextEditingController _cycleLengthController;
   late final TextEditingController _periodLengthController;
 
-  int _versionTapCount = 0;
-  bool _showVersionDetails = false;
   bool _showAnimalGeneratorLink = false;
 
   @override
   void initState() {
     super.initState();
-    _loadDisplayVersionPreference();
     _loadAnimalGeneratorUnlocked();
 
     _nameController = TextEditingController();
@@ -51,33 +46,11 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  Future<void> _loadDisplayVersionPreference() async {
-    final saved = await getDisplayVersionDetails();
-    setState(() {
-      _showVersionDetails = saved;
-    });
-  }
-
   Future<void> _loadAnimalGeneratorUnlocked() async {
     final saved = await getAnimalGeneratorUnlocked();
     setState(() {
       _showAnimalGeneratorLink = saved;
     });
-  }
-
-  void _onVersionTapped() async {
-    if (_showVersionDetails) return;
-
-    setState(() {
-      _versionTapCount++;
-    });
-
-    if (_versionTapCount >= 9) {
-      await setDisplayVersionDetailsValue(true);
-      setState(() {
-        _showVersionDetails = true;
-      });
-    }
   }
 
   @override
@@ -147,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
           },
         ),
         const Divider(),
-        SectionTitle('App settings'),
+        SectionTitle('Settings'),
         Consumer<SettingsProvider>(
           builder: (context, settingsProvider, child) {
             final predictionMode = settingsProvider.settings?.predictionMode;
@@ -208,33 +181,10 @@ class _ProfilePageState extends State<ProfilePage> {
           },
         ),
         const Divider(),
-        SectionTitle('Account & Data'),
+        SectionTitle('Application & Data'),
+        _buildListTile(user, settings, 'about'),
         _buildListTile(user, settings, 'transfer'),
         _buildListTile(user, settings, 'delete'),
-        const SizedBox(height: 24),
-        if (_showVersionDetails) Center(child: Text('Made with ❤️ for Nina', style: Theme.of(context).textTheme.bodySmall)),
-        Center(
-          child: GestureDetector(
-            onTap: _onVersionTapped,
-            child: FutureBuilder<PackageInfo>(
-              future: _packageInfoFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(padding: const EdgeInsets.all(8), child: const CircularProgressIndicator());
-                }
-                if (snapshot.hasError || !snapshot.hasData) {
-                  return const SizedBox();
-                }
-                final packageInfo = snapshot.data!;
-                return Text(
-                  'Version ${packageInfo.version} ${packageInfo.buildNumber == '' ? '' : '(${packageInfo.buildNumber})'}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                );
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
         if (_showAnimalGeneratorLink)
           Column(
             children: [
@@ -267,6 +217,10 @@ class _ProfilePageState extends State<ProfilePage> {
       case 'notifications':
         title = 'Notifications';
         subtitle = 'Manage your notification settings';
+        break;
+      case 'about':
+        title = 'App Info';
+        subtitle = 'Version, contact & support';
         break;
       case 'transfer':
         title = 'Transfer Data';
@@ -346,6 +300,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   break;
                 case 'notifications':
                   context.go('/notifications');
+                  break;
+                case 'about':
+                  context.push('/about');
                   break;
                 case 'transfer':
                   _showTransferDialog();

@@ -2,7 +2,7 @@ name: period_tracker
 description: "Period tracking app"
 publish_to: 'none'
 
-version: 1.1.8+20
+version: 1.2.0+21
 
 environment:
   sdk: ^3.8.1
@@ -32,6 +32,7 @@ dependencies:
   timezone: ^0.10.1
   open_mail: ^1.2.0
   restart_app: ^1.3.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -45,6 +46,7 @@ flutter:
   # https://flutter.dev/to/resolution-aware-images
   # https://flutter.dev/to/asset-from-package
   assets:
+    - assets/images/logo.png
     - assets/images/tutorials/transfer-profile-page.png
     - assets/images/tutorials/transfer-dialog.png
     - assets/images/tutorials/transfer-share.png
