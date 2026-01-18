@@ -284,23 +284,8 @@ Development details (please don't remove this, as it helps us diagnose the issue
   }
 
   Future<void> _checkForUpdates() async {
-    try {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Checking for updates...'), behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2)));
-      // TODO: Implement actual update check using package_info_plus or in_app_update
-      await Future.delayed(const Duration(seconds: 2));
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('You are on the latest version!'), behavior: SnackBarBehavior.floating));
-    } catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot check for updates at this time. Please try again later.'), behavior: SnackBarBehavior.floating),
-      );
+    if (Platform.isAndroid) {
+      _launchUrl(kGooglePlayStoreUrl);
     }
   }
 
