@@ -306,6 +306,7 @@ class _InsightsPageState extends State<InsightsPage> {
       color: Theme.of(context).colorScheme.secondary,
       margin: const EdgeInsets.all(8),
       child: InkWell(
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -318,7 +319,6 @@ class _InsightsPageState extends State<InsightsPage> {
             ],
           ),
         ),
-        onTap: onTap,
       ),
     );
   }
