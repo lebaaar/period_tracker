@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:open_mail/open_mail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
@@ -18,6 +19,7 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
+  AppUpdateInfo? _updateInfo;
   int _versionTapCount = 0;
   bool _showVersionDetails = false;
 
@@ -25,6 +27,7 @@ class _AboutPageState extends State<AboutPage> {
   void initState() {
     super.initState();
     _loadDisplayVersionPreference();
+    _checkForUpdate();
   }
 
   Future<void> _loadDisplayVersionPreference() async {
@@ -49,6 +52,16 @@ class _AboutPageState extends State<AboutPage> {
         _showVersionDetails = newState;
       });
     }
+  }
+
+  Future<void> _checkForUpdate() async {
+    InAppUpdate.checkForUpdate()
+        .then((info) {
+          setState(() {
+            _updateInfo = info;
+          });
+        })
+        .catchError((e) {});
   }
 
   Future<void> openEmail(bool bugReport) async {
@@ -116,6 +129,27 @@ Development details (please don't remove this, as it helps us diagnose the issue
     );
   }
 
+  Future<void> _openPlayStore() async {
+    if (Platform.isAndroid) {
+      _launchUrl(kGooglePlayStoreUrl);
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,22 +189,36 @@ Development details (please don't remove this, as it helps us diagnose the issue
                                 GestureDetector(
                                   onTap: _onVersionTapped,
                                   child: Text(
-                                    'Version ${snapshot.data!.version}+${snapshot.data!.buildNumber}',
+                                    'v${snapshot.data!.version}+${snapshot.data!.buildNumber}',
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: IconButton(
-                                    onPressed: () => _checkForUpdates(),
-                                    icon: const Icon(Icons.system_update_rounded, size: 14),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    tooltip: 'Check for updates',
+                                if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) ...[
+                                  Text('•'),
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () => _openPlayStore(),
+                                    child: Text(
+                                      'Update available',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ] else
+                                  SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: IconButton(
+                                      onPressed: () => _openPlayStore(),
+                                      icon: const Icon(Icons.system_update_rounded, size: 14),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      tooltip: 'Check for updates',
+                                    ),
+                                  ),
                               ],
                             ),
                           ],
@@ -280,26 +328,5 @@ Development details (please don't remove this, as it helps us diagnose the issue
         ),
       ),
     );
-  }
-
-  Future<void> _checkForUpdates() async {
-    if (Platform.isAndroid) {
-      _launchUrl(kGooglePlayStoreUrl);
-    }
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
-    }
   }
 }
