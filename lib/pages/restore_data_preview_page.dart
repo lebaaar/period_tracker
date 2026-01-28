@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:open_mail/open_mail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/enums/email_type.dart';
+import 'package:period_tracker/exceptions/email_exception.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
@@ -12,7 +12,7 @@ import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
-import 'package:period_tracker/services/encryption_service.dart';
+import 'package:period_tracker/services/email_service.dart';
 import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/utils/file_helper.dart';
@@ -234,6 +234,29 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     }
   }
 
+  Future<void> openEmail() async {
+    try {
+      await EmailService.openEmail(EmailType.bugReport, kRestoreErrorCode, sharedFileContent: _sharedFileContent);
+    } on EmailException catch (e) {
+      switch (e.errorCode) {
+        case kNoEmailAppErrorCode:
+          showNoMailAppsDialog(context);
+          return;
+        case kUnknownErrorCode:
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+          return;
+      }
+    } catch (_) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+    }
+  }
+
   void showNoMailAppsDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -253,43 +276,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         );
       },
     );
-  }
-
-  Future<void> openEmail() async {
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final String encodedContent = _sharedFileContent != null ? EncryptionService().base64Encode(_sharedFileContent.toString()) : 'N/A';
-
-    final EmailContent emailContent = EmailContent(
-      to: [kContactEmail],
-      subject: 'Issue with Period Tracker',
-      body:
-          '''
-Hello,
-
-I'm having an issue with restoring data in the Period Tracker app. Here are the details:
-
-[Error: ${_error ?? 'Unknown error'}]
-[Restore error: ${_restoreError.toString()}]
-[Timestamp: ${DateTime.now()}]
-[Version: ${packageInfo.version}+${packageInfo.buildNumber}]
-[Device: ${Platform.operatingSystem}]
-[OS version: ${Platform.operatingSystemVersion}]
-[Backup content: $encodedContent]''',
-    );
-    final OpenMailAppResult result;
-
-    try {
-      result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);
-
-      if (!result.didOpen && !result.canOpen) {
-        showNoMailAppsDialog(context);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
-    }
   }
 
   @override

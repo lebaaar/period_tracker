@@ -1,12 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:open_mail/open_mail.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/dog_breed.dart';
+import 'package:period_tracker/enums/email_type.dart';
+import 'package:period_tracker/exceptions/email_exception.dart';
 import 'package:period_tracker/services/animal_image_service.dart';
+import 'package:period_tracker/services/email_service.dart';
 
 class AnimalGeneratorPage extends StatefulWidget {
   const AnimalGeneratorPage({super.key});
@@ -45,31 +44,21 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
   }
 
   Future<void> openEmail() async {
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-
-    final EmailContent emailContent = EmailContent(
-      to: [kContactEmail],
-      subject: 'Issue with Period Tracker',
-      body:
-          '''
-Hello,
-
-I'm having an issue with fetching doggy images in the Period Tracker app.
-
-[Timestamp: ${DateTime.now()}]
-[Version: ${packageInfo.version}+${packageInfo.buildNumber}]
-[Device: ${Platform.operatingSystem}]
-[OS version: ${Platform.operatingSystemVersion}]''',
-    );
-    final OpenMailAppResult result;
-
     try {
-      result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);
-
-      if (!result.didOpen && !result.canOpen) {
-        showNoMailAppsDialog(context);
+      await EmailService.openEmail(EmailType.bugReport, kDogApiErrorCode);
+    } on EmailException catch (e) {
+      switch (e.errorCode) {
+        case kNoEmailAppErrorCode:
+          showNoMailAppsDialog(context);
+          return;
+        case kUnknownErrorCode:
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+          return;
       }
-    } catch (e) {
+    } catch (_) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(
         context,

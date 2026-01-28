@@ -1,13 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:open_mail/open_mail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
-import 'package:period_tracker/services/application_data_service.dart';
-import 'package:period_tracker/services/encryption_service.dart';
+import 'package:period_tracker/enums/email_type.dart';
+import 'package:period_tracker/exceptions/email_exception.dart';
+import 'package:period_tracker/services/email_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -64,43 +63,22 @@ class _AboutPageState extends State<AboutPage> {
         .catchError((e) {});
   }
 
-  Future<void> openEmail(bool bugReport) async {
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String? appContent;
+  Future<void> openEmail(EmailType emailType) async {
     try {
-      appContent = await ApplicationDataService().createBackupFileContent();
-    } catch (e) {
-      appContent = 'Error generating application data: $e';
-    }
-
-    final String encodedContent = EncryptionService().base64Encode(appContent);
-    final EmailContent emailContent = EmailContent(
-      to: [kContactEmail],
-      subject: bugReport == true ? 'Issue with Period Tracker' : 'Period Tracker Feedback',
-      body: bugReport == true
-          ? '''
-Hello,
-
-I'm having an issue with Period Tracker app: <SPECIFY YOUR ISSUE HERE>
-\n\n\n\n\n
-Development details (please don't remove this, as it helps us diagnose the issue):
-
-[Timestamp: ${DateTime.now()}]
-[Version: ${packageInfo.version}+${packageInfo.buildNumber}]
-[Device: ${Platform.operatingSystem}]
-[OS version: ${Platform.operatingSystemVersion}]
-[Application data: $encodedContent]'''
-          : null,
-    );
-    final OpenMailAppResult result;
-
-    try {
-      result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);
-
-      if (!result.didOpen && !result.canOpen) {
-        showNoMailAppsDialog(context);
+      await EmailService.openEmail(emailType, null);
+    } on EmailException catch (e) {
+      switch (e.errorCode) {
+        case kNoEmailAppErrorCode:
+          showNoMailAppsDialog(context);
+          return;
+        case kUnknownErrorCode:
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+          return;
       }
-    } catch (e) {
+    } catch (_) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(
         context,
@@ -253,7 +231,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
               icon: Icons.mail_rounded,
               title: 'Contact Developer',
               subtitle: 'Have questions or suggestions?',
-              onTap: () => openEmail(false),
+              onTap: () => openEmail(EmailType.feedback),
             ),
             const SizedBox(height: 12),
             _buildActionButton(
@@ -261,7 +239,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
               icon: Icons.bug_report_rounded,
               title: 'Report a Bug',
               subtitle: 'Help improve the app',
-              onTap: () => openEmail(true),
+              onTap: () => openEmail(EmailType.bugReport),
             ),
             const SizedBox(height: 24),
             Text('Development', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
