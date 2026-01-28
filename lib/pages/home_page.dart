@@ -75,7 +75,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     void orderBoyfriend() {
       final TextEditingController messageController = TextEditingController();
+      final TextEditingController phoneController = TextEditingController();
       String fullPhoneNumber = '';
+      String userPhoneNumber = user?.partnerPhoneNumber ?? '';
+
+      // Prefill phone number if it exists
+      if (userPhoneNumber.isNotEmpty) {
+        phoneController.text = userPhoneNumber;
+      }
 
       showDialog(
         context: context,
@@ -90,6 +97,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     IntlPhoneField(
+                      controller: phoneController,
                       decoration: InputDecoration(
                         hintText: 'Phone number',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -97,6 +105,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       initialCountryCode: 'SI',
                       onChanged: (phone) {
                         fullPhoneNumber = phone.completeNumber;
+                        userPhoneNumber = phone.number;
                       },
                     ),
                     const SizedBox(height: 12),
@@ -120,10 +129,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               TextButton(
                 onPressed: () async {
-                  if (fullPhoneNumber.isEmpty) {
+                  if (userPhoneNumber.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a phone number')));
                     return;
                   }
+
+                  // Update user with new phone number
+                  context.read<UserProvider>().updateUser(
+                    name: user?.name,
+                    cycleLength: user?.cycleLength ?? 28,
+                    periodLength: user?.periodLength ?? 5,
+                    partnerPhoneNumber: userPhoneNumber,
+                  );
+
+                  // Send SMS
                   final uri = Uri(scheme: 'sms', path: fullPhoneNumber, queryParameters: <String, String>{'body': messageController.text});
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri);

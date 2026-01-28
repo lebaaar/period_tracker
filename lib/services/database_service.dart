@@ -28,7 +28,7 @@ class DatabaseService {
   final String _userNameColumnName = 'name';
   final String _userCycleLengthColumnName = 'cycleLength';
   final String _userPeriodLengthColumnName = 'periodLength';
-  final String _userPartnerContactColumnName = 'partnerContact';
+  final String _userPartnerPhoneNumberColumnName = 'partnerPhoneNumber';
 
   final String _settingsTableName = kSettingsTableName;
   final String _settingsIdColumnName = 'id';
@@ -71,7 +71,7 @@ class DatabaseService {
         $_userNameColumnName TEXT NULL,
         $_userCycleLengthColumnName INTEGER NOT NULL,
         $_userPeriodLengthColumnName INTEGER NOT NULL,
-        $_userPartnerContactColumnName TEXT NULL
+        $_userPartnerPhoneNumberColumnName TEXT NULL
       )
     ''');
 
@@ -100,7 +100,7 @@ class DatabaseService {
      */
     if (oldVersion < 2) {
       try {
-        await db.execute('ALTER TABLE $_userTableName ADD COLUMN $_userPartnerContactColumnName TEXT NULL');
+        await db.execute('ALTER TABLE $_userTableName ADD COLUMN $_userPartnerPhoneNumberColumnName TEXT NULL');
         await db.execute('ALTER TABLE $_userTableName DROP COLUMN lastPeriodDate');
         await db.execute('ALTER TABLE $_userTableName DROP COLUMN dynamicCycleLength');
       } catch (e) {
