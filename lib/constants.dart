@@ -68,6 +68,7 @@ const String kMysteriousUserName = 'Mysterious User';
 
 // Database constants
 const String kDatabaseName = 'period_tracker.db';
+const int kDatabaseVersion = 2;
 const String kPeriodsTableName = 'periods';
 const String kUserTableName = 'user';
 const String kSettingsTableName = 'settings';

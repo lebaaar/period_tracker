@@ -68,6 +68,7 @@ class ApplicationDataService {
       'app': kPackageName,
       'version': (await PackageInfo.fromPlatform()).version,
       'buildNumber': (await PackageInfo.fromPlatform()).buildNumber,
+      'databaseVersion': kDatabaseVersion,
       'timestamp': DateTime.now().toIso8601String(),
       'database': {'periods': periods.map((period) => period.toMap()).toList(), 'user': user?.toMap(), 'settings': settings.toMap()},
       'sharedPreferences': sharedPrefsData,
@@ -175,7 +176,7 @@ class ApplicationDataService {
   /// @param data The Map representation of the backup data
   /// @returns true if the backup data structure is valid, false otherwise
   bool isBackupDataValid(Map<String, dynamic> data) {
-    final Set<String> requiredKeys = {'version', 'buildNumber', 'timestamp', 'database', 'sharedPreferences'};
+    final Set<String> requiredKeys = {'version', 'buildNumber', 'databaseVersion', 'timestamp', 'database', 'sharedPreferences'};
     for (final String key in requiredKeys) {
       if (!data.containsKey(key)) {
         return false;

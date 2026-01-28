@@ -345,7 +345,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         name: _nameController.text.trim(),
                         cycleLength: int.parse(_cycleLengthController.text),
                         periodLength: int.parse(_periodLengthController.text),
-                        lastPeriodDate: _lastPeriodDate!,
                       ),
                     );
                     await context.read<UserProvider>().fetchUser();

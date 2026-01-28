@@ -15,7 +15,7 @@ class DatabaseService {
   }
 
   final String _databaseName = kDatabaseName;
-  final int _databaseVersion = 1;
+  final int _databaseVersion = kDatabaseVersion;
 
   final String _periodsTableName = kPeriodsTableName;
   final String _periodsIdColumnName = 'id';
@@ -28,8 +28,7 @@ class DatabaseService {
   final String _userNameColumnName = 'name';
   final String _userCycleLengthColumnName = 'cycleLength';
   final String _userPeriodLengthColumnName = 'periodLength';
-  final String _userLastPeriodDateColumnName = 'lastPeriodDate'; // TODO - remove unused field
-  final String _userDynamicCycleLength = 'dynamicCycleLength'; // TODO - remove unused field
+  final String _userPartnerContactColumnName = 'partnerContact';
 
   final String _settingsTableName = kSettingsTableName;
   final String _settingsIdColumnName = 'id';
@@ -50,7 +49,7 @@ class DatabaseService {
     final String databaseDirPath = await getDatabasesPath();
     final String databasePath = p.join(databaseDirPath, _databaseName);
 
-    _database = await openDatabase(databasePath, version: _databaseVersion, onCreate: _onCreate);
+    _database = await openDatabase(databasePath, version: _databaseVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return _database!;
   }
 
@@ -72,8 +71,7 @@ class DatabaseService {
         $_userNameColumnName TEXT NULL,
         $_userCycleLengthColumnName INTEGER NOT NULL,
         $_userPeriodLengthColumnName INTEGER NOT NULL,
-        $_userLastPeriodDateColumnName TEXT NOT NULL,
-        $_userDynamicCycleLength REAL NOT NULL DEFAULT 0
+        $_userPartnerContactColumnName TEXT NULL
       )
     ''');
 
@@ -91,6 +89,25 @@ class DatabaseService {
 
     // insert default settings
     await insertDefaultSettings(db);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    /**
+     * v1 -> v2
+     * add partnerPhoneNumber column
+     * remove lastPeriodDate
+     * remove dynamicCycleLength
+     */
+    if (oldVersion < 2) {
+      try {
+        await db.execute('ALTER TABLE $_userTableName ADD COLUMN $_userPartnerContactColumnName TEXT NULL');
+        await db.execute('ALTER TABLE $_userTableName DROP COLUMN lastPeriodDate');
+        await db.execute('ALTER TABLE $_userTableName DROP COLUMN dynamicCycleLength');
+      } catch (e) {
+        // Column might already exist, ignore error
+        debugPrint('Migration error: $e');
+      }
+    }
   }
 
   // Period methods

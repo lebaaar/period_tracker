@@ -3,9 +3,9 @@ class User {
   final String? name;
   final int cycleLength;
   final int periodLength;
-  final DateTime lastPeriodDate; // TODO - remove unused field
+  final String? partnerPhoneNumber;
 
-  User({this.id, this.name, required this.cycleLength, required this.periodLength, required this.lastPeriodDate});
+  User({this.id, this.name, required this.cycleLength, required this.periodLength, this.partnerPhoneNumber});
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
@@ -13,22 +13,16 @@ class User {
       name: map['name'] as String?,
       cycleLength: map['cycleLength'] as int,
       periodLength: map['periodLength'] as int,
-      lastPeriodDate: DateTime.parse(map['lastPeriodDate'] as String),
+      partnerPhoneNumber: map['partnerPhoneNumber'] as String?,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id ?? 1,
-      'name': name,
-      'cycleLength': cycleLength,
-      'periodLength': periodLength,
-      'lastPeriodDate': lastPeriodDate.toIso8601String(),
-    };
+    return {'id': id ?? 1, 'name': name, 'cycleLength': cycleLength, 'periodLength': periodLength, 'partnerPhoneNumber': partnerPhoneNumber};
   }
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, cycleLength: $cycleLength, periodLength: $periodLength, lastPeriodDate: $lastPeriodDate)';
+    return 'User(id: $id, name: $name, cycleLength: $cycleLength, periodLength: $periodLength, partnerPhoneNumber: $partnerPhoneNumber)';
   }
 }

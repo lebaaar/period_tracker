@@ -255,22 +255,12 @@ class _ProfilePageState extends State<ProfilePage> {
               switch (tileType) {
                 case 'name':
                   _showEditNameDialog(user, (newName) {
-                    context.read<UserProvider>().updateUser(
-                      name: newName,
-                      cycleLength: user.cycleLength,
-                      periodLength: user.periodLength,
-                      lastPeriodDate: user.lastPeriodDate,
-                    );
+                    context.read<UserProvider>().updateUser(name: newName, cycleLength: user.cycleLength, periodLength: user.periodLength);
                   });
                   break;
                 case 'cycle_length':
                   _showEditCycleLengthDialog(user, (newLength) async {
-                    context.read<UserProvider>().updateUser(
-                      cycleLength: int.parse(newLength),
-                      name: user.name,
-                      periodLength: user.periodLength,
-                      lastPeriodDate: user.lastPeriodDate,
-                    );
+                    context.read<UserProvider>().updateUser(cycleLength: int.parse(newLength), name: user.name, periodLength: user.periodLength);
 
                     // update nextPeriodDate if prediction mode is static
                     final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
@@ -286,12 +276,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   break;
                 case 'period_length':
                   _showEditPeriodLengthDialog(user, (newLength) {
-                    context.read<UserProvider>().updateUser(
-                      periodLength: int.parse(newLength),
-                      name: user.name,
-                      cycleLength: user.cycleLength,
-                      lastPeriodDate: user.lastPeriodDate,
-                    );
+                    context.read<UserProvider>().updateUser(periodLength: int.parse(newLength), name: user.name, cycleLength: user.cycleLength);
 
                     // periodLength change does not affect nextPeriodDate, no notification reschedule needed
                     // periodLength is only used for auto-logging period end date
