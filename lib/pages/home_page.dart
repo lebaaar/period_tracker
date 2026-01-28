@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
@@ -8,9 +9,11 @@ import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
+import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,11 +27,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   DateTime? _rangeEnd;
   late DateTime _selectedDay;
   DateTime _focusedDay = DateTime.now();
+  bool _showOrderBoyfriend = false;
 
   @override
   void initState() {
     super.initState();
+    _loadPreferences();
     _selectedDay = _focusedDay;
+  }
+
+  Future<void> _loadPreferences() async {
+    final versionDetails = await getDisplayVersionDetails();
+    final animalGenerator = await getAnimalGeneratorUnlocked();
+    if (!mounted) return;
+    setState(() {
+      _showOrderBoyfriend = versionDetails && animalGenerator;
+    });
   }
 
   @override
@@ -59,6 +73,76 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (progress > 1) progress = 1;
     }
 
+    void orderBoyfriend() {
+      final TextEditingController messageController = TextEditingController();
+      String fullPhoneNumber = '';
+
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Order boyfriend'),
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IntlPhoneField(
+                      decoration: InputDecoration(
+                        hintText: 'Phone number',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      initialCountryCode: 'SI',
+                      onChanged: (phone) {
+                        fullPhoneNumber = phone.completeNumber;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Message',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  if (fullPhoneNumber.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a phone number')));
+                    return;
+                  }
+                  final uri = Uri(scheme: 'sms', path: fullPhoneNumber, queryParameters: <String, String>{'body': messageController.text});
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
+                    Navigator.of(context).pop();
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open SMS app')));
+                    }
+                  }
+                },
+                child: const Text('Send'),
+              ),
+            ],
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          );
+        },
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -83,6 +167,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                           ],
                         ),
+                        Spacer(),
+                        if (_showOrderBoyfriend)
+                          InkWell(
+                            onTap: orderBoyfriend,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.favorite_rounded, size: 28, color: Theme.of(context).colorScheme.primary),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Order boyfriend',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     if (showProgressBar)
