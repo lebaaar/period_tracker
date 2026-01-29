@@ -64,8 +64,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         subtitle = DateTimeHelper.displayTime(settings.notificationTime);
         break;
       default:
-        throw ArgumentError('''Invalid tile type: $tileType. Should be one of the following:
-          "notifications_days_before", "notifications_time".''');
+        throw ArgumentError('Invalid tile type: $tileType');
     }
 
     return ListTile(
@@ -116,8 +115,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             });
             break;
           default:
-            throw ArgumentError('''Invalid tile type: $tileType. Should be one the following:
-              "notifications_days_before", "notifications_time".''');
+            throw ArgumentError('Invalid tile type: $tileType');
         }
       },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),

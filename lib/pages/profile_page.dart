@@ -144,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
             return Column(
               children: [
                 _buildSwitchTile(
-                  'Dynamic period prediction',
+                  'Dynamic Period Prediction',
                   predictionMode == 'dynamic'
                       ? 'Next period date is based on your cycle history'
                       : 'Next period date is based on the cycle length you specify below',
@@ -247,8 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
         subtitle = 'Permanently delete your account and all data';
         break;
       default:
-        throw ArgumentError('''Invalid tile type: $tileType. Should be
-          "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''');
+        throw ArgumentError('Invalid tile type: $tileType');
     }
 
     return ListTile(
@@ -312,8 +311,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   _showDeleteAccountDialog();
                   break;
                 default:
-                  throw ArgumentError('''Invalid tile type: $tileType. Should be one the following:
-              "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''');
+                  throw ArgumentError('Invalid tile type: $tileType');
               }
             },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
