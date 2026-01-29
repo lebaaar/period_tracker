@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/email_type.dart';
 import 'package:period_tracker/exceptions/email_exception.dart';
@@ -106,19 +105,20 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
         setState(() {
           _sharedFileContent = null;
           _loading = false;
-          _error = 'Invalid backup file format';
+          _showErrorDetails = true;
+          _error = 'Invalid backup file format. Please update the app to the latest version and try again.';
         });
         return;
       }
 
       // verify version compatibility
-      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      final bool compatible = ApplicationDataService().verifyVersionCompatibility(_sharedFileContent!['version'] as String, packageInfo.version);
+      final bool compatible = ApplicationDataService().verifyVersionCompatibility(_sharedFileContent!['databaseVersion'], kDatabaseVersion);
       if (!compatible) {
         setState(() {
           _sharedFileContent = null;
           _loading = false;
-          _error = 'Incompatible backup file version';
+          _showErrorDetails = true;
+          _error = 'Incompatible backup file version. Please update the app to the latest version and try again.';
         });
         return;
       }
