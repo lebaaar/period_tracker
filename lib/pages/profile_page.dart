@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
@@ -13,6 +16,7 @@ import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,6 +26,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  AppUpdateInfo? _updateInfo;
   late final TextEditingController _nameController;
   late final TextEditingController _cycleLengthController;
   late final TextEditingController _periodLengthController;
@@ -32,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _loadAnimalGeneratorUnlocked();
+    _checkForUpdate();
 
     _nameController = TextEditingController();
     _cycleLengthController = TextEditingController();
@@ -44,6 +50,16 @@ class _ProfilePageState extends State<ProfilePage> {
     _cycleLengthController.dispose();
     _periodLengthController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkForUpdate() async {
+    InAppUpdate.checkForUpdate()
+        .then((info) {
+          setState(() {
+            _updateInfo = info;
+          });
+        })
+        .catchError((e) {});
   }
 
   Future<void> _loadAnimalGeneratorUnlocked() async {
@@ -481,6 +497,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showTransferDialog() {
+    if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) {
+      _showUpdateNeededDialog();
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) {
@@ -536,7 +557,52 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
-  // ...existing code...
+
+  void _showUpdateNeededDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Update Needed'),
+          content: const Text(
+            'Please update the app to the latest version before restoring your data.\nBoth devices need to be on the same version in order to transfer data.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (Platform.isAndroid) {
+                  final Uri uri = Uri.parse(kGooglePlayStoreUrl);
+                  try {
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
+                  }
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('Go to Play Store'),
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        );
+      },
+    );
+  }
 
   void _showDeleteAccountDialog() {
     showDialog(
