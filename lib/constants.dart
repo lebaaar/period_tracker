@@ -95,6 +95,10 @@ To restore your data on a new device:
 3. Hold down on the file, click on the three dots and select Open with > Period Tracker.
 4. In the Period Tracker app, click "Restore my data".''';
 
+// Phone number constants
+const String kDefaultIsoCountryCode = 'SI';
+const String kDefaultCountryCode = '+386';
+
 // Error codes
 const String kRestoreErrorCode = "RESTORE_ERR";
 const String kDogApiErrorCode = "DOG_ERR";

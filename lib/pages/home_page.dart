@@ -76,8 +76,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     void orderBoyfriend() {
       final TextEditingController messageController = TextEditingController();
       final TextEditingController phoneController = TextEditingController();
-      String fullPhoneNumber = '';
-      String userPhoneNumber = user?.partnerPhoneNumber ?? '';
+      String? userDbPhoneNumber = user?.partnerPhoneNumber;
+      String userIsoCountryCode = userDbPhoneNumber?.split('|')[0] ?? kDefaultIsoCountryCode; // SI
+      String userCountryCode = userDbPhoneNumber?.split('|')[1] ?? kDefaultCountryCode; // +386
+      String userPhoneNumber = userDbPhoneNumber?.split('|')[2] ?? '';
 
       // Prefill phone number if it exists
       if (userPhoneNumber.isNotEmpty) {
@@ -102,9 +104,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         hintText: 'Phone number',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      initialCountryCode: 'SI',
+                      initialCountryCode: userIsoCountryCode,
+                      onCountryChanged: (value) {
+                        userIsoCountryCode = value.code;
+                        userCountryCode = value.dialCode;
+                      },
                       onChanged: (phone) {
-                        fullPhoneNumber = phone.completeNumber;
+                        userIsoCountryCode = phone.countryISOCode;
+                        userCountryCode = phone.countryCode;
                         userPhoneNumber = phone.number;
                       },
                     ),
@@ -139,11 +146,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     name: user?.name,
                     cycleLength: user?.cycleLength ?? 28,
                     periodLength: user?.periodLength ?? 5,
-                    partnerPhoneNumber: userPhoneNumber,
+                    partnerPhoneNumber: '$userIsoCountryCode|$userCountryCode|$userPhoneNumber',
                   );
 
                   // Send SMS
-                  final uri = Uri(scheme: 'sms', path: fullPhoneNumber, queryParameters: <String, String>{'body': messageController.text});
+                  final uri = Uri(
+                    scheme: 'sms',
+                    path: '$userCountryCode$userPhoneNumber',
+                    queryParameters: <String, String>{'body': messageController.text},
+                  );
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri);
                     Navigator.of(context).pop();

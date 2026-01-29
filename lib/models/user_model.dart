@@ -3,7 +3,7 @@ class User {
   final String? name;
   final int cycleLength;
   final int periodLength;
-  final String? partnerPhoneNumber;
+  final String? partnerPhoneNumber; // SI|+386|12345678
 
   User({this.id, this.name, required this.cycleLength, required this.periodLength, this.partnerPhoneNumber});
 
