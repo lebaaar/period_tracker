@@ -30,18 +30,21 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _nameController;
   late final TextEditingController _cycleLengthController;
   late final TextEditingController _periodLengthController;
+  late final TextEditingController _partnerMessageHeadingController;
 
-  bool _showAnimalGeneratorLink = false;
+  bool _animalGeneratorUnlocked = false;
+  bool _versionDetailsUnlocked = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAnimalGeneratorUnlocked();
+    _loadPreferences();
     _checkForUpdate();
 
     _nameController = TextEditingController();
     _cycleLengthController = TextEditingController();
     _periodLengthController = TextEditingController();
+    _partnerMessageHeadingController = TextEditingController();
   }
 
   @override
@@ -49,6 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameController.dispose();
     _cycleLengthController.dispose();
     _periodLengthController.dispose();
+    _partnerMessageHeadingController.dispose();
     super.dispose();
   }
 
@@ -62,10 +66,12 @@ class _ProfilePageState extends State<ProfilePage> {
         .catchError((e) {});
   }
 
-  Future<void> _loadAnimalGeneratorUnlocked() async {
-    final saved = await getAnimalGeneratorUnlocked();
+  Future<void> _loadPreferences() async {
+    final animal = await getAnimalGeneratorUnlocked();
+    final version = await getDisplayVersionDetails();
     setState(() {
-      _showAnimalGeneratorLink = saved;
+      _animalGeneratorUnlocked = animal;
+      _versionDetailsUnlocked = version;
     });
   }
 
@@ -192,6 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 _buildListTile(user, settings, 'period_length', isDisabled: predictionMode == 'dynamic'),
                 _buildListTile(user, settings, 'cycle_length', isDisabled: predictionMode == 'dynamic'),
+                if (_animalGeneratorUnlocked && _versionDetailsUnlocked) _buildListTile(user, settings, 'partner_message_heading'),
               ],
             );
           },
@@ -201,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildListTile(user, settings, 'about'),
         _buildListTile(user, settings, 'transfer'),
         _buildListTile(user, settings, 'delete'),
-        if (_showAnimalGeneratorLink)
+        if (_animalGeneratorUnlocked)
           Column(
             children: [
               Center(
@@ -230,6 +237,9 @@ class _ProfilePageState extends State<ProfilePage> {
         title = 'Period Length';
         subtitle = user.periodLength.toString();
         break;
+      case 'partner_message_heading':
+        title = 'Order Boyfriend Settings';
+        subtitle = 'Set title message for ordering boyfriend';
       case 'notifications':
         title = 'Notifications';
         subtitle = 'Manage your notification settings';
@@ -296,6 +306,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     // periodLength change does not affect nextPeriodDate, no notification reschedule needed
                     // periodLength is only used for auto-logging period end date
                     // possible TODO: if user is currently on period, update the end date based on new period length
+                  });
+                  break;
+                case 'partner_message_heading':
+                  _showEditPartnerMessageHeadingDialog(user, (newMessage) {
+                    context.read<UserProvider>().updateUser(
+                      name: user.name,
+                      cycleLength: user.cycleLength,
+                      periodLength: user.periodLength,
+                      partnerMessageHeading: newMessage,
+                    );
                   });
                   break;
                 case 'notifications':
@@ -483,6 +503,55 @@ class _ProfilePageState extends State<ProfilePage> {
                   return;
                 }
                 onSave(_periodLengthController.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        );
+      },
+    );
+  }
+
+  void _showEditPartnerMessageHeadingDialog(User user, Function(String) onSave) {
+    _partnerMessageHeadingController.text = user.partnerMessageHeading ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit order boyfriend title'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text(
+                  'This text will be attached at the beginning of every message you send to your boyfriend by clicking Order boyfriend in the home page.',
+                ),
+                SizedBox(height: 12),
+                TextField(
+                  controller: _partnerMessageHeadingController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter title message',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(kBorderRadius),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
+                    ),
+                  ),
+                  keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                onSave(_partnerMessageHeadingController.text);
                 Navigator.of(context).pop();
               },
               child: const Text('Save'),

@@ -149,12 +149,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     partnerPhoneNumber: '$userIsoCountryCode|$userCountryCode|$userPhoneNumber',
                   );
 
+                  // Build SMS message with optional heading
+                  String smsBody = messageController.text;
+                  if (user?.partnerMessageHeading?.isNotEmpty == true) {
+                    smsBody = '${user?.partnerMessageHeading}\n\n$smsBody';
+                  }
+
                   // Send SMS
-                  final uri = Uri(
-                    scheme: 'sms',
-                    path: '$userCountryCode$userPhoneNumber',
-                    queryParameters: <String, String>{'body': messageController.text},
-                  );
+                  final uri = Uri(scheme: 'sms', path: '$userCountryCode$userPhoneNumber', queryParameters: <String, String>{'body': smsBody});
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri);
                     Navigator.of(context).pop();

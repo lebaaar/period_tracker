@@ -4,8 +4,9 @@ class User {
   final int cycleLength;
   final int periodLength;
   final String? partnerPhoneNumber; // SI|+386|12345678
+  final String? partnerMessageHeading;
 
-  User({this.id, this.name, required this.cycleLength, required this.periodLength, this.partnerPhoneNumber});
+  User({this.id, this.name, required this.cycleLength, required this.periodLength, this.partnerPhoneNumber, this.partnerMessageHeading});
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(

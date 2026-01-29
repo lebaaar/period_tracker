@@ -22,7 +22,14 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateUser({int? id, String? name, required int cycleLength, required int periodLength, String? partnerPhoneNumber}) async {
+  Future<void> updateUser({
+    int? id,
+    String? name,
+    required int cycleLength,
+    required int periodLength,
+    String? partnerPhoneNumber,
+    String? partnerMessageHeading,
+  }) async {
     try {
       final User updatedUser = User(
         id: 1,
@@ -30,6 +37,7 @@ class UserProvider extends ChangeNotifier {
         cycleLength: cycleLength,
         periodLength: periodLength,
         partnerPhoneNumber: partnerPhoneNumber ?? _user?.partnerPhoneNumber,
+        partnerMessageHeading: partnerMessageHeading ?? _user?.partnerMessageHeading,
       );
       _user = updatedUser;
       await _db.insertUser(_user!);
