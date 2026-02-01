@@ -115,8 +115,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         userPhoneNumber = phone.number;
                       },
                     ),
-                    const SizedBox(height: 12),
-                    if (user?.partnerMessageHeading != null)
+                    if (user?.partnerMessageHeading?.isEmpty ?? true) const SizedBox(height: 12),
+                    if (user?.partnerMessageHeading?.isNotEmpty ?? false)
                       RichText(
                         text: TextSpan(
                           children: [
@@ -128,7 +128,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ],
                         ),
                       ),
-                    const SizedBox(height: 6),
+                    if (user?.partnerMessageHeading?.isNotEmpty ?? false) const SizedBox(height: 6),
                     TextField(
                       controller: messageController,
                       decoration: InputDecoration(
