@@ -73,7 +73,7 @@ class DatabaseService {
         $_userCycleLengthColumnName INTEGER NOT NULL,
         $_userPeriodLengthColumnName INTEGER NOT NULL,
         $_userPartnerPhoneNumberColumnName TEXT NULL,
-        $_userPartnerMessageHeadingColumnName TEXT NULL
+        $_userPartnerMessageHeadingColumnName TEXT NULL DEFAULT '$kDefaultPartnerMessageHeading'
       )
     ''');
 
@@ -104,7 +104,9 @@ class DatabaseService {
     if (oldVersion < 2) {
       try {
         await db.execute('ALTER TABLE $_userTableName ADD COLUMN $_userPartnerPhoneNumberColumnName TEXT NULL');
-        await db.execute('ALTER TABLE $_userTableName ADD COLUMN $_userPartnerMessageHeadingColumnName TEXT NULL');
+        await db.execute(
+          'ALTER TABLE $_userTableName ADD COLUMN $_userPartnerMessageHeadingColumnName TEXT NULL DEFAULT \'$kDefaultPartnerMessageHeading\'',
+        );
         await db.execute('ALTER TABLE $_userTableName DROP COLUMN lastPeriodDate');
         await db.execute('ALTER TABLE $_userTableName DROP COLUMN dynamicCycleLength');
       } catch (e) {
