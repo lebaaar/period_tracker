@@ -85,7 +85,6 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       _sharedFileContent = ApplicationDataService().parseBackupFile(fileContent);
       if (_sharedFileContent == null) {
         setState(() {
-          _sharedFileContent = null;
           _loading = false;
           _error = 'Failed to parse backup file';
         });
@@ -103,10 +102,9 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       final bool validBackupData = ApplicationDataService().isBackupDataValid(_sharedFileContent!);
       if (!validBackupData) {
         setState(() {
-          _sharedFileContent = null;
           _loading = false;
           _showErrorDetails = true;
-          _error = 'Invalid backup file format. Please update the app to the latest version and try again.';
+          _error = 'Invalid backup file format. Please update the app on both your old and new devices to the latest version and try again.';
         });
         return;
       }
@@ -115,10 +113,9 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       final bool compatible = ApplicationDataService().verifyVersionCompatibility(_sharedFileContent!['databaseVersion'], kDatabaseVersion);
       if (!compatible) {
         setState(() {
-          _sharedFileContent = null;
           _loading = false;
           _showErrorDetails = true;
-          _error = 'Incompatible backup file version. Please update the app to the latest version and try again.';
+          _error = 'Incompatible backup file version. Please update the app on both your old and new devices to the latest version and try again.';
         });
         return;
       }

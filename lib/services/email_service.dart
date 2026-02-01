@@ -19,7 +19,7 @@ class EmailService {
 
     String? backupEncodedContent;
     if (sharedFileContent != null && sharedFileContent.toString().isNotEmpty) {
-      backupEncodedContent = sharedFileContent;
+      backupEncodedContent = sharedFileContent.toString();
       backupEncodedContent = EncryptionService().base64Encode(backupEncodedContent.toString());
     }
 
