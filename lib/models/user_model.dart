@@ -15,15 +15,23 @@ class User {
       cycleLength: map['cycleLength'] as int,
       periodLength: map['periodLength'] as int,
       partnerPhoneNumber: map['partnerPhoneNumber'] as String?,
+      partnerMessageHeading: map['partnerMessageHeading'] as String?,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {'id': id ?? 1, 'name': name, 'cycleLength': cycleLength, 'periodLength': periodLength, 'partnerPhoneNumber': partnerPhoneNumber};
+    return {
+      'id': id ?? 1,
+      'name': name,
+      'cycleLength': cycleLength,
+      'periodLength': periodLength,
+      'partnerPhoneNumber': partnerPhoneNumber,
+      'partnerMessageHeading': partnerMessageHeading,
+    };
   }
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, cycleLength: $cycleLength, periodLength: $periodLength, partnerPhoneNumber: $partnerPhoneNumber)';
+    return 'User(id: $id, name: $name, cycleLength: $cycleLength, periodLength: $periodLength, partnerPhoneNumber: $partnerPhoneNumber, partnerMessageHeading: $partnerMessageHeading)';
   }
 }
