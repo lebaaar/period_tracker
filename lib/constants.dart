@@ -98,7 +98,7 @@ To restore your data on a new device:
 // Phone number constants
 const String kDefaultIsoCountryCode = 'SI';
 const String kDefaultCountryCode = '+386';
-const String kDefaultPartnerMessageHeading = 'Your girlfriend is on her period and needs your help! Here\'s her message for you:';
+const String kDefaultPartnerMessageHeading = 'Your girlfriend is on her period and needs your help! Here is her message for you:';
 
 // Error codes
 const String kRestoreErrorCode = "RESTORE_ERR";
