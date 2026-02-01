@@ -116,6 +116,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       },
                     ),
                     const SizedBox(height: 12),
+                    if (user?.partnerMessageHeading != null)
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(text: 'Title: ', style: DefaultTextStyle.of(context).style),
+                            TextSpan(
+                              text: user?.partnerMessageHeading ?? '',
+                              style: DefaultTextStyle.of(context).style.copyWith(fontStyle: FontStyle.italic),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: messageController,
                       decoration: InputDecoration(

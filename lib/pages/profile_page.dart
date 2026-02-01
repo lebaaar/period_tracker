@@ -538,7 +538,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
                     ),
                   ),
-                  keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
+                  maxLines: 3,
                 ),
               ],
             ),
