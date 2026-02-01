@@ -9,7 +9,7 @@ import 'package:period_tracker/services/encryption_service.dart';
 
 class EmailService {
   static Future<void> openEmail(EmailType emailType, String? errorCode, {sharedFileContent, Object? error}) async {
-    String? appContent;
+    String appContent = '';
     try {
       appContent = await ApplicationDataService().createBackupFileContent();
     } catch (e) {

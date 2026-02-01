@@ -240,6 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
       case 'partner_message_heading':
         title = 'Order Boyfriend Settings';
         subtitle = 'Set title message for ordering boyfriend';
+        break;
       case 'notifications':
         title = 'Notifications';
         subtitle = 'Manage your notification settings';
