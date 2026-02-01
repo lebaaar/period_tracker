@@ -73,7 +73,7 @@ class DatabaseService {
         $_userCycleLengthColumnName INTEGER NOT NULL,
         $_userPeriodLengthColumnName INTEGER NOT NULL,
         $_userPartnerPhoneNumberColumnName TEXT NULL,
-        $_userPartnerMessageHeadingColumnName TEXT NULL,
+        $_userPartnerMessageHeadingColumnName TEXT NULL
       )
     ''');
 
