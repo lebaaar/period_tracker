@@ -1,12 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:open_mail/open_mail.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
-import 'package:period_tracker/services/application_data_service.dart';
-import 'package:period_tracker/services/encryption_service.dart';
+import 'package:period_tracker/enums/email_type.dart';
+import 'package:period_tracker/exceptions/email_exception.dart';
+import 'package:period_tracker/services/email_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,6 +18,7 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
+  AppUpdateInfo? _updateInfo;
   int _versionTapCount = 0;
   bool _showVersionDetails = false;
 
@@ -25,6 +26,7 @@ class _AboutPageState extends State<AboutPage> {
   void initState() {
     super.initState();
     _loadDisplayVersionPreference();
+    _checkForUpdate();
   }
 
   Future<void> _loadDisplayVersionPreference() async {
@@ -51,43 +53,32 @@ class _AboutPageState extends State<AboutPage> {
     }
   }
 
-  Future<void> openEmail(bool bugReport) async {
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String? appContent;
+  Future<void> _checkForUpdate() async {
+    InAppUpdate.checkForUpdate()
+        .then((info) {
+          setState(() {
+            _updateInfo = info;
+          });
+        })
+        .catchError((e) {});
+  }
+
+  Future<void> openEmail(EmailType emailType) async {
     try {
-      appContent = await ApplicationDataService().createBackupFileContent();
-    } catch (e) {
-      appContent = 'Error generating application data: $e';
-    }
-
-    final String encodedContent = EncryptionService().base64Encode(appContent);
-    final EmailContent emailContent = EmailContent(
-      to: [kContactEmail],
-      subject: bugReport == true ? 'Issue with Period Tracker' : 'Period Tracker Feedback',
-      body: bugReport == true
-          ? '''
-Hello,
-
-I'm having an issue with Period Tracker app: <SPECIFY YOUR ISSUE HERE>
-\n\n\n\n\n
-Development details (please don't remove this, as it helps us diagnose the issue):
-
-[Timestamp: ${DateTime.now()}]
-[Version: ${packageInfo.version}+${packageInfo.buildNumber}]
-[Device: ${Platform.operatingSystem}]
-[OS version: ${Platform.operatingSystemVersion}]
-[Application data: $encodedContent]'''
-          : null,
-    );
-    final OpenMailAppResult result;
-
-    try {
-      result = await OpenMail.composeNewEmailInMailApp(nativePickerTitle: 'Select email app to contact support', emailContent: emailContent);
-
-      if (!result.didOpen && !result.canOpen) {
-        showNoMailAppsDialog(context);
+      await EmailService.openEmail(emailType, null);
+    } on EmailException catch (e) {
+      switch (e.errorCode) {
+        case kNoEmailAppErrorCode:
+          showNoMailAppsDialog(context);
+          return;
+        case kUnknownErrorCode:
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+          return;
       }
-    } catch (e) {
+    } catch (_) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(
         context,
@@ -114,6 +105,27 @@ Development details (please don't remove this, as it helps us diagnose the issue
         );
       },
     );
+  }
+
+  Future<void> _openPlayStore() async {
+    if (Platform.isAndroid) {
+      _launchUrl(kGooglePlayStoreUrl);
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
+    }
   }
 
   @override
@@ -155,22 +167,36 @@ Development details (please don't remove this, as it helps us diagnose the issue
                                 GestureDetector(
                                   onTap: _onVersionTapped,
                                   child: Text(
-                                    'Version ${snapshot.data!.version}+${snapshot.data!.buildNumber}',
+                                    'v${snapshot.data!.version}+${snapshot.data!.buildNumber}',
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: IconButton(
-                                    onPressed: () => _checkForUpdates(),
-                                    icon: const Icon(Icons.system_update_rounded, size: 14),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    tooltip: 'Check for updates',
+                                if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) ...[
+                                  Text('•'),
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () => _openPlayStore(),
+                                    child: Text(
+                                      'Update available',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ] else
+                                  SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: IconButton(
+                                      onPressed: () => _openPlayStore(),
+                                      icon: const Icon(Icons.system_update_rounded, size: 14),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      tooltip: 'Check for updates',
+                                    ),
+                                  ),
                               ],
                             ),
                           ],
@@ -205,7 +231,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
               icon: Icons.mail_rounded,
               title: 'Contact Developer',
               subtitle: 'Have questions or suggestions?',
-              onTap: () => openEmail(false),
+              onTap: () => openEmail(EmailType.feedback),
             ),
             const SizedBox(height: 12),
             _buildActionButton(
@@ -213,7 +239,7 @@ Development details (please don't remove this, as it helps us diagnose the issue
               icon: Icons.bug_report_rounded,
               title: 'Report a Bug',
               subtitle: 'Help improve the app',
-              onTap: () => openEmail(true),
+              onTap: () => openEmail(EmailType.bugReport),
             ),
             const SizedBox(height: 24),
             Text('Development', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -280,26 +306,5 @@ Development details (please don't remove this, as it helps us diagnose the issue
         ),
       ),
     );
-  }
-
-  Future<void> _checkForUpdates() async {
-    if (Platform.isAndroid) {
-      _launchUrl(kGooglePlayStoreUrl);
-    }
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
-    }
   }
 }

@@ -68,6 +68,7 @@ class ApplicationDataService {
       'app': kPackageName,
       'version': (await PackageInfo.fromPlatform()).version,
       'buildNumber': (await PackageInfo.fromPlatform()).buildNumber,
+      'databaseVersion': kDatabaseVersion,
       'timestamp': DateTime.now().toIso8601String(),
       'database': {'periods': periods.map((period) => period.toMap()).toList(), 'user': user?.toMap(), 'settings': settings.toMap()},
       'sharedPreferences': sharedPrefsData,
@@ -175,7 +176,7 @@ class ApplicationDataService {
   /// @param data The Map representation of the backup data
   /// @returns true if the backup data structure is valid, false otherwise
   bool isBackupDataValid(Map<String, dynamic> data) {
-    final Set<String> requiredKeys = {'version', 'buildNumber', 'timestamp', 'database', 'sharedPreferences'};
+    final Set<String> requiredKeys = {'app', 'version', 'buildNumber', 'databaseVersion', 'timestamp', 'database', 'sharedPreferences'};
     for (final String key in requiredKeys) {
       if (!data.containsKey(key)) {
         return false;
@@ -227,12 +228,11 @@ class ApplicationDataService {
     return true;
   }
 
-  /// Verifies if the backup file version is compatible with the current app version
-  /// @param backupVersion The version string from the backup file
-  /// @param currentVersion The current app version string
+  /// Verifies that the backup version and the current app version are the same
+  /// @param backupVersion The database version from the backup file
+  /// @param currentVersion The current database app version
   /// @returns true if the versions are compatible, false otherwise
-  bool verifyVersionCompatibility(String backupVersion, String currentVersion) {
-    // TODO: Implement in case of breaking DB changes in future versions
-    return true;
+  bool verifyVersionCompatibility(int backupVersion, int currentVersion) {
+    return backupVersion == currentVersion;
   }
 }

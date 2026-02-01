@@ -68,6 +68,7 @@ const String kMysteriousUserName = 'Mysterious User';
 
 // Database constants
 const String kDatabaseName = 'period_tracker.db';
+const int kDatabaseVersion = 2;
 const String kPeriodsTableName = 'periods';
 const String kUserTableName = 'user';
 const String kSettingsTableName = 'settings';
@@ -94,12 +95,27 @@ To restore your data on a new device:
 3. Hold down on the file, click on the three dots and select Open with > Period Tracker.
 4. In the Period Tracker app, click "Restore my data".''';
 
+// Phone number constants
+const String kDefaultIsoCountryCode = 'SI';
+const String kDefaultCountryCode = '+386';
+const String kDefaultPartnerMessageHeading = 'Your girlfriend is on her period and needs your help! Here is her message for you:';
+
+// Error codes
+const String kRestoreErrorCode = "RESTORE_ERR";
+const String kDogApiErrorCode = "DOG_ERR";
+const String kNoEmailAppErrorCode = "NO_EMAIL_APP_ERR";
+const String kUnknownErrorCode = "UNKNOWN_ERR";
+
+// Emails
+const String kFeedbackEmailSubject = 'Period Tracker Feedback';
+const String kBugReportEmailSubject = 'Issue with Period Tracker';
+
+// APIs
+const String kDogApiBase = 'https://dog.ceo/api/breed';
+const String kCatApiBase = 'https://api.thecatapi.com';
+
 // Contact
 const String kContactEmail = 'lanlebar6@gmail.com';
 const String kKofiUrl = 'https://ko-fi.com/lebaaar';
 const String kGitHubUrl = 'https://github.com/lebaaar/period_tracker';
 const String kGooglePlayStoreUrl = 'https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker';
-
-// APIs
-const String kDogApiBase = 'https://dog.ceo/api/breed';
-const String kCatApiBase = 'https://api.thecatapi.com';

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
@@ -13,6 +16,7 @@ import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/widgets/section_title.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,20 +26,25 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  AppUpdateInfo? _updateInfo;
   late final TextEditingController _nameController;
   late final TextEditingController _cycleLengthController;
   late final TextEditingController _periodLengthController;
+  late final TextEditingController _partnerMessageHeadingController;
 
-  bool _showAnimalGeneratorLink = false;
+  bool _animalGeneratorUnlocked = false;
+  bool _versionDetailsUnlocked = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAnimalGeneratorUnlocked();
+    _loadPreferences();
+    _checkForUpdate();
 
     _nameController = TextEditingController();
     _cycleLengthController = TextEditingController();
     _periodLengthController = TextEditingController();
+    _partnerMessageHeadingController = TextEditingController();
   }
 
   @override
@@ -43,13 +52,26 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameController.dispose();
     _cycleLengthController.dispose();
     _periodLengthController.dispose();
+    _partnerMessageHeadingController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadAnimalGeneratorUnlocked() async {
-    final saved = await getAnimalGeneratorUnlocked();
+  Future<void> _checkForUpdate() async {
+    InAppUpdate.checkForUpdate()
+        .then((info) {
+          setState(() {
+            _updateInfo = info;
+          });
+        })
+        .catchError((e) {});
+  }
+
+  Future<void> _loadPreferences() async {
+    final animal = await getAnimalGeneratorUnlocked();
+    final version = await getDisplayVersionDetails();
     setState(() {
-      _showAnimalGeneratorLink = saved;
+      _animalGeneratorUnlocked = animal;
+      _versionDetailsUnlocked = version;
     });
   }
 
@@ -128,7 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
             return Column(
               children: [
                 _buildSwitchTile(
-                  'Dynamic period prediction',
+                  'Dynamic Period Prediction',
                   predictionMode == 'dynamic'
                       ? 'Next period date is based on your cycle history'
                       : 'Next period date is based on the cycle length you specify below',
@@ -176,6 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 _buildListTile(user, settings, 'period_length', isDisabled: predictionMode == 'dynamic'),
                 _buildListTile(user, settings, 'cycle_length', isDisabled: predictionMode == 'dynamic'),
+                if (_animalGeneratorUnlocked && _versionDetailsUnlocked) _buildListTile(user, settings, 'partner_message_heading'),
               ],
             );
           },
@@ -185,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildListTile(user, settings, 'about'),
         _buildListTile(user, settings, 'transfer'),
         _buildListTile(user, settings, 'delete'),
-        if (_showAnimalGeneratorLink)
+        if (_animalGeneratorUnlocked)
           Column(
             children: [
               Center(
@@ -214,6 +237,10 @@ class _ProfilePageState extends State<ProfilePage> {
         title = 'Period Length';
         subtitle = user.periodLength.toString();
         break;
+      case 'partner_message_heading':
+        title = 'Order Boyfriend Settings';
+        subtitle = 'Set title message for ordering boyfriend';
+        break;
       case 'notifications':
         title = 'Notifications';
         subtitle = 'Manage your notification settings';
@@ -231,8 +258,7 @@ class _ProfilePageState extends State<ProfilePage> {
         subtitle = 'Permanently delete your account and all data';
         break;
       default:
-        throw ArgumentError('''Invalid tile type: $tileType. Should be
-          "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''');
+        throw ArgumentError('Invalid tile type: $tileType');
     }
 
     return ListTile(
@@ -255,22 +281,12 @@ class _ProfilePageState extends State<ProfilePage> {
               switch (tileType) {
                 case 'name':
                   _showEditNameDialog(user, (newName) {
-                    context.read<UserProvider>().updateUser(
-                      name: newName,
-                      cycleLength: user.cycleLength,
-                      periodLength: user.periodLength,
-                      lastPeriodDate: user.lastPeriodDate,
-                    );
+                    context.read<UserProvider>().updateUser(name: newName, cycleLength: user.cycleLength, periodLength: user.periodLength);
                   });
                   break;
                 case 'cycle_length':
                   _showEditCycleLengthDialog(user, (newLength) async {
-                    context.read<UserProvider>().updateUser(
-                      cycleLength: int.parse(newLength),
-                      name: user.name,
-                      periodLength: user.periodLength,
-                      lastPeriodDate: user.lastPeriodDate,
-                    );
+                    context.read<UserProvider>().updateUser(cycleLength: int.parse(newLength), name: user.name, periodLength: user.periodLength);
 
                     // update nextPeriodDate if prediction mode is static
                     final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
@@ -286,16 +302,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   break;
                 case 'period_length':
                   _showEditPeriodLengthDialog(user, (newLength) {
-                    context.read<UserProvider>().updateUser(
-                      periodLength: int.parse(newLength),
-                      name: user.name,
-                      cycleLength: user.cycleLength,
-                      lastPeriodDate: user.lastPeriodDate,
-                    );
+                    context.read<UserProvider>().updateUser(periodLength: int.parse(newLength), name: user.name, cycleLength: user.cycleLength);
 
                     // periodLength change does not affect nextPeriodDate, no notification reschedule needed
                     // periodLength is only used for auto-logging period end date
                     // possible TODO: if user is currently on period, update the end date based on new period length
+                  });
+                  break;
+                case 'partner_message_heading':
+                  _showEditPartnerMessageHeadingDialog(user, (newMessage) {
+                    context.read<UserProvider>().updateUser(
+                      name: user.name,
+                      cycleLength: user.cycleLength,
+                      periodLength: user.periodLength,
+                      partnerMessageHeading: newMessage,
+                    );
                   });
                   break;
                 case 'notifications':
@@ -311,8 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   _showDeleteAccountDialog();
                   break;
                 default:
-                  throw ArgumentError('''Invalid tile type: $tileType. Should be one the following:
-              "name", "cycle_length", "period_length", "notifications", "transfer" or "delete".''');
+                  throw ArgumentError('Invalid tile type: $tileType');
               }
             },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -495,7 +515,61 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _showEditPartnerMessageHeadingDialog(User user, Function(String) onSave) {
+    _partnerMessageHeadingController.text = user.partnerMessageHeading ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit order boyfriend title'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text(
+                  'This text will be attached at the beginning of every message you send to your boyfriend by clicking Order boyfriend in the home page.',
+                ),
+                SizedBox(height: 12),
+                TextField(
+                  controller: _partnerMessageHeadingController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter title message',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(kBorderRadius),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
+                    ),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                onSave(_partnerMessageHeadingController.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        );
+      },
+    );
+  }
+
   void _showTransferDialog() {
+    if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) {
+      _showUpdateNeededDialog();
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) {
@@ -551,7 +625,52 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
-  // ...existing code...
+
+  void _showUpdateNeededDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Update Needed'),
+          content: const Text(
+            'Please update the app to the latest version before restoring your data.\nBoth devices need to be on the same version in order to transfer data.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (Platform.isAndroid) {
+                  final Uri uri = Uri.parse(kGooglePlayStoreUrl);
+                  try {
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
+                  }
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('Go to Play Store'),
+            ),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        );
+      },
+    );
+  }
 
   void _showDeleteAccountDialog() {
     showDialog(
