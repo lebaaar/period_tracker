@@ -116,6 +116,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       },
                     ),
                     if (user?.partnerMessageHeading?.isEmpty ?? true) const SizedBox(height: 12),
+                    if (user?.partnerMessageHeading?.isNotEmpty ?? false) const SizedBox(height: 6),
                     if (user?.partnerMessageHeading?.isNotEmpty ?? false)
                       RichText(
                         text: TextSpan(
