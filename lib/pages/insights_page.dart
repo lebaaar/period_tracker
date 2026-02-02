@@ -262,26 +262,17 @@ class _InsightsPageState extends State<InsightsPage> {
 
                       return ListTile(
                         leading: Icon(Icons.calendar_month_rounded, color: Theme.of(context).colorScheme.primary),
-                        title: Text('Start: ${DateTimeHelper.displayDate(period.startDate)}'),
+                        title: Text(
+                          '${DateTimeHelper.displayDate(period.startDate)} - ${period.endDate != null ? DateTimeHelper.displayDate(period.endDate!) : 'Ongoing'}',
+                        ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(period.endDate != null ? 'End: ${DateTimeHelper.displayDate(period.endDate!)}' : 'Ongoing'),
                             if (periodLength != null &&
                                 (_currentSortOption == SortOption.periodLengthShortest || _currentSortOption == SortOption.periodLengthLongest))
-                              Text(
-                                'Length: $periodLength day${periodLength == 1 ? '' : 's'}',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.w500),
-                              ),
-                            if ((_currentSortOption == SortOption.cycleLengthShortest || _currentSortOption == SortOption.cycleLengthLongest))
-                              Text(
-                                cycleLength != null ? 'Cycle: $cycleLength day${cycleLength == 1 ? '' : 's'}' : 'First Period',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.w500),
-                              ),
+                              Text('Length: $periodLength day${periodLength == 1 ? '' : 's'}')
+                            else
+                              Text(cycleLength != null ? 'Cycle: $cycleLength day${cycleLength == 1 ? '' : 's'}' : 'First logged period'),
                           ],
                         ),
                         trailing: Icon(Icons.chevron_right_rounded),
