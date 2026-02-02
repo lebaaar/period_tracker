@@ -170,9 +170,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   }
 
                   // Send SMS
-                  final uri = Uri(scheme: 'sms', path: '$userCountryCode$userPhoneNumber', queryParameters: <String, String>{'body': smsBody});
+                  final encodedBody = Uri.encodeComponent(smsBody);
+                  final uri = Uri.parse('sms:$userCountryCode$userPhoneNumber?body=$encodedBody');
                   if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri);
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
                     Navigator.of(context).pop();
                   } else {
                     if (mounted) {

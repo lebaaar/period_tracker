@@ -21,6 +21,7 @@ class _AboutPageState extends State<AboutPage> {
   AppUpdateInfo? _updateInfo;
   int _versionTapCount = 0;
   bool _showVersionDetails = false;
+  bool _isCheckingForUpdate = false;
 
   @override
   void initState() {
@@ -54,13 +55,26 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Future<void> _checkForUpdate() async {
-    InAppUpdate.checkForUpdate()
-        .then((info) {
-          setState(() {
-            _updateInfo = info;
-          });
-        })
-        .catchError((e) {});
+    setState(() {
+      _isCheckingForUpdate = true;
+    });
+
+    try {
+      // simulate loading
+      await Future.delayed(const Duration(seconds: 1));
+      final info = await InAppUpdate.checkForUpdate();
+
+      if (!mounted) return;
+      setState(() {
+        _updateInfo = info;
+        _isCheckingForUpdate = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isCheckingForUpdate = false;
+      });
+    }
   }
 
   Future<void> openEmail(EmailType emailType) async {
@@ -172,8 +186,18 @@ class _AboutPageState extends State<AboutPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) ...[
-                                  Text('•'),
+                                Text('•'),
+                                if (_isCheckingForUpdate) ...[
+                                  const SizedBox(width: 4),
+                                  SizedBox(
+                                    height: 15,
+                                    width: 15,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                                    ),
+                                  ),
+                                ] else if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) ...[
                                   const SizedBox(width: 4),
                                   GestureDetector(
                                     onTap: () => _openPlayStore(),
@@ -185,18 +209,19 @@ class _AboutPageState extends State<AboutPage> {
                                       ),
                                     ),
                                   ),
-                                ] else
-                                  SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: IconButton(
-                                      onPressed: () => _openPlayStore(),
-                                      icon: const Icon(Icons.system_update_rounded, size: 14),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      tooltip: 'Check for updates',
+                                ] else ...[
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () => _openPlayStore(),
+                                    child: Text(
+                                      'View on Google Play',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        decoration: TextDecoration.underline,
+                                      ),
                                     ),
                                   ),
+                                ],
                               ],
                             ),
                           ],

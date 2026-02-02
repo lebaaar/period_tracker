@@ -60,7 +60,7 @@ ${_bugReportEmailDetails(errorCode, await PackageInfo.fromPlatform(), Platform.o
     String? backupEncodedContent,
   }) {
     String details = '''\n\n
-Development details:\n''';
+Development details (please don't remove this, as it helps us diagnose issues faster):\n''';
 
     if (errorCode != null) {
       details += '[Error code: ${errorCode.toString()}]\n';
@@ -75,7 +75,7 @@ Development details:\n''';
 [Timestamp: ${DateTime.now()}]
 [Version: ${packageInfo.version}+${packageInfo.buildNumber}]
 [Database version: $kDatabaseVersion]
-[Device: $platformOs}
+[Device: $platformOs]
 [OS version: $platformOsVersion]
 [Content: $encodedContent]\n''';
 
