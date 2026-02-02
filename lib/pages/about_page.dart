@@ -188,7 +188,7 @@ class _AboutPageState extends State<AboutPage> {
                                 const SizedBox(width: 4),
                                 Text('•'),
                                 if (_isCheckingForUpdate) ...[
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   SizedBox(
                                     height: 15,
                                     width: 15,
