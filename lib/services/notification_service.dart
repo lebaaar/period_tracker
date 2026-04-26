@@ -54,9 +54,10 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation('Europe/Ljubljana')); // TODO
 
     const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@drawable/ic_stat_notify');
+    const DarwinInitializationSettings iosInit = DarwinInitializationSettings();
 
     await _flutterLocalNotificationsPlugin.initialize(
-      InitializationSettings(android: androidInit),
+      InitializationSettings(android: androidInit, iOS: iosInit),
       // onDidReceiveNotificationResponse: (NotificationResponse response) {
       //   if (response.actionId == 'log') {
       //     navigatorKey.currentState?.pushNamed('/log');
@@ -68,9 +69,15 @@ class NotificationService {
     );
   }
 
-  /// Requests notification permissions (Android 13+).
+  /// Requests notification permissions.
   /// @return true if permissions are granted, false otherwise.
   Future<bool> requestPermissions() async {
+    final iosPlugin = NotificationService()._flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+    if (iosPlugin != null) {
+      final granted = await iosPlugin.requestPermissions(alert: true, badge: true, sound: true);
+      return granted == true;
+    }
+
     // Android 13+
     final androidPlugin = NotificationService()._flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
@@ -103,7 +110,7 @@ class NotificationService {
       title,
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
-      NotificationDetails(android: _androidNotificationDetails),
+      NotificationDetails(android: _androidNotificationDetails, iOS: const DarwinNotificationDetails()),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: payload,
     );
