@@ -25,6 +25,7 @@ class PeriodProvider extends ChangeNotifier {
   Future<void> insertPeriod(Period period) async {
     await _db.insertPeriod(period);
     _periods.add(period);
+    _periods.sort((a, b) => b.startDate.compareTo(a.startDate));
     notifyListeners();
   }
 
@@ -43,32 +44,44 @@ class PeriodProvider extends ChangeNotifier {
   /// @param dynamicPeriodPrediction Whether to use dynamic prediction based on average cycle length
   /// @param userCycleLength The user's set cycle length (used if dynamic prediction is false)
   /// @returns The predicted next period start date, or null if not enough data
-  DateTime? getNextPeriodDate(bool dynamicPeriodPrediction, int? userCycleLength) {
-    if (periods.isEmpty) return null;
-    if (periods.length < 2) {
+  DateTime? getNextPeriodDate(
+    bool dynamicPeriodPrediction,
+    int? userCycleLength,
+  ) {
+    if (_periods.isEmpty) return null;
+    final List<Period> sortedPeriods = List<Period>.from(_periods)
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
+    if (sortedPeriods.length < 2) {
       // Not enough data to predict next period - only one period logged
       // Use the provided userCycleLength
       // Case when user gets not enough data to predict the next period right after onboarding
-      return periods.last.startDate.add(Duration(days: userCycleLength ?? kDefaultCycleLength));
+      return sortedPeriods.last.startDate.add(
+        Duration(days: userCycleLength ?? kDefaultCycleLength),
+      );
     }
-    periods.sort((a, b) => a.startDate.compareTo(b.startDate));
     if (dynamicPeriodPrediction) {
       // dynamic prediction based on average cycle length
       final avgCycle = getAverageCycleLength(useRecent6: true);
       if (avgCycle == null) return null;
-      return periods.last.startDate.add(Duration(days: avgCycle.round()));
+      return sortedPeriods.last.startDate.add(Duration(days: avgCycle.round()));
     } else {
       // static prediction based on last period and user's cycle length
       if (userCycleLength == null) return null;
-      return periods.last.startDate.add(Duration(days: userCycleLength));
+      return sortedPeriods.last.startDate.add(Duration(days: userCycleLength));
     }
   }
 
   // Returns the next 3 expected period start dates
-  List<DateTime> getNext3PeriodDates(bool dynamicPredictionMode, int? userCycleLength) {
+  List<DateTime> getNext3PeriodDates(
+    bool dynamicPredictionMode,
+    int? userCycleLength,
+  ) {
     final List<DateTime> upcomingPeriods = [];
 
-    final DateTime? firstPeriod = getNextPeriodDate(dynamicPredictionMode, userCycleLength);
+    final DateTime? firstPeriod = getNextPeriodDate(
+      dynamicPredictionMode,
+      userCycleLength,
+    );
     if (firstPeriod == null) return upcomingPeriods;
 
     upcomingPeriods.add(firstPeriod);
@@ -97,12 +110,19 @@ class PeriodProvider extends ChangeNotifier {
     date ??= DateTime.now();
     final targetDate = DateTime.utc(date.year, date.month, date.day);
 
-    _periods.sort((a, b) => a.startDate.compareTo(b.startDate));
+    final List<Period> sortedPeriods = List<Period>.from(_periods)
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
     // Normalize period dates to UTC date only for consistent comparison
-    final normalizedPeriods = _periods.map((p) {
-      final DateTime startDate = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
-      final DateTime? endDate = p.endDate != null ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day) : null;
+    final normalizedPeriods = sortedPeriods.map((p) {
+      final DateTime startDate = DateTime.utc(
+        p.startDate.year,
+        p.startDate.month,
+        p.startDate.day,
+      );
+      final DateTime? endDate = p.endDate != null
+          ? DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day)
+          : null;
       return {'period': p, 'start': startDate, 'end': endDate};
     }).toList();
 
@@ -115,7 +135,8 @@ class PeriodProvider extends ChangeNotifier {
     Map<String, dynamic>? lastPeriodData;
     for (var periodData in normalizedPeriods) {
       final startDate = periodData['start'] as DateTime;
-      if (targetDate.isAtSameMomentAs(startDate) || targetDate.isAfter(startDate)) {
+      if (targetDate.isAtSameMomentAs(startDate) ||
+          targetDate.isAfter(startDate)) {
         lastPeriodData = periodData;
       } else {
         break;
@@ -134,28 +155,39 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns a status message (e.g., late, on track)
-  PeriodStatusMessage getStatusMessage(Color defaultColor, DateTime? nextPeriodDate) {
-    PeriodStatusMessage status = PeriodStatusMessage(text: '', color: defaultColor);
+  PeriodStatusMessage getStatusMessage(
+    Color defaultColor,
+    DateTime? nextPeriodDate,
+  ) {
+    PeriodStatusMessage status = PeriodStatusMessage(
+      text: '',
+      color: defaultColor,
+    );
 
     if (_periods.isEmpty || nextPeriodDate == null) {
       // in this case status bar on home page is hidden
-      status.text = 'Start by tapping the + button below to log your most recent period';
+      status.text =
+          'Start by tapping the + button below to log your most recent period';
       return status;
     }
 
     status.color = Colors.green;
 
-    final List<Period> sortedPeriods = List<Period>.from(_periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+    final List<Period> sortedPeriods = List<Period>.from(_periods)
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
-    final lastPeriod = sortedPeriods.last; // last period dates are normalized to UTC already
+    final lastPeriod =
+        sortedPeriods.last; // last period dates are normalized to UTC already
 
     // ensure both nextPeriodDate and today are stripped of time and in UTC
     final DateTime now = DateTime.now();
     final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
     // Check if currently in period
-    if ((today.isAtSameMomentAs(lastPeriod.startDate) || today.isAtSameMomentAs(lastPeriod.endDate!)) ||
-        (today.isAfter(lastPeriod.startDate) && today.isBefore(lastPeriod.endDate!))) {
+    if ((today.isAtSameMomentAs(lastPeriod.startDate) ||
+            today.isAtSameMomentAs(lastPeriod.endDate!)) ||
+        (today.isAfter(lastPeriod.startDate) &&
+            today.isBefore(lastPeriod.endDate!))) {
       status.text = 'Currently in period';
       return status;
     }
@@ -167,7 +199,8 @@ class PeriodProvider extends ChangeNotifier {
   // Returns average period length in days
   double? getAveragePeriodLength({bool? useRecent6}) {
     // Only consider periods with both start and end dates
-    final completed = _periods.where((p) => p.endDate != null).toList();
+    final completed = _periods.where((p) => p.endDate != null).toList()
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
     if (completed.isEmpty) return null;
 
     List<Period> periodsToUse = completed;
@@ -175,7 +208,10 @@ class PeriodProvider extends ChangeNotifier {
       periodsToUse = completed.sublist(completed.length - 6);
     }
 
-    final lengths = periodsToUse.map((p) => p.endDate!.difference(p.startDate).inDays + 1).where((days) => days > 0).toList();
+    final lengths = periodsToUse
+        .map((p) => p.endDate!.difference(p.startDate).inDays + 1)
+        .where((days) => days > 0)
+        .toList();
     if (lengths.isEmpty) return null;
     return lengths.reduce((a, b) => a + b) / lengths.length;
   }
@@ -188,13 +224,16 @@ class PeriodProvider extends ChangeNotifier {
       // returns null if userCycleLength is null
       return userCycleLength?.toDouble();
     }
-    final List<Period> sorted = List<Period>.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+    final List<Period> sorted = List<Period>.from(periods)
+      ..sort((a, b) => a.startDate.compareTo(b.startDate));
     final List<int> cycles = [];
     if (useRecent6 == true && sorted.length > 6) {
       sorted.removeRange(0, sorted.length - 6);
     }
     for (int i = 1; i < sorted.length; i++) {
-      cycles.add(sorted[i].startDate.difference(sorted[i - 1].startDate).inDays);
+      cycles.add(
+        sorted[i].startDate.difference(sorted[i - 1].startDate).inDays,
+      );
     }
     if (cycles.isEmpty) return null;
     return cycles.reduce((a, b) => a + b) / cycles.length;
@@ -218,7 +257,10 @@ class PeriodProvider extends ChangeNotifier {
 
     final Period? period = PeriodService.getPeriodInDate(checkDate, periods);
     if (period == null) {
-      return Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium);
+      return Text(
+        'Cycle Day: $cycleDay',
+        style: Theme.of(context).textTheme.bodyMedium,
+      );
     }
 
     final String? notes;
@@ -231,7 +273,10 @@ class PeriodProvider extends ChangeNotifier {
     return Center(
       child: Column(
         children: [
-          Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            'Cycle Day: $cycleDay',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           SizedBox(height: 4),
           Text(
             'Selected period: ${DateTimeHelper.displayDate(period.startDate)} - '
