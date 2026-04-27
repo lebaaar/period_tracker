@@ -19,7 +19,7 @@
 <h2>Download&nbsp;<img src="https://img.shields.io/badge/Downloads-100%2B-brightgreen" alt="100+ downloads"></h2>
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker" target="_blank">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/960px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
   </a>
   <br>
   <br>
