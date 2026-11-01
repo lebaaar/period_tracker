@@ -33,7 +33,7 @@ class NotificationService {
     kNotificationChannelId,
     kNotificationChannelName,
     channelDescription: kNotificationChannelDescription,
-    color: colorScheme.primary,
+    color: darkColorScheme.primary,
     importance: Importance.high,
     priority: Priority.high,
     playSound: true,

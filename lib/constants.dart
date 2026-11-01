@@ -1,5 +1,4 @@
-import 'package:flutter/rendering.dart';
-import 'package:period_tracker/theme.dart';
+import 'package:flutter/material.dart';
 
 const String kPackageName = 'com.lebaaar.period_tracker';
 
@@ -16,47 +15,21 @@ final DateTime kLastCalendarDay = DateTime.utc(
 ); // 8 years into the future
 
 // table_calendar specific
-// logged period gradients - gradient the whole background
-final Gradient kLoggedPeriodFirstMonthDayGradient = LinearGradient(
-  colors: [colorScheme.surface, colorScheme.secondary],
-  stops: [0.0, 0.33],
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-);
-final Gradient kLoggedPeriodLastMonthDayGradient = LinearGradient(
-  colors: [colorScheme.secondary, colorScheme.surface],
-  stops: [0.66, 1.0],
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-);
+// gradients across the whole day cell background, built from the active theme's scheme
+Gradient _fromLeft(Color a, Color b, double s0, double s1) =>
+    LinearGradient(colors: [a, b], stops: [s0, s1], begin: Alignment.centerLeft, end: Alignment.centerRight);
 
-// logged selected period gradients - gradient the whole background
-final Gradient kLoggedSelectedPeriodFirstMonthDayGradient = LinearGradient(
-  colors: [colorScheme.surface, colorScheme.primary],
-  stops: [0.0, 0.33],
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-);
-final Gradient kLoggedSelectedPeriodLastMonthDayGradient = LinearGradient(
-  colors: [colorScheme.primary, colorScheme.surface],
-  stops: [0.66, 1.0],
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-);
+// logged period
+Gradient kLoggedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.secondary, 0.0, 0.33);
+Gradient kLoggedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.secondary, cs.surface, 0.66, 1.0);
+
+// logged selected period
+Gradient kLoggedSelectedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.primary, 0.0, 0.33);
+Gradient kLoggedSelectedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.primary, cs.surface, 0.66, 1.0);
 
 // TODO: upcoming period gradients - gradient just the border
-final Gradient kUpcomingSelectedPeriodFirstMonthDayGradient = LinearGradient(
-  colors: [colorScheme.surface, colorScheme.primary],
-  stops: [0.0, 0.33],
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-);
-final Gradient kUpcomingSelectedPeriodLastMonthDayGradient = LinearGradient(
-  colors: [colorScheme.primary, colorScheme.surface],
-  stops: [0.66, 1.0],
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-);
+Gradient kUpcomingSelectedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.primary, 0.0, 0.33);
+Gradient kUpcomingSelectedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.primary, cs.surface, 0.66, 1.0);
 
 // Default cycle and period lengths
 const int kDefaultCycleLength = 28;

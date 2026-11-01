@@ -18,6 +18,7 @@ import 'package:period_tracker/pages/restore_data_preview_page.dart';
 import 'package:period_tracker/pages/restore_help_page.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/theme_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
@@ -37,20 +38,7 @@ Future<void> main() async {
 
   await NotificationService().init();
 
-  // Set system UI overlay style globally
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // Background behind status bar (top)
-      statusBarBrightness: Brightness.dark, // iOS: dark status bar content (light icons/text)
-      statusBarIconBrightness: Brightness.light, // Android: light icons (dark background)
-      systemNavigationBarColor: Colors.black, // Android: background color of bottom navigation bar
-      systemNavigationBarDividerColor: Colors.black, // Android: divider above navbar (optional)
-      systemNavigationBarIconBrightness: Brightness.light, // Android: light icons for dark navbar
-      systemStatusBarContrastEnforced: false, // Allow custom navbar styling
-      systemNavigationBarContrastEnforced: false, // Allow custom navbar styling
-    ),
-  );
-
+  final ThemeProvider themeProvider = await ThemeProvider.load();
   final bool onBoardingComplete = await getOnboardingComplete();
   final bool isAfterRestore = await getDisplayRestoreSuccess();
   if (isAfterRestore) {
@@ -63,6 +51,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => PeriodProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider.value(value: themeProvider),
       ],
       child: PeriodTrackerApp(showOnboarding: !onBoardingComplete, isAfterRestore: isAfterRestore),
     ),
@@ -81,6 +70,7 @@ class PeriodTrackerApp extends StatefulWidget {
 class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
   late StreamSubscription _intentSub;
   final List _sharedFiles = [];
+  late final GoRouter _router = _buildRouter();
 
   @override
   void initState() {
@@ -126,9 +116,9 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
     await setFileShared(value);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final GoRouter router = GoRouter(
+  // built once: recreating it on rebuild (e.g. theme change) resets navigation to home
+  GoRouter _buildRouter() {
+    return GoRouter(
       initialLocation: widget.showOnboarding ? '/onboarding' : '/',
       routes: [
         GoRoute(
@@ -195,10 +185,39 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
         return widget.showOnboarding ? const OnboardingScreen() : MainNavigation(isAfterRestore: widget.isAfterRestore);
       },
     );
+  }
 
+  @override
+  Widget build(BuildContext context) {
     // disable landscape mode
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    return MaterialApp.router(title: 'Period Tracker', theme: appTheme, routerConfig: router, debugShowCheckedModeBanner: kDebugMode);
+    final ThemeMode themeMode = context.watch<ThemeProvider>().mode;
+    return MaterialApp.router(
+      title: 'Period Tracker',
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: themeMode,
+      routerConfig: _router,
+      debugShowCheckedModeBanner: kDebugMode,
+      builder: (context, child) {
+        final bool isDark = Theme.of(context).brightness == Brightness.dark;
+        final Color navColor = Theme.of(context).colorScheme.surface;
+        final Brightness iconBrightness = isDark ? Brightness.light : Brightness.dark;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            statusBarIconBrightness: iconBrightness,
+            systemNavigationBarColor: navColor,
+            systemNavigationBarDividerColor: navColor,
+            systemNavigationBarIconBrightness: iconBrightness,
+            systemStatusBarContrastEnforced: false,
+            systemNavigationBarContrastEnforced: false,
+          ),
+          child: child!,
+        );
+      },
+    );
   }
 }
 

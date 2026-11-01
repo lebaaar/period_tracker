@@ -8,6 +8,7 @@ import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/theme_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/notification_service.dart';
@@ -149,6 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             return Column(
               children: [
+                _buildThemeTile(),
                 _buildSwitchTile(
                   'Dynamic Period Prediction',
                   predictionMode == 'dynamic'
@@ -336,6 +338,30 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+    );
+  }
+
+  Widget _buildThemeTile() {
+    final ThemeProvider themeProvider = context.watch<ThemeProvider>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text('Theme', style: Theme.of(context).textTheme.bodyLarge),
+          ),
+          SegmentedButton<ThemeMode>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_rounded), tooltip: 'System default'),
+              ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_rounded), tooltip: 'Light'),
+              ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_rounded), tooltip: 'Dark'),
+            ],
+            selected: {themeProvider.mode},
+            onSelectionChanged: (s) => themeProvider.setMode(s.first),
+          ),
+        ],
+      ),
     );
   }
 

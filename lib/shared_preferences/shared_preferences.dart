@@ -64,3 +64,14 @@ Future<void> clearDisplayRestoreSuccess() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove('display_restore_success');
 }
+
+// theme_mode: 'system' (default), 'light' or 'dark'
+Future<void> setThemeModeValue(String mode) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('theme_mode', mode);
+}
+
+Future<String> getThemeModeValue() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString('theme_mode') ?? 'system';
+}

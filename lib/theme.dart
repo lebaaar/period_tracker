@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // icon color: FF91C5
-const ColorScheme colorScheme = ColorScheme.dark(
+const ColorScheme darkColorScheme = ColorScheme.dark(
   brightness: Brightness.dark,
 
   primary: Color(0xFFFF91C5), // #ff91c5
@@ -44,31 +44,74 @@ const ColorScheme colorScheme = ColorScheme.dark(
   inversePrimary: Color(0xFF98406F),
 );
 
-final TextTheme textTheme = TextTheme(
-  bodyLarge: GoogleFonts.lexend(fontSize: 16, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
-  bodyMedium: GoogleFonts.lexend(fontSize: 14, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
-  bodySmall: GoogleFonts.lexend(fontSize: 12, color: colorScheme.onSurface, fontWeight: FontWeight.w400, letterSpacing: 0),
-  titleLarge: GoogleFonts.lexend(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
-  titleMedium: GoogleFonts.lexend(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface, letterSpacing: 0),
-  titleSmall: GoogleFonts.lexend(fontSize: 16, fontWeight: FontWeight.w500, color: colorScheme.onSurface, letterSpacing: 0),
-  labelLarge: GoogleFonts.lexend(fontSize: 14, fontWeight: FontWeight.w500, color: colorScheme.onSurface, letterSpacing: 0),
-  labelMedium: GoogleFonts.lexend(fontSize: 12, fontWeight: FontWeight.w400, color: colorScheme.onSurface, letterSpacing: 0),
-  labelSmall: GoogleFonts.lexend(fontSize: 10, fontWeight: FontWeight.w400, color: colorScheme.onSurface, letterSpacing: 0),
-  headlineLarge: GoogleFonts.lexend(fontSize: 32, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
-  headlineMedium: GoogleFonts.lexend(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
-  headlineSmall: GoogleFonts.lexend(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface, letterSpacing: 0),
+const ColorScheme lightColorScheme = ColorScheme.light(
+  brightness: Brightness.light,
+
+  primary: Color(0xFFFF91C5),
+  onPrimary: Colors.black,
+  primaryContainer: Color(0xFFF5F5F5),
+  onPrimaryContainer: Colors.black,
+
+  secondary: Color(0xFFE0E0E0),
+  onSecondary: Color(0xFF231532),
+  secondaryContainer: Color(0xFFEADDF7),
+  onSecondaryContainer: Color(0xFF231532),
+
+  tertiary: Color(0xFF6B6B6B),
+  onTertiary: Colors.white,
+  tertiaryContainer: Color(0xFFD0D0D0),
+  onTertiaryContainer: Color(0xFF39182A),
+
+  error: Color(0xFFBA1A1A),
+  onError: Colors.white,
+  errorContainer: Color(0xFFFFDAD6),
+  onErrorContainer: Color(0xFF410002),
+
+  surface: Colors.white,
+  onSurface: Colors.black,
+  surfaceContainerHighest: Color(0xFFF5F5F5),
+  onSurfaceVariant: Color(0xFF49454F),
+
+  outline: Color(0xFF79747E),
+  outlineVariant: Color(0xFFCAC4D0),
+
+  shadow: Color(0xFF000000),
+  scrim: Color(0xFF000000),
+
+  inverseSurface: Color(0xFF313033),
+  onInverseSurface: Color(0xFFF4EFF4),
+  inversePrimary: Color(0xFFFF91C5),
 );
 
-final AppBarTheme appBarTheme = AppBarTheme(
-  backgroundColor: colorScheme.primary,
-  foregroundColor: colorScheme.onPrimary,
-  scrolledUnderElevation: 0,
-  titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
-);
+TextStyle _lexend(ColorScheme cs, double size, FontWeight weight) =>
+    GoogleFonts.lexend(fontSize: size, color: cs.onSurface, fontWeight: weight, letterSpacing: 0);
 
-final ThemeData appTheme = ThemeData(
-  colorScheme: colorScheme,
-  textTheme: textTheme,
-  appBarTheme: appBarTheme,
-  scaffoldBackgroundColor: colorScheme.surface,
-);
+ThemeData buildTheme(ColorScheme cs) {
+  return ThemeData(
+    colorScheme: cs,
+    textTheme: TextTheme(
+      bodyLarge: _lexend(cs, 16, FontWeight.w400),
+      bodyMedium: _lexend(cs, 14, FontWeight.w400),
+      bodySmall: _lexend(cs, 12, FontWeight.w400),
+      titleLarge: _lexend(cs, 20, FontWeight.bold),
+      titleMedium: _lexend(cs, 18, FontWeight.w600),
+      titleSmall: _lexend(cs, 16, FontWeight.w500),
+      labelLarge: _lexend(cs, 14, FontWeight.w500),
+      labelMedium: _lexend(cs, 12, FontWeight.w400),
+      labelSmall: _lexend(cs, 10, FontWeight.w400),
+      headlineLarge: _lexend(cs, 32, FontWeight.bold),
+      headlineMedium: _lexend(cs, 28, FontWeight.bold),
+      headlineSmall: _lexend(cs, 24, FontWeight.bold),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
+      scrolledUnderElevation: 0,
+      titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: cs.onPrimary),
+    ),
+    scaffoldBackgroundColor: cs.surface,
+  );
+}
+
+final ThemeData darkTheme = buildTheme(darkColorScheme);
+final ThemeData lightTheme = buildTheme(lightColorScheme);

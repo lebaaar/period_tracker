@@ -349,9 +349,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (spansMultipleMonths) {
       if (isInPeriod) {
         gradient = isFirstDayOfMonth
-            ? kLoggedPeriodFirstMonthDayGradient
+            ? kLoggedPeriodFirstMonthDayGradient(Theme.of(context).colorScheme)
             : isLastDayOfMonth
-            ? kLoggedPeriodLastMonthDayGradient
+            ? kLoggedPeriodLastMonthDayGradient(Theme.of(context).colorScheme)
             : null;
       }
     }
@@ -506,17 +506,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (spansMultipleMonths) {
       if (isInPeriod) {
         gradient = isFirstDayOfMonth
-            ? kLoggedSelectedPeriodFirstMonthDayGradient
+            ? kLoggedSelectedPeriodFirstMonthDayGradient(Theme.of(context).colorScheme)
             : isLastDayOfMonth
-            ? kLoggedSelectedPeriodLastMonthDayGradient
+            ? kLoggedSelectedPeriodLastMonthDayGradient(Theme.of(context).colorScheme)
             : null;
       }
     } else if (upComingSpanMultipleMonths) {
       if (insideUpcomingPeriod) {
         gradient = isFirstDayOfMonth
-            ? kUpcomingSelectedPeriodFirstMonthDayGradient
+            ? kUpcomingSelectedPeriodFirstMonthDayGradient(Theme.of(context).colorScheme)
             : isLastDayOfMonth
-            ? kUpcomingSelectedPeriodLastMonthDayGradient
+            ? kUpcomingSelectedPeriodLastMonthDayGradient(Theme.of(context).colorScheme)
             : null;
       }
     }
