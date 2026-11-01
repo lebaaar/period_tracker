@@ -9,7 +9,11 @@ const double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2004, 3, 9);
-final DateTime kLastCalendarDay = DateTime.utc(DateTime.now().year + 8, 12, 31); // 8 years into the future
+final DateTime kLastCalendarDay = DateTime.utc(
+  DateTime.now().year + 8,
+  12,
+  31,
+); // 8 years into the future
 
 // table_calendar specific
 // logged period gradients - gradient the whole background
@@ -77,7 +81,8 @@ const String kNotificationsTableName = 'notifications';
 // Notification constants
 const String kNotificationChannelId = 'period_tracker_channel';
 const String kNotificationChannelName = 'Period Tracker Notifications';
-const String kNotificationChannelDescription = 'Notifications for Period Tracker';
+const String kNotificationChannelDescription =
+    'Notifications for Period Tracker';
 const int kDefaultNotificationsDaysBefore = 3;
 const int kMaxNotificationsDaysBefore = 14;
 const int kDefaultNotificationHour = 8;
@@ -98,7 +103,8 @@ To restore your data on a new device:
 // Phone number constants
 const String kDefaultIsoCountryCode = 'SI';
 const String kDefaultCountryCode = '+386';
-const String kDefaultPartnerMessageHeading = 'Your girlfriend is on her period and needs your help! Here is her message for you:';
+const String kDefaultPartnerMessageHeading =
+    'Your girlfriend is on her period and needs your help! Here is her message for you:';
 
 // Error codes
 const String kRestoreErrorCode = "RESTORE_ERR";
@@ -115,7 +121,8 @@ const String kDogApiBase = 'https://dog.ceo/api/breed';
 const String kCatApiBase = 'https://api.thecatapi.com';
 
 // Contact
-const String kContactEmail = 'lanlebar6@gmail.com';
+const String kContactEmail = 'periodtracker@lan.si';
 const String kKofiUrl = 'https://ko-fi.com/lebaaar';
 const String kGitHubUrl = 'https://github.com/lebaaar/period_tracker';
-const String kGooglePlayStoreUrl = 'https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker';
+const String kGooglePlayStoreUrl =
+    'https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker';
