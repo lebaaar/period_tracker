@@ -81,6 +81,18 @@ class NotificationService {
     return true; // permission granted or older Android version (granted == null)
   }
 
+  /// Whether exact alarms are allowed (needed for on-time delivery under Doze). Always true below Android 12.
+  Future<bool> canScheduleExact() async {
+    final androidPlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    return await androidPlugin?.canScheduleExactNotifications() ?? false;
+  }
+
+  /// Opens the system "Alarms & reminders" screen (Android 14+). User must flip the switch there.
+  Future<void> requestExactAlarmPermission() async {
+    final androidPlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.requestExactAlarmsPermission();
+  }
+
   /// Schedules a notification. Method should be called only if notifications are enabled.
   /// @param id Unique identifier for the notification.
   /// @param title Title of the notification.
@@ -98,13 +110,16 @@ class NotificationService {
       payload = '/log';
     }
 
+    // Inexact alarms get deferred by Doze (often until the app is opened), so use exact when allowed.
+    final bool canScheduleExact = await this.canScheduleExact();
+
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       title,
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
       NotificationDetails(android: _androidNotificationDetails),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: canScheduleExact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       payload: payload,
     );
   }

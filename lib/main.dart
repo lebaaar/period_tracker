@@ -7,6 +7,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
+import 'package:period_tracker/models/settings_model.dart';
+import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/pages/about_page.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
@@ -209,12 +211,71 @@ class MainNavigation extends StatefulWidget {
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObserver {
   int _selectedIndex = 0;
+  bool _exactPromptShown = false; // once per app session
+  bool _awaitingExactGrant = false;
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _awaitingExactGrant) _onReturnFromAlarmSettings();
+  }
+
+  /// Notifications are only reliable on time with exact alarms. Android 14+ needs the user to allow
+  /// "Alarms & reminders" in system settings, so explain first and send them there.
+  Future<void> _checkExactAlarms() async {
+    if (_exactPromptShown || !mounted) return;
+    final Settings? settings = context.read<SettingsProvider>().settings;
+    if (settings == null || !settings.notificationsEnabled) return;
+    if (await NotificationService().canScheduleExact() || !mounted) return;
+    _exactPromptShown = true;
+
+    final bool? open = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Get reminders on time'),
+        content: const Text('To send your period reminders exactly on the day, allow "Alarms & reminders" for Period Tracker on the next screen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
+            child: const Text('Not now'),
+          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Open settings')),
+        ],
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      ),
+    );
+    if (open == true) {
+      _awaitingExactGrant = true;
+      await NotificationService().requestExactAlarmPermission();
+    }
+  }
+
+  /// Alarms already queued stay inexact, so reschedule everything once exact is granted.
+  Future<void> _onReturnFromAlarmSettings() async {
+    _awaitingExactGrant = false;
+    if (!await NotificationService().canScheduleExact() || !mounted) return;
+    final Settings? settings = context.read<SettingsProvider>().settings;
+    final User? user = context.read<UserProvider>().user;
+    if (settings == null) return;
+    final DateTime? next = context.read<PeriodProvider>().getNextPeriodDate(settings.predictionMode == 'dynamic', user?.cycleLength);
+    await NotificationService().scheduleNotificationsForNextPeriod(next, settings.notificationDaysBefore, settings.notificationTime);
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (!widget.isAfterRestore) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkExactAlarms());
+    }
     if (widget.isAfterRestore) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog(
@@ -228,6 +289,7 @@ class _MainNavigationState extends State<MainNavigation> {
                 onPressed: () async {
                   Navigator.of(context).pop();
                   await NotificationService().requestPermissions();
+                  await _checkExactAlarms();
                 },
                 child: const Text('Great!'),
               ),
