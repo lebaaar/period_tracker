@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/notification_type.dart';
 import 'package:period_tracker/models/settings_model.dart';
@@ -50,8 +51,13 @@ class NotificationService {
   Future<void> init() async {
     // Init timezones
     tz.initializeTimeZones();
-    // final String name = DateTime.now().timeZoneName;
-    tz.setLocalLocation(tz.getLocation('Europe/Ljubljana')); // TODO
+    try {
+      final TimezoneInfo timezone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timezone.identifier));
+    } catch (_) {
+      // Unknown zone: tz.local stays UTC, so keep the old default instead of firing at the wrong hour.
+      tz.setLocalLocation(tz.getLocation('Europe/Ljubljana'));
+    }
 
     const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@drawable/ic_stat_notify');
 
