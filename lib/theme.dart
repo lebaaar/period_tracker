@@ -237,7 +237,8 @@ ThemeData buildTheme(Brightness brightness) {
       elevation: 0,
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: const WidgetStatePropertyAll(Colors.white),
+      // white when on; in dark mode a dimmer grey when off so it does not glare against the dark track
+      thumbColor: WidgetStateProperty.resolveWith((s) => !s.contains(WidgetState.selected) && isDark ? const Color(0xFF9A9AA0) : Colors.white),
       trackColor: WidgetStateProperty.resolveWith(
         (s) => s.contains(WidgetState.selected) ? c.accent : (isDark ? const Color(0xFF39393D) : const Color(0xFFD9D5D1)),
       ),

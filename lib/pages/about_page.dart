@@ -23,7 +23,6 @@ class AboutPage extends StatefulWidget {
 class _AboutPageState extends State<AboutPage> {
   AppUpdateInfo? _updateInfo;
   int _versionTapCount = 0;
-  bool _isCheckingForUpdate = false;
 
   @override
   void initState() {
@@ -41,25 +40,12 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Future<void> _checkForUpdate() async {
-    setState(() {
-      _isCheckingForUpdate = true;
-    });
-
     try {
-      // simulate loading
-      await Future.delayed(const Duration(seconds: 1));
       final info = await InAppUpdate.checkForUpdate();
-
       if (!mounted) return;
-      setState(() {
-        _updateInfo = info;
-        _isCheckingForUpdate = false;
-      });
+      setState(() => _updateInfo = info);
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isCheckingForUpdate = false;
-      });
+      // no Play Store (debug, sideloaded) or offline: just show no update pill
     }
   }
 
@@ -125,10 +111,7 @@ class _AboutPageState extends State<AboutPage> {
                             ),
                           ),
                         ),
-                        if (_isCheckingForUpdate) ...[
-                          const SizedBox(width: 10),
-                          const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2)),
-                        ] else if (updateAvailable) ...[
+                        if (updateAvailable) ...[
                           const SizedBox(width: 10),
                           GestureDetector(
                             onTap: _openPlayStore,
