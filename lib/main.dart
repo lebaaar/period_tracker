@@ -311,7 +311,7 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await showInfo(
           context: context,
-          title: 'Data restored',
+          title: 'Data restored successfully 🎉',
           message: 'All your data has been successfully restored from the $kBackupFileName file.',
           buttonLabel: 'Great!',
         );

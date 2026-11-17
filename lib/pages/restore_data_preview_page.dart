@@ -31,7 +31,7 @@ class RestoreDataPreviewPage extends StatefulWidget {
 }
 
 class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
-  late bool _onBoardingComplete;
+  bool _onBoardingComplete = false;
   Map<String, dynamic>? _sharedFileContent;
   bool _loading = true;
   String? _error;
