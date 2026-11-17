@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -138,25 +139,10 @@ class NotificationService {
     // Cancel existing notifications
     await cancelAllNotifications();
 
-    if (nextPeriodStartDate == null) {
-      await cancelAllNotifications();
-      return;
-    }
-
-    if (nextPeriodStartDate.isBefore(DateTime.now())) return;
+    if (nextPeriodStartDate == null) return;
 
     // Schedule new notifications
-    for (int i = 0; i <= sendNotificationsDaysBefore; i++) {
-      final DateTime scheduledDate = DateTime(
-        nextPeriodStartDate.year,
-        nextPeriodStartDate.month,
-        nextPeriodStartDate.day - i,
-        notificationTime.hour,
-        notificationTime.minute,
-      );
-
-      if (scheduledDate.isBefore(DateTime.now())) continue;
-
+    for (final (int i, DateTime scheduledDate) in reminderTimes(nextPeriodStartDate, sendNotificationsDaysBefore, notificationTime, clock.now())) {
       final String notificationTitle = PeriodStatusMessageHelper.getNotificationTitleMessage(i);
       final String notificationBody = PeriodStatusMessageHelper.getNotificationBodyMessage(i);
 
@@ -168,6 +154,17 @@ class NotificationService {
         i == 0 ? NotificationType.periodToday : NotificationType.upcomingPeriod,
       );
     }
+  }
+
+  /// Reminder id and local time for each day from [daysBefore] days before the period up to the period day.
+  /// Id 0 is the "period today" reminder. Times that have already passed are left out, so a prediction
+  /// for today still gets its reminder if the reminder time is still ahead.
+  static List<(int, DateTime)> reminderTimes(DateTime nextPeriodStartDate, int daysBefore, TimeOfDay time, DateTime now) {
+    return [
+      for (int i = 0; i <= daysBefore; i++)
+        if (!DateTime(nextPeriodStartDate.year, nextPeriodStartDate.month, nextPeriodStartDate.day - i, time.hour, time.minute).isBefore(now))
+          (i, DateTime(nextPeriodStartDate.year, nextPeriodStartDate.month, nextPeriodStartDate.day - i, time.hour, time.minute)),
+    ];
   }
 
   /// Cancels all scheduled notifications.
