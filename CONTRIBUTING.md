@@ -33,6 +33,13 @@ lib/services/     database, notifications, backup, feedback
 lib/models/       period, user, settings
 ```
 
+## Workflow
+
+1. Fork and clone the repository.
+2. Create a branch named `feature/<issueId>/<short-desc>` or `bugfix/<issueId>/<short-desc>`, e.g. `feature/23/backup`.
+3. Develop, test, commit (descriptive messages) and push.
+4. Open a pull request titled `fix: #<issueId> - <issueTitle>`, e.g. `fix: #31 - Backup and restore data`, with a clear description.
+
 ## Releasing the app
 
 Release builds must be signed with `android/key.properties` (see `android/example-key.properties` for structure).

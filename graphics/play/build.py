@@ -68,7 +68,7 @@ FEATURE = f"""<!doctype html><meta charset=utf-8><style>{BASE}
 html,body{{width:1024px;height:500px}}
 body{{background:{PINK};color:{INK}}}
 .logo{{position:absolute;left:64px;top:56px;width:60px;height:60px;border-radius:50%}}
-.n{{position:absolute;left:140px;top:56px;line-height:60px;font-size:26px;font-weight:600;letter-spacing:-.02em}}
+.n{{position:absolute;left:120px;top:56px;line-height:60px;font-size:26px;font-weight:600;letter-spacing:-.02em}}
 h1{{position:absolute;left:62px;top:170px;font-size:58px;line-height:1;font-weight:700;letter-spacing:-.045em}}
 p{{position:absolute;left:64px;top:320px;font-size:22px;font-weight:500;color:rgba(17,17,17,.68);letter-spacing:-.01em}}
 .d{{position:absolute;top:70px;width:290px;padding:7px;border-radius:44px 44px 0 0;background:#111}}
