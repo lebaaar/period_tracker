@@ -4,7 +4,7 @@
 
 <h1><img src="images/logo.png" width="36" align="absmiddle" alt="">&nbsp;&nbsp;Period Tracker</h1>
 
-**A simple, private period tracker for Android.** No ads, no account, no internet access, and nothing leaves your phone.
+**A simple, private period tracker for Android.** No ads, no account, works fully offline, and your data never leaves your phone unless you send feedback.
 <br>
 Built for my girlfriend, who just wanted to track her cycle without annoying ads or premium upsells.
 
@@ -49,6 +49,6 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 Period Tracker is built with Flutter. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, running and testing, code structure, branch and PR naming, and how to release.
 
 ## Legal
-All data is stored locally on your device and is never transmitted. Complete privacy policy is available [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
+Your data is stored only on your device. Full privacy policy available at [periodtracker.lan.si](https://periodtracker.lan.si/privacy).
 
 Distributed under the [GNU General Public License v3](/LICENSE).
