@@ -1,26 +1,44 @@
 """Play Store graphics. Needs screens from `flutter test test/shots_test.dart`
 (writes shots/*.png). Run: python3 graphics/play/build.py -> graphics/play/*.png"""
-import base64, pathlib, subprocess
+
+import base64
+import pathlib
+import subprocess
 
 D = pathlib.Path(__file__).parent
 ROOT = D.parent.parent
-OUT = D / "out"; OUT.mkdir(exist_ok=True)
+OUT = D / "out"
+OUT.mkdir(exist_ok=True)
 CHROME = "/usr/bin/chromium-browser"
 
+
 def b64(p, mime):
-    return f"data:{mime};base64," + base64.b64encode(pathlib.Path(p).read_bytes()).decode()
+    return (
+        f"data:{mime};base64," + base64.b64encode(pathlib.Path(p).read_bytes()).decode()
+    )
+
 
 FONTS = "".join(
-    f"@font-face{{font-family:'Inter';font-weight:{w};src:url({b64(ROOT/'assets/fonts'/f'Inter-{n}.ttf','font/ttf')}) format('truetype')}}"
-    for w, n in ((400, "Regular"), (500, "Medium"), (600, "SemiBold"), (700, "Bold")))
+    f"@font-face{{font-family:'Inter';font-weight:{w};src:url({b64(ROOT / 'assets/fonts' / f'Inter-{n}.ttf', 'font/ttf')}) format('truetype')}}"
+    for w, n in ((400, "Regular"), (500, "Medium"), (600, "SemiBold"), (700, "Bold"))
+)
 LOGO = b64(ROOT / "images/logo.png", "image/png")
-def shot(n): return b64(D / "shots" / f"{n}.png", "image/png")
+
+
+def shot(n):
+    return b64(D / "shots" / f"{n}.png", "image/png")
+
 
 PINK, CREAM, INK = "#FF91C5", "#F5F3F1", "#111111"
 THEMES = {
-    "cream": dict(bg=CREAM, fg=INK, sub="#6B6966", frame="#111111"),
-    "pink":  dict(bg=PINK, fg=INK, sub="rgba(17,17,17,.68)", frame="#111111"),
-    "ink":   dict(bg="#0B0B0C", fg="#FFFFFF", sub="rgba(255,255,255,.58)", frame="#2A2A2D"),
+    "cream": {"bg": CREAM, "fg": INK, "sub": "#6B6966", "frame": "#111111"},
+    "pink": {"bg": PINK, "fg": INK, "sub": "rgba(17,17,17,.68)", "frame": "#111111"},
+    "ink": {
+        "bg": "#0B0B0C",
+        "fg": "#FFFFFF",
+        "sub": "rgba(255,255,255,.58)",
+        "frame": "#2A2A2D",
+    },
 }
 
 BASE = f"""{FONTS}
@@ -28,20 +46,21 @@ BASE = f"""{FONTS}
 body{{font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}}
 """
 
+
 def slide(theme, title, sub, img, kicker):
     t = THEMES[theme]
     return f"""<!doctype html><meta charset=utf-8><style>{BASE}
 html,body{{width:1080px;height:1920px}}
-body{{background:{t['bg']};color:{t['fg']}}}
+body{{background:{t["bg"]};color:{t["fg"]}}}
 .k{{position:absolute;left:88px;top:96px;font-size:26px;font-weight:600;letter-spacing:.02em;
   display:flex;align-items:center;gap:14px}}
-.k i{{width:12px;height:12px;border-radius:50%;background:{PINK if theme!='pink' else INK};display:block}}
+.k i{{width:12px;height:12px;border-radius:50%;background:{PINK if theme != "pink" else INK};display:block}}
 h1{{position:absolute;left:84px;top:130px;width:900px;font-size:112px;line-height:1;
   font-weight:700;letter-spacing:-.045em}}
 p{{position:absolute;left:88px;top:400px;width:700px;font-size:36px;line-height:1.38;
-  font-weight:400;letter-spacing:-.011em;color:{t['sub']}}}
+  font-weight:400;letter-spacing:-.011em;color:{t["sub"]}}}
 .dev{{position:absolute;left:50%;top:580px;transform:translateX(-50%);width:860px;
-  padding:14px;border-radius:92px 92px 0 0;background:{t['frame']};
+  padding:14px;border-radius:92px 92px 0 0;background:{t["frame"]};
   box-shadow:0 -2px 0 rgba(255,255,255,.06) inset,0 50px 120px -30px rgba(0,0,0,.35)}}
 .dev .s{{border-radius:78px 78px 0 0;overflow:hidden;background:#fff;height:1340px;position:relative}}
 .dev img{{width:100%;display:block}}
@@ -51,17 +70,48 @@ p{{position:absolute;left:88px;top:400px;width:700px;font-size:36px;line-height:
 <h1>{title}</h1><p>{sub}</p>
 <div class=dev><div class=s><img src="{img}"><div class=cam></div></div></div></body>"""
 
+
 SLIDES = [
-    ("01_home", "cream", "Your cycle,<br>at a glance.",
-     "Cycle day, countdown and a calendar that reads in a second.", "home", "Today"),
-    ("02_insights", "pink", "Know your<br>numbers.",
-     "Average cycle and period length, worked out from your own history.", "insights", "Insights"),
-    ("03_log", "ink", "Log a period<br>in seconds.",
-     "Tap the days, add a note if you like, done.", "log_dark", "Log"),
-    ("04_reminders", "cream", "A heads-up<br>before it starts.",
-     "Pick how many days ahead and what time. Nothing else ever pings you.", "reminders", "Reminders"),
-    ("05_transfer", "pink", "New phone?<br>Keep it all.",
-     "Move your history across with one file. No cloud, no account.", "transfer", "Your data"),
+    (
+        "01_home",
+        "cream",
+        "Your cycle,<br>at a glance.",
+        "Cycle day, countdown and a calendar that reads in a second.",
+        "home",
+        "Today",
+    ),
+    (
+        "02_insights",
+        "pink",
+        "Know your<br>numbers.",
+        "Average cycle and period length, worked out from your own history.",
+        "insights",
+        "Insights",
+    ),
+    (
+        "03_log",
+        "ink",
+        "Log a period<br>in seconds.",
+        "Tap the days, add a note if you like, done.",
+        "log_dark",
+        "Log",
+    ),
+    (
+        "04_reminders",
+        "cream",
+        "A heads-up<br>before it starts.",
+        "Pick how many days ahead and what time. Nothing else ever pings you.",
+        "reminders",
+        "Reminders",
+    ),
+    (
+        "05_transfer",
+        "pink",
+        "New phone?<br>Keep it all.",
+        "Move your history across with one file. No cloud, no account.",
+        "transfer",
+        "Your data",
+    ),
 ]
 
 FEATURE = f"""<!doctype html><meta charset=utf-8><style>{BASE}
@@ -79,17 +129,30 @@ p{{position:absolute;left:64px;top:320px;font-size:22px;font-weight:500;color:rg
 <img class=logo src="{LOGO}"><div class=n>Period Tracker</div>
 <h1>Track your cycle.<br>Nothing else.</h1>
 <p>No ads · No account · 100% offline</p>
-<div class="d a"><div class=s><img src="{shot('home')}"></div></div>
-<div class="d b"><div class=s><img src="{shot('insights')}"></div></div>
+<div class="d a"><div class=s><img src="{shot("home")}"></div></div>
+<div class="d b"><div class=s><img src="{shot("insights")}"></div></div>
 </body>"""
 
+
 def render(name, html, w, h):
-    f = OUT / f"{name}.html"; f.write_text(html)
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                    "--force-device-scale-factor=1", f"--window-size={w},{h}",
-                    f"--screenshot={D/(name+'.png')}", f"file://{f}"],
-                   check=True, capture_output=True)
+    f = OUT / f"{name}.html"
+    f.write_text(html)
+    subprocess.run(
+        [
+            CHROME,
+            "--headless=new",
+            "--disable-gpu",
+            "--hide-scrollbars",
+            "--force-device-scale-factor=1",
+            f"--window-size={w},{h}",
+            f"--screenshot={D / (name + '.png')}",
+            f"file://{f}",
+        ],
+        check=True,
+        capture_output=True,
+    )
     print("rendered", name)
+
 
 for name, th, title, sub, img, kick in SLIDES:
     render(name, slide(th, title, sub, shot(img), kick), 1080, 1920)
