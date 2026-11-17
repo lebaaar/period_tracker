@@ -1,54 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:period_tracker/widgets/primary_button.dart';
 
 class OnboardingRestoreDataPage extends StatelessWidget {
   const OnboardingRestoreDataPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('Restore Data', style: Theme.of(context).textTheme.titleMedium),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          color: Theme.of(context).colorScheme.onSurface,
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(Icons.restore_rounded, size: 100, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'To restore data you need the $kBackupFileName file on your device. Locate the file with your Files app and open it with this app.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  context.push('/help?initialPage=restore');
-                },
-                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
-                child: Text('Need help?', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-              ),
-            ],
+    final c = context.colors;
+    return LargeTitleScaffold(
+      title: 'Restore data',
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'To restore your data you need the $kBackupFileName file on this device. Find it in your Files app and open it with Period Tracker.',
+              style: context.text.bodyLarge?.copyWith(color: c.labelSecondary),
+            ),
           ),
         ),
-      ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+            child: PrimaryButton(label: 'How do I do that?', style: AppButtonStyle.secondary, onPressed: () => context.push('/help?initialPage=restore')),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -7,8 +7,10 @@ class UserProvider extends ChangeNotifier {
   User? get user => _user;
   final DatabaseService _db = DatabaseService();
 
+  late final Future<void> ready;
+
   UserProvider() {
-    fetchUser();
+    ready = fetchUser();
   }
 
   Future<void> fetchUser() async {

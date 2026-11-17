@@ -1,9 +1,17 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:period_tracker/providers/period_provider.dart';
-import 'package:period_tracker/utils/date_time_helper.dart';
-import 'package:period_tracker/widgets/section_title.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/grouped_section.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:period_tracker/widgets/pressable.dart';
+import 'package:period_tracker/widgets/primary_button.dart';
+import 'package:period_tracker/widgets/segmented_control.dart';
 import 'package:provider/provider.dart';
+
 import '../models/period_model.dart';
 
 class InsightsPage extends StatefulWidget {
@@ -17,23 +25,22 @@ enum SortOption { dateNewest, dateOldest, periodLengthShortest, periodLengthLong
 
 class _InsightsPageState extends State<InsightsPage> {
   SortOption _currentSortOption = SortOption.dateNewest;
-  bool _showOnlyLast6ForCycleLength = true; // Track whether to show last 6 or all history for cycle length
-  bool _showOnlyLast6ForPeriodLength = true; // Track whether to show last 6 or all history for period length
+  bool _recentOnly = true; // averages over the last 6 periods vs. all time
 
   String _getSortOptionText(SortOption option) {
     switch (option) {
       case SortOption.dateNewest:
-        return 'Date (Newest First)';
+        return 'Newest first';
       case SortOption.dateOldest:
-        return 'Date (Oldest First)';
+        return 'Oldest first';
       case SortOption.periodLengthShortest:
-        return 'Period Length (Shortest)';
+        return 'Shortest period';
       case SortOption.periodLengthLongest:
-        return 'Period Length (Longest)';
+        return 'Longest period';
       case SortOption.cycleLengthShortest:
-        return 'Cycle Length (Shortest)';
+        return 'Shortest cycle';
       case SortOption.cycleLengthLongest:
-        return 'Cycle Length (Longest)';
+        return 'Longest cycle';
     }
   }
 
@@ -92,224 +99,182 @@ class _InsightsPageState extends State<InsightsPage> {
     return sortedPeriods;
   }
 
-  void _showToggleMessage(BuildContext context, String statName) {
-    final isCycleLength = statName == 'cycle';
-    final isShowingLast6 = isCycleLength ? _showOnlyLast6ForCycleLength : _showOnlyLast6ForPeriodLength;
-    final displayName = isCycleLength ? 'Cycle Length' : 'Period Length';
-    final message = isShowingLast6 ? 'Average $displayName for the last 6 periods' : 'Average $displayName for all time';
-
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), behavior: SnackBarBehavior.floating));
+  String _rangeLabel(Period p) {
+    if (p.endDate == null) return '${DateFormat('d MMM yyyy').format(p.startDate)} – ongoing';
+    final bool sameYear = p.startDate.year == p.endDate!.year;
+    final String start = DateFormat(sameYear ? 'd MMM' : 'd MMM yyyy').format(p.startDate);
+    return '$start – ${DateFormat('d MMM yyyy').format(p.endDate!)}';
   }
+
+  void _logPeriod() => context.go('/log?isEditing=false&focusedDay=${Uri.encodeComponent(clock.now().toIso8601String())}');
+
+  Future<void> _pickSort() async {
+    final SortOption? picked = await showSelectSheet<SortOption>(
+      context: context,
+      title: 'Sort history',
+      selected: _currentSortOption,
+      options: [for (final SortOption o in SortOption.values) SelectOption(value: o, label: _getSortOptionText(o), icon: _sortIcon(o))],
+    );
+    if (picked != null && mounted) setState(() => _currentSortOption = picked);
+  }
+
+  IconData _sortIcon(SortOption option) => switch (option) {
+    SortOption.dateNewest => Icons.arrow_downward_rounded,
+    SortOption.dateOldest => Icons.arrow_upward_rounded,
+    SortOption.periodLengthShortest || SortOption.periodLengthLongest => Icons.straighten_rounded,
+    SortOption.cycleLengthShortest || SortOption.cycleLengthLongest => Icons.autorenew_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {
-    final PeriodProvider periodProvider = Provider.of<PeriodProvider>(context);
-    final List<Period> periods = context.watch<PeriodProvider>().periods;
+    final PeriodProvider periodProvider = context.watch<PeriodProvider>();
+    final List<Period> periods = periodProvider.periods;
     final List<Period> sortedPeriods = _sortPeriods(periods, _currentSortOption);
+    final c = context.colors;
 
-    return SafeArea(
-      child: periods.isEmpty
-          ? Center(
+    // always use date-sorted periods to find the chronologically previous one
+    final List<Period> byDate = List.from(periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
+
+    final double? avgCycle = periodProvider.getAverageCycleLength(useRecent6: _recentOnly);
+    final double? avgPeriod = periodProvider.getAveragePeriodLength(useRecent6: _recentOnly);
+
+    return LargeTitleScaffold(
+      title: 'Insights',
+      showBack: false,
+      // The empty state has its own button.
+      titleTrailing: periods.isEmpty ? null : PrimaryButton(label: 'Log period', icon: Icons.add_rounded, expand: false, compact: true, onPressed: _logPeriod),
+      slivers: [
+        if (periods.isEmpty)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              // Optical centring: the title and tab bar make a true centre look low.
+              padding: const EdgeInsets.fromLTRB(32, 0, 32, 190),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('No periods logged', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 10),
-                  Text('When you log periods, insights will appear here.', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 2),
-                  TextButton(
-                    onPressed: () {
-                      context.go('/log?isEditing=false&focusedDay=${Uri.encodeComponent(DateTime.now().toIso8601String())}');
-                    },
-                    child: Text('Log Period'),
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(color: c.card, shape: BoxShape.circle),
+                    child: Icon(Icons.show_chart_rounded, size: 32, color: c.labelSecondary),
                   ),
+                  const SizedBox(height: 16),
+                  Text('Nothing to show yet', style: context.text.titleLarge),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Log a few periods and your averages and history will show up here.',
+                    textAlign: TextAlign.center,
+                    style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
+                  ),
+                  const SizedBox(height: 20),
+                  PrimaryButton(label: 'Log period', icon: Icons.add_rounded, expand: false, height: 46, onPressed: _logPeriod),
                 ],
               ),
-            )
-          : Column(
-              children: [
-                if (periodProvider.getAverageCycleLength() != null && periodProvider.getAveragePeriodLength() != null)
-                  SizedBox(
-                    height: 150,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: _statCard(
-                            title: "Average Cycle Length",
-                            value: periodProvider.getAverageCycleLength(useRecent6: _showOnlyLast6ForCycleLength)?.toStringAsFixed(1) ?? '0.0',
-                            onTap: () {
-                              setState(() {
-                                _showOnlyLast6ForCycleLength = !_showOnlyLast6ForCycleLength;
-                              });
-                              // if 6 > periods logged don't show toggle message
-                              if (periods.length > 6) _showToggleMessage(context, 'cycle');
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _statCard(
-                            title: "Average Period Length",
-                            value: periodProvider.getAveragePeriodLength(useRecent6: _showOnlyLast6ForPeriodLength)?.toStringAsFixed(1) ?? '0.0',
-                            onTap: () {
-                              setState(() {
-                                _showOnlyLast6ForPeriodLength = !_showOnlyLast6ForPeriodLength;
-                              });
-                              // if 6 > periods logged don't show toggle message
-                              if (periods.length > 6) _showToggleMessage(context, 'period');
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+            ),
+          )
+        else ...[
+          if (avgCycle != null && avgPeriod != null) ...[
+            if (periods.length > 6)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: SegmentedControl<bool>(
+                    options: const [
+                      SegmentOption(value: true, label: 'Last 6'),
+                      SegmentOption(value: false, label: 'All time'),
+                    ],
+                    selected: _recentOnly,
+                    onChanged: (v) => setState(() => _recentOnly = v),
                   ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Row(
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SectionTitle('Period History', padding: const EdgeInsets.fromLTRB(16, 16, 16, 4)),
-                          if (periods.length > 1)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16.0, bottom: 8),
-                              child: Text(
-                                'Sorted by: ${_getSortOptionText(_currentSortOption)}',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                              ),
-                            ),
-                        ],
-                      ),
+                      child: _StatTile(label: 'Average cycle', value: avgCycle.toStringAsFixed(1)),
                     ),
-                    if (periods.length > 1)
-                      PopupMenuButton<SortOption>(
-                        icon: Icon(Icons.sort_rounded, color: Theme.of(context).colorScheme.primary),
-                        tooltip: 'Sort periods',
-                        onSelected: (SortOption value) {
-                          setState(() {
-                            _currentSortOption = value;
-                          });
-                        },
-                        itemBuilder: (BuildContext context) => SortOption.values.map((option) {
-                          IconData optionIcon;
-                          switch (option) {
-                            case SortOption.dateNewest:
-                              optionIcon = Icons.schedule_rounded;
-                              break;
-                            case SortOption.dateOldest:
-                              optionIcon = Icons.history_rounded;
-                              break;
-                            case SortOption.periodLengthShortest:
-                            case SortOption.periodLengthLongest:
-                              optionIcon = Icons.straighten_rounded;
-                              break;
-                            case SortOption.cycleLengthShortest:
-                            case SortOption.cycleLengthLongest:
-                              optionIcon = Icons.refresh_rounded;
-                              break;
-                          }
-
-                          return PopupMenuItem<SortOption>(
-                            value: option,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  optionIcon,
-                                  size: 18,
-                                  color: _currentSortOption == option
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _getSortOptionText(option),
-                                    style: TextStyle(
-                                      fontWeight: _currentSortOption == option ? FontWeight.w600 : FontWeight.normal,
-                                      color: _currentSortOption == option ? Theme.of(context).colorScheme.primary : null,
-                                    ),
-                                  ),
-                                ),
-                                if (_currentSortOption == option) Icon(Icons.check_rounded, size: 16, color: Theme.of(context).colorScheme.primary),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _StatTile(label: 'Average period', value: avgPeriod.toStringAsFixed(1)),
+                    ),
                   ],
                 ),
-                Expanded(
-                  child: ListView(
-                    children: sortedPeriods.map((period) {
-                      final int? periodLength = period.endDate != null ? period.endDate!.difference(period.startDate).inDays + 1 : null;
-
-                      // Calculate cycle length for this period (if not the first one chronologically)
-                      int? cycleLength;
-
-                      // Always use date-sorted periods to find the chronologically previous period
-                      final List<Period> dateSortedPeriods = List.from(periods);
-                      dateSortedPeriods.sort((a, b) => a.startDate.compareTo(b.startDate));
-
-                      final int dateIndex = dateSortedPeriods.indexOf(period);
-                      if (dateIndex > 0) {
-                        cycleLength = period.startDate.difference(dateSortedPeriods[dateIndex - 1].startDate).inDays;
-                      }
-
-                      return ListTile(
-                        leading: Icon(Icons.calendar_month_rounded, color: Theme.of(context).colorScheme.primary),
-                        title: Text(
-                          '${DateTimeHelper.displayDate(period.startDate)} - ${period.endDate != null ? DateTimeHelper.displayDate(period.endDate!) : 'Ongoing'}',
+              ),
+            ),
+          ],
+          SliverToBoxAdapter(
+            child: GroupedSection(
+              header: 'History',
+              headerTrailing: periods.length > 1
+                  ? Semantics(
+                      label: 'Sort periods',
+                      child: Pressable(
+                        onTap: _pickSort,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(_getSortOptionText(_currentSortOption), style: context.text.bodyMedium?.copyWith(color: c.labelSecondary)),
+                              const SizedBox(width: 4),
+                              Icon(Icons.unfold_more_rounded, color: c.labelSecondary, size: 18),
+                            ],
+                          ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (periodLength != null &&
-                                (_currentSortOption == SortOption.periodLengthShortest || _currentSortOption == SortOption.periodLengthLongest))
-                              Text('Length: $periodLength day${periodLength == 1 ? '' : 's'}')
-                            else
-                              Text(cycleLength != null ? 'Cycle: $cycleLength day${cycleLength == 1 ? '' : 's'}' : 'First logged period'),
-                          ],
-                        ),
-                        trailing: Icon(Icons.chevron_right_rounded),
-                        onTap: () {
-                          context.go(
-                            '/log?isEditing=true&periodId=${period.id}&focusedDay=${Uri.encodeComponent(period.startDate.toIso8601String())}',
-                          );
-                          return;
-                        },
+                      ),
+                    )
+                  : null,
+              children: [
+                for (final Period period in sortedPeriods)
+                  Builder(
+                    builder: (context) {
+                      final int? length = period.endDate != null ? period.endDate!.difference(period.startDate).inDays + 1 : null;
+                      final int idx = byDate.indexOf(period);
+                      final int? cycle = idx > 0 ? period.startDate.difference(byDate[idx - 1].startDate).inDays : null;
+                      final List<String> parts = [
+                        ?(length != null ? '$length ${length == 1 ? 'day' : 'days'}' : null),
+                        cycle != null ? '$cycle-day cycle' : 'First logged',
+                      ];
+                      return GroupedRow(
+                        title: _rangeLabel(period),
+                        subtitle: parts.join('  ·  '),
+                        onTap: () =>
+                            context.go('/log?isEditing=true&periodId=${period.id}&focusedDay=${Uri.encodeComponent(period.startDate.toIso8601String())}'),
                       );
-                    }).toList(),
+                    },
                   ),
-                ),
               ],
             ),
+          ),
+        ],
+      ],
     );
   }
+}
 
-  Widget _statCard({required String title, required String value, required VoidCallback onTap}) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: Theme.of(context).colorScheme.secondary,
-      margin: const EdgeInsets.all(8),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Center(child: Text(title, style: Theme.of(context).textTheme.bodyMedium)),
-              const SizedBox(height: 8),
-              Text(value, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  const _StatTile({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: context.text.bodyMedium?.copyWith(color: c.labelSecondary)),
+          const SizedBox(height: 10),
+          Text(value, style: context.text.displayMedium),
+          Text('days', style: context.text.bodyMedium?.copyWith(color: c.labelSecondary)),
+        ],
       ),
     );
   }

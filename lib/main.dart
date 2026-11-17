@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
@@ -11,6 +12,7 @@ import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/pages/about_page.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
+import 'package:period_tracker/pages/feedback_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
@@ -19,10 +21,13 @@ import 'package:period_tracker/pages/restore_help_page.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/theme_provider.dart';
+import 'package:period_tracker/providers/unlocks_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/bottom_tab_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
@@ -36,22 +41,36 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterL
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  try {
+    await dotenv.load();
+  } catch (_) {
+    // missing .env: feedback submission reports it as not configured
+  }
+
   await NotificationService().init();
 
   final ThemeProvider themeProvider = await ThemeProvider.load();
+  final UnlocksProvider unlocksProvider = await UnlocksProvider.load();
   final bool onBoardingComplete = await getOnboardingComplete();
   final bool isAfterRestore = await getDisplayRestoreSuccess();
   if (isAfterRestore) {
     await clearDisplayRestoreSuccess();
   }
 
+  // Load before the first frame so pages never flash their empty state.
+  final PeriodProvider periodProvider = PeriodProvider();
+  final UserProvider userProvider = UserProvider();
+  final SettingsProvider settingsProvider = SettingsProvider();
+  await Future.wait([periodProvider.ready, userProvider.ready, settingsProvider.ready].map((f) => f.catchError((Object _) {})));
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => PeriodProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider.value(value: periodProvider),
+        ChangeNotifierProvider.value(value: userProvider),
+        ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider.value(value: themeProvider),
+        ChangeNotifierProvider.value(value: unlocksProvider),
       ],
       child: PeriodTrackerApp(showOnboarding: !onBoardingComplete, isAfterRestore: isAfterRestore),
     ),
@@ -131,9 +150,7 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
                 final bool isEditing = state.uri.queryParameters['isEditing'] == 'true';
                 final String? periodId = state.uri.queryParameters['periodId'];
                 final Period? period = periodId != null ? context.read<PeriodProvider>().getPeriodById(int.parse(periodId)) : null;
-                final DateTime? focusedDay = state.uri.queryParameters['focusedDay'] != null
-                    ? DateTime.parse(state.uri.queryParameters['focusedDay']!)
-                    : null;
+                final DateTime? focusedDay = state.uri.queryParameters['focusedDay'] != null ? DateTime.parse(state.uri.queryParameters['focusedDay']!) : null;
                 return LogPeriodPage(isEditing: isEditing, period: period, focusedDay: focusedDay);
               },
             ),
@@ -156,6 +173,10 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
               },
             ),
           ],
+        ),
+        GoRoute(
+          path: '/feedback',
+          builder: (context, state) => FeedbackPage(args: state.extra is FeedbackArgs ? state.extra as FeedbackArgs : const FeedbackArgs()),
         ),
         GoRoute(
           path: '/onboarding',
@@ -198,6 +219,7 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
       darkTheme: darkTheme,
       themeMode: themeMode,
       routerConfig: _router,
+      scrollBehavior: const _NoBounceScrollBehavior(),
       debugShowCheckedModeBanner: kDebugMode,
       builder: (context, child) {
         final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -219,6 +241,17 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
       },
     );
   }
+}
+
+/// Clamps scrolling: no bounce, no stretch glow.
+class _NoBounceScrollBehavior extends MaterialScrollBehavior {
+  const _NoBounceScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) => const ClampingScrollPhysics();
+
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
 }
 
 class MainNavigation extends StatefulWidget {
@@ -255,23 +288,14 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
     if (await NotificationService().canScheduleExact() || !mounted) return;
     _exactPromptShown = true;
 
-    final bool? open = await showDialog<bool>(
+    final bool open = await showConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Get reminders on time'),
-        content: const Text('To send your period reminders exactly on the day, allow "Alarms & reminders" for Period Tracker on the next screen.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-            child: const Text('Not now'),
-          ),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Open settings')),
-        ],
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      ),
+      title: 'Get reminders on time',
+      message: 'To send your period reminders exactly on the day, allow "Alarms & reminders" for Period Tracker on the next screen.',
+      confirmLabel: 'Open settings',
+      cancelLabel: 'Not now',
     );
-    if (open == true) {
+    if (open) {
       _awaitingExactGrant = true;
       await NotificationService().requestExactAlarmPermission();
     }
@@ -296,71 +320,36 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
       WidgetsBinding.instance.addPostFrameCallback((_) => _checkExactAlarms());
     }
     if (widget.isAfterRestore) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await showInfo(
           context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: const Text('Data restored successfully 🎉'),
-            content: Text('All your data has been successfully restored from the $kBackupFileName file'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await NotificationService().requestPermissions();
-                  await _checkExactAlarms();
-                },
-                child: const Text('Great!'),
-              ),
-            ],
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          ),
+          title: 'Data restored successfully 🎉',
+          message: 'All your data has been successfully restored from the $kBackupFileName file.',
+          buttonLabel: 'Great!',
         );
+        await NotificationService().requestPermissions();
+        await _checkExactAlarms();
       });
     }
   }
 
-  final List<Widget> pages = [HomePage(), InsightsPage(), ProfilePage()];
-  final List<String> appBarTitles = ['Home', 'Insights', 'Profile'];
+  final List<Widget> pages = const [HomePage(), InsightsPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(appBarTitles[_selectedIndex], style: Theme.of(context).textTheme.titleMedium),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-      ),
-      extendBodyBehindAppBar: true,
-      body: SafeArea(
-        child: Padding(padding: EdgeInsets.all(8.0), child: pages[_selectedIndex]),
-      ),
-      bottomNavigationBar: NavigationBar(
-        destinations: <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.home_rounded),
-            selectedIcon: Icon(Icons.home_rounded, color: Theme.of(context).colorScheme.onPrimary),
-            label: 'Home',
-            tooltip: null,
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_rounded),
-            selectedIcon: Icon(Icons.bar_chart_rounded, color: Theme.of(context).colorScheme.onPrimary),
-            label: 'Insights',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_rounded),
-            selectedIcon: Icon(Icons.person_rounded, color: Theme.of(context).colorScheme.onPrimary),
-            label: 'Profile',
-          ),
+      backgroundColor: c.background,
+      extendBody: true,
+      body: IndexedStack(index: _selectedIndex, children: pages),
+      bottomNavigationBar: BottomTabBar(
+        index: _selectedIndex,
+        onChanged: (i) => setState(() => _selectedIndex = i),
+        items: const [
+          BottomTabItem(label: 'Today', icon: Icons.today_outlined, selectedIcon: Icons.today_rounded),
+          BottomTabItem(label: 'Insights', icon: Icons.show_chart_rounded, selectedIcon: Icons.show_chart_rounded),
+          BottomTabItem(label: 'Settings', icon: Icons.settings_outlined, selectedIcon: Icons.settings_rounded),
         ],
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (int index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        indicatorColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }

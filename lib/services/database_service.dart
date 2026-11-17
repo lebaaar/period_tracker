@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:period_tracker/constants.dart';
@@ -41,6 +42,13 @@ class DatabaseService {
 
   DatabaseService._constructor();
 
+  /// Forgets the open database so the next call opens a fresh one (tests only).
+  @visibleForTesting
+  static Future<void> resetForTest() async {
+    await _database?.close();
+    _database = null;
+  }
+
   Future<Database> get database async {
     if (_database != null) return _database!;
     return await getDatabase();
@@ -66,16 +74,7 @@ class DatabaseService {
     ''');
 
     // user table
-    await db.execute('''
-      CREATE TABLE $_userTableName (
-        $_userIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
-        $_userNameColumnName TEXT NULL,
-        $_userCycleLengthColumnName INTEGER NOT NULL,
-        $_userPeriodLengthColumnName INTEGER NOT NULL,
-        $_userPartnerPhoneNumberColumnName TEXT NULL,
-        $_userPartnerMessageHeadingColumnName TEXT NULL DEFAULT '$kDefaultPartnerMessageHeading'
-      )
-    ''');
+    await _createUserTable(db);
 
     // settings table
     await db.execute('''
@@ -100,20 +99,38 @@ class DatabaseService {
      * add partnerMessageHeading column
      * remove lastPeriodDate
      * remove dynamicCycleLength
+     *
+     * The user table is rebuilt instead of using ALTER TABLE ... DROP COLUMN, which needs SQLite 3.35
+     * (Android 14+). On older Android the drop failed and left lastPeriodDate (NOT NULL) behind, which
+     * made every later save of the user fail.
      */
     if (oldVersion < 2) {
-      try {
-        await db.execute('ALTER TABLE $_userTableName ADD COLUMN $_userPartnerPhoneNumberColumnName TEXT NULL');
-        await db.execute(
-          'ALTER TABLE $_userTableName ADD COLUMN $_userPartnerMessageHeadingColumnName TEXT NULL DEFAULT \'$kDefaultPartnerMessageHeading\'',
-        );
-        await db.execute('ALTER TABLE $_userTableName DROP COLUMN lastPeriodDate');
-        await db.execute('ALTER TABLE $_userTableName DROP COLUMN dynamicCycleLength');
-      } catch (e) {
-        // Column might already exist, ignore error
-        debugPrint('Migration error: $e');
-      }
+      await _rebuildUserTableV2(db);
     }
+  }
+
+  Future<void> _rebuildUserTableV2(Database db) async {
+    const String oldTable = '${kUserTableName}_v1';
+    await db.execute('ALTER TABLE $_userTableName RENAME TO $oldTable');
+    await _createUserTable(db);
+    await db.execute(
+      'INSERT INTO $_userTableName ($_userIdColumnName, $_userNameColumnName, $_userCycleLengthColumnName, $_userPeriodLengthColumnName) '
+      'SELECT $_userIdColumnName, $_userNameColumnName, $_userCycleLengthColumnName, $_userPeriodLengthColumnName FROM $oldTable',
+    );
+    await db.execute('DROP TABLE $oldTable');
+  }
+
+  Future<void> _createUserTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE $_userTableName (
+        $_userIdColumnName INTEGER PRIMARY KEY AUTOINCREMENT,
+        $_userNameColumnName TEXT NULL,
+        $_userCycleLengthColumnName INTEGER NOT NULL,
+        $_userPeriodLengthColumnName INTEGER NOT NULL,
+        $_userPartnerPhoneNumberColumnName TEXT NULL,
+        $_userPartnerMessageHeadingColumnName TEXT NULL DEFAULT '$kDefaultPartnerMessageHeading'
+      )
+    ''');
   }
 
   // Period methods

@@ -1,17 +1,22 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/unlocks_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/notification_service.dart';
-import 'package:period_tracker/services/period_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
-import 'package:period_tracker/utils/date_time_helper.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/pressable.dart';
+import 'package:period_tracker/widgets/primary_button.dart';
+import 'package:period_tracker/widgets/stepper_field.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -22,390 +27,324 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _controller = PageController();
-  int _currentPage = 0;
+  static const int _pageCount = 3;
 
+  final PageController _controller = PageController();
   late final TextEditingController _nameController;
-  late final TextEditingController _cycleLengthController;
-  late final TextEditingController _periodLengthController;
   late final FocusNode _nameFocusNode;
-  late final FocusNode _periodLengthFocusNode;
-  late final FocusNode _cycleLengthFocusNode;
+
+  int _currentPage = 0;
+  int _periodLength = kDefaultPeriodLength;
+  int _cycleLength = kDefaultCycleLength;
   DateTime? _lastPeriodDate;
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _cycleLengthController = TextEditingController();
-    _periodLengthController = TextEditingController();
     _nameFocusNode = FocusNode();
-    _periodLengthFocusNode = FocusNode();
-    _cycleLengthFocusNode = FocusNode();
+    _nameController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
+    _controller.dispose();
     _nameController.dispose();
-    _cycleLengthController.dispose();
-    _periodLengthController.dispose();
     _nameFocusNode.dispose();
-    _periodLengthFocusNode.dispose();
-    _cycleLengthFocusNode.dispose();
     super.dispose();
   }
 
-  bool validateInput() {
-    final cycleLength = int.tryParse(_cycleLengthController.text);
-    final periodLength = int.tryParse(_periodLengthController.text);
+  Future<void> _goTo(int page) {
+    FocusScope.of(context).unfocus();
+    return _controller.animateToPage(
+      page,
+      duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false ? Duration.zero : const Duration(milliseconds: 380),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
-    final bool periodValid = PeriodService.validatePeriodLength(periodLength);
-    final bool cycleValid = PeriodService.validateCycleLength(cycleLength);
+  Future<void> _next() async {
+    if (_currentPage < _pageCount - 1) {
+      await _goTo(_currentPage + 1);
+    } else {
+      await _finish();
+    }
+  }
 
-    if (!periodValid) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return false;
+  Future<void> _finish() async {
+    if (_lastPeriodDate == null || _saving) return;
+    setState(() => _saving = true);
+
+    // Read providers up front; no context use after awaits.
+    final UserProvider userProvider = context.read<UserProvider>();
+    final PeriodProvider periodProvider = context.read<PeriodProvider>();
+    final SettingsProvider settingsProvider = context.read<SettingsProvider>();
+    final UnlocksProvider unlocksProvider = context.read<UnlocksProvider>();
+    final GoRouter router = GoRouter.of(context);
+
+    // Save onboarding data
+    await setOnboardingValue(true);
+
+    // Save user to database
+    await userProvider.insertUser(
+      User(
+        id: 1,
+        name: _nameController.text.trim(),
+        cycleLength: _cycleLength,
+        periodLength: _periodLength,
+        partnerPhoneNumber: null,
+        partnerMessageHeading: kDefaultPartnerMessageHeading,
+      ),
+    );
+    await userProvider.fetchUser();
+
+    // Set initial period
+    final DateTime start = DateTime.utc(_lastPeriodDate!.year, _lastPeriodDate!.month, _lastPeriodDate!.day);
+    final DateTime end = start.add(Duration(days: _periodLength - 1));
+    await periodProvider.insertPeriod(Period(startDate: start, endDate: end, notes: ''));
+    await periodProvider.fetchPeriods();
+
+    // Request notification permission
+    final bool result = await NotificationService().requestPermissions();
+
+    await settingsProvider.insertSettings(
+      Settings(
+        id: 1,
+        predictionMode: 'dynamic',
+        darkMode: true,
+        notificationsEnabled: result,
+        notificationDaysBefore: 3,
+        notificationTime: const TimeOfDay(hour: 8, minute: 0),
+      ),
+    );
+    await settingsProvider.loadSettings();
+
+    // schedule notifications for next period
+    final User? user = userProvider.user;
+    final Settings? settings = settingsProvider.settings;
+    final DateTime? nextPeriodStartDate = periodProvider.getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
+
+    if (nextPeriodStartDate != null && settings != null) {
+      await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodStartDate, settings.notificationDaysBefore, settings.notificationTime);
     }
 
-    if (!cycleValid) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)'), behavior: SnackBarBehavior.floating),
-      );
-      return false;
-    }
+    // Disable version details by default
+    await unlocksProvider.setVersionDetails(false);
 
-    return true;
-  }
+    // Hide easter eggs
+    await unlocksProvider.setAnimalGenerator(false);
 
-  Widget _buildNameInputPage() {
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        children: [
-          // Centered content
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Welcome!', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 12),
-                Text('Let\'s start with your name', style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _nameController,
-                  focusNode: _nameFocusNode,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    hintText: 'Your name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(kBorderRadius),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-                    ),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) {
-                    FocusScope.of(context).unfocus();
-                    _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                    FocusScope.of(context).requestFocus(_periodLengthFocusNode);
-                  },
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            splashColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.33),
-            onTap: () => context.go('/onboarding/restore'),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Text('Already have an account?', style: Theme.of(context).textTheme.bodySmall),
-                  Text('Restore data', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.primary)),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCycleInfoPage() {
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Cycle Info', style: Theme.of(context).textTheme.headlineMedium),
-              IconButton(
-                icon: const Icon(Icons.help_outline),
-                color: Theme.of(context).colorScheme.tertiary,
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text('Cycle Information'),
-                      content: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Period length: number of days your period usually lasts - number of "bleeding" days (eg: 5 days)\n'),
-                          Text('Cycle length: number of days from the first day of one period to the first day of the next (eg: 28 days)'),
-                        ],
-                      ),
-                      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text('Enter your cycle and period lengths in days', textAlign: TextAlign.center),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _periodLengthController,
-            focusNode: _periodLengthFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
-            decoration: InputDecoration(
-              hintText: 'Average period length',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-              ),
-            ),
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) {
-              FocusScope.of(context).requestFocus(_cycleLengthFocusNode);
-            },
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _cycleLengthController,
-            focusNode: _cycleLengthFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
-            decoration: InputDecoration(
-              hintText: 'Average cycle length',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-              ),
-            ),
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) {
-              bool isValid = validateInput();
-              if (!isValid) {
-                // Keep focus and keyboard open
-                FocusScope.of(context).requestFocus(_cycleLengthFocusNode);
-                SystemChannels.textInput.invokeMethod('TextInput.show');
-                return;
-              }
-              // kle
-              FocusScope.of(context).unfocus();
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLastPeriodDatePage() {
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Last Period', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 12),
-          Text('Select the date your last period started', style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 20),
-          Builder(
-            builder: (context) {
-              FocusScope.of(context).unfocus();
-              return CalendarDatePicker(
-                initialDate: _lastPeriodDate ?? DateTime.now(),
-                firstDate: kFirstCalendarDay,
-                lastDate: DateTime.now(),
-                onDateChanged: (picked) {
-                  setState(() {
-                    _lastPeriodDate = picked;
-                  });
-                },
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _lastPeriodDate == null ? 'No date selected' : 'My last period started ${DateTimeHelper.displayDate(_lastPeriodDate!)}',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
+    router.go('/');
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    final c = context.colors;
+    final bool last = _currentPage == _pageCount - 1;
+
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goTo(_currentPage - 1);
+      },
       child: Scaffold(
-        body: PageView(
-          controller: _controller,
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (index) {
-            setState(() {
-              _currentPage = index;
-            });
-          },
-          children: [_buildNameInputPage(), _buildCycleInfoPage(), _buildLastPeriodDatePage()],
-        ),
-        bottomSheet: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (_currentPage > 0)
-              TextButton(
-                onPressed: () {
-                  switch (_currentPage) {
-                    case 1:
-                      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                      break;
-                    case 2:
-                      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                      break;
-                  }
-                },
-                child: Text('Back', style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
-              ),
-            Row(
-              children: List.generate(
-                3,
-                (index) => Container(
-                  margin: const EdgeInsets.all(4),
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary,
-                    shape: BoxShape.circle,
-                  ),
+        backgroundColor: c.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _Header(page: _currentPage, count: _pageCount, onBack: _currentPage > 0 ? () => _goTo(_currentPage - 1) : null),
+              Expanded(
+                child: PageView(
+                  controller: _controller,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  children: [_namePage(), _cyclePage(), _datePage()],
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () async {
-                switch (_currentPage) {
-                  case 0:
-                    FocusScope.of(context).requestFocus(_periodLengthFocusNode);
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                    });
-                    break;
-                  case 1:
-                    if (!validateInput()) return;
-                    // Dismiss keyboard
-                    FocusScope.of(context).unfocus();
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                    });
-                    break;
-                  case 2:
-                    // Validate input
-                    if (context.mounted) {
-                      if (_lastPeriodDate == null) {
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please select the start day of your last period'), behavior: SnackBarBehavior.floating),
-                        );
-                        return;
-                      }
-                    }
-
-                    // Save onboarding data
-                    await setOnboardingValue(true);
-
-                    // Save user to database
-                    await context.read<UserProvider>().insertUser(
-                      User(
-                        id: 1,
-                        name: _nameController.text.trim(),
-                        cycleLength: int.parse(_cycleLengthController.text),
-                        periodLength: int.parse(_periodLengthController.text),
-                        partnerPhoneNumber: null,
-                        partnerMessageHeading: kDefaultPartnerMessageHeading,
-                      ),
-                    );
-                    await context.read<UserProvider>().fetchUser();
-
-                    // Set initial period
-                    final DateTime start = DateTime.utc(_lastPeriodDate!.year, _lastPeriodDate!.month, _lastPeriodDate!.day);
-                    final DateTime end = start.add(Duration(days: int.parse(_periodLengthController.text) - 1));
-                    final Period period = Period(startDate: start, endDate: end, notes: '');
-                    await context.read<PeriodProvider>().insertPeriod(period);
-                    await context.read<PeriodProvider>().fetchPeriods();
-
-                    // Request notification permission
-                    final bool result = await NotificationService().requestPermissions();
-
-                    await context.read<SettingsProvider>().insertSettings(
-                      Settings(
-                        id: 1,
-                        predictionMode: 'dynamic',
-                        darkMode: true,
-                        notificationsEnabled: result,
-                        notificationDaysBefore: 3,
-                        notificationTime: const TimeOfDay(hour: 8, minute: 0),
-                      ),
-                    );
-                    await context.read<SettingsProvider>().loadSettings();
-
-                    // schedule notifications for next period
-                    final User? user = Provider.of<UserProvider>(context, listen: false).user;
-                    final Settings? settings = Provider.of<SettingsProvider>(context, listen: false).settings;
-                    final DateTime? nextPeriodStartDate = Provider.of<PeriodProvider>(
-                      context,
-                      listen: false,
-                    ).getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
-
-                    if (nextPeriodStartDate != null && settings != null) {
-                      await NotificationService().scheduleNotificationsForNextPeriod(
-                        nextPeriodStartDate,
-                        settings.notificationDaysBefore,
-                        settings.notificationTime,
-                      );
-                    }
-
-                    // Disable version details by default
-                    await setDisplayVersionDetailsValue(false);
-
-                    // Hide easter eggs
-                    await setAnimalGeneratorUnlockedValue(false);
-
-                    // Navigate to home screen
-                    if (context.mounted) {
-                      context.go('/');
-                    }
-                    break;
-                }
-              },
-              child: Text(_currentPage < 2 ? 'Next' : 'Get Started'),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: PrimaryButton(label: last ? 'Get started' : 'Continue', onPressed: (last && (_lastPeriodDate == null || _saving)) ? null : _next),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _title(String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: context.text.headlineLarge),
+          const SizedBox(height: 8),
+          Text(subtitle, style: context.text.bodyLarge?.copyWith(color: context.colors.labelSecondary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _namePage() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _title('Welcome', 'A private, simple period tracker. Everything stays on your phone.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TextField(
+              controller: _nameController,
+              focusNode: _nameFocusNode,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(hintText: 'What should we call you?'),
+              onSubmitted: (_) => _next(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+            child: Pressable(
+              onTap: () => context.go('/onboarding/restore'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                child: Text('Restore from a backup', style: context.text.titleSmall?.copyWith(color: context.colors.labelSecondary)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cyclePage() {
+    final c = context.colors;
+    Widget card(String label, String hint, Widget stepper) => Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: context.text.titleMedium),
+          const SizedBox(height: 2),
+          Text(hint, style: context.text.bodySmall),
+          const SizedBox(height: 12),
+          stepper,
+        ],
+      ),
+    );
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _title('Your cycle', 'Rough averages are fine. You can change them anytime.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                card(
+                  'Period length',
+                  'How many days it usually lasts',
+                  StepperField(value: _periodLength, min: kMinPeriodLength, max: kMaxPeriodLength, onChanged: (v) => setState(() => _periodLength = v)),
+                ),
+                card(
+                  'Cycle length',
+                  'First day of one period to the first day of the next',
+                  StepperField(value: _cycleLength, min: kMinCycleLength, max: kMaxCycleLength, onChanged: (v) => setState(() => _cycleLength = v)),
+                ),
+                Pressable(
+                  onTap: () => showInfo(
+                    context: context,
+                    title: 'Period vs. cycle',
+                    message:
+                        'Period length is the number of days you bleed (for example 5).\n\nCycle length is the number of days from the first day of one period to the first day of the next (for example 28).',
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text('What\'s the difference?', style: context.text.titleSmall?.copyWith(color: c.labelSecondary)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _datePage() {
+    final c = context.colors;
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _title('Last period', 'Tap the day your last period started.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(20)),
+              child: CalendarDatePicker(
+                initialDate: _lastPeriodDate ?? clock.now(),
+                firstDate: kFirstCalendarDay,
+                lastDate: clock.now(),
+                onDateChanged: (picked) => setState(() => _lastPeriodDate = picked),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Text(
+              _lastPeriodDate == null ? 'No day selected yet' : 'Started ${DateFormat('d MMMM yyyy').format(_lastPeriodDate!)}',
+              style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Back chevron + thin segmented progress.
+class _Header extends StatelessWidget {
+  final int page;
+  final int count;
+  final VoidCallback? onBack;
+  const _Header({required this.page, required this.count, required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return SizedBox(
+      height: 56,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 56,
+            child: onBack == null ? null : IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), tooltip: 'Back', onPressed: onBack),
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                for (int i = 0; i < count; i++) ...[
+                  if (i > 0) const SizedBox(width: 6),
+                  Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      height: 4,
+                      decoration: BoxDecoration(color: i <= page ? c.accent : c.hairline, borderRadius: BorderRadius.circular(99)),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 56),
+        ],
       ),
     );
   }

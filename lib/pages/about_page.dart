@@ -1,13 +1,16 @@
 import 'dart:io';
+
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
-import 'package:period_tracker/enums/email_type.dart';
-import 'package:period_tracker/exceptions/email_exception.dart';
-import 'package:period_tracker/services/email_service.dart';
-import 'package:period_tracker/shared_preferences/shared_preferences.dart';
+import 'package:period_tracker/providers/unlocks_provider.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/widgets/grouped_section.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatefulWidget {
@@ -20,105 +23,36 @@ class AboutPage extends StatefulWidget {
 class _AboutPageState extends State<AboutPage> {
   AppUpdateInfo? _updateInfo;
   int _versionTapCount = 0;
-  bool _showVersionDetails = false;
-  bool _isCheckingForUpdate = false;
 
   @override
   void initState() {
     super.initState();
-    _loadDisplayVersionPreference();
     _checkForUpdate();
   }
 
-  Future<void> _loadDisplayVersionPreference() async {
-    final saved = await getDisplayVersionDetails();
-    if (!mounted) return;
-    setState(() {
-      _showVersionDetails = saved;
-    });
-  }
-
-  void _onVersionTapped() async {
-    setState(() {
-      _versionTapCount++;
-    });
-
+  void _onVersionTapped() {
+    _versionTapCount++;
     if (_versionTapCount >= 9) {
       _versionTapCount = 0;
-      final newState = !_showVersionDetails;
-      await setDisplayVersionDetailsValue(newState);
-      if (!mounted) return;
-      setState(() {
-        _showVersionDetails = newState;
-      });
+      final UnlocksProvider unlocks = context.read<UnlocksProvider>();
+      unlocks.setVersionDetails(!unlocks.versionDetails);
     }
   }
 
   Future<void> _checkForUpdate() async {
-    setState(() {
-      _isCheckingForUpdate = true;
-    });
-
     try {
-      // simulate loading
-      await Future.delayed(const Duration(seconds: 1));
       final info = await InAppUpdate.checkForUpdate();
-
       if (!mounted) return;
-      setState(() {
-        _updateInfo = info;
-        _isCheckingForUpdate = false;
-      });
+      setState(() => _updateInfo = info);
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isCheckingForUpdate = false;
-      });
+      // no Play Store (debug, sideloaded) or offline: just show no update pill
     }
   }
 
-  Future<void> openEmail(EmailType emailType) async {
-    try {
-      await EmailService.openEmail(emailType, null);
-    } on EmailException catch (e) {
-      switch (e.errorCode) {
-        case kNoEmailAppErrorCode:
-          showNoMailAppsDialog(context);
-          return;
-        case kUnknownErrorCode:
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
-          return;
-      }
-    } catch (_) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
-    }
-  }
-
-  void showNoMailAppsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Cannot Open Email App"),
-          content: const Text("No email apps installed on this device. Please install an email app to contact support."),
-          actions: [
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
+  void _snack(String message) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _openPlayStore() async {
@@ -132,212 +66,133 @@ class _AboutPageState extends State<AboutPage> {
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
+      } else if (mounted) {
+        _snack('Cannot open link');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
+      if (mounted) _snack('An error occurred');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          color: Theme.of(context).colorScheme.onSurface,
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  Image.asset('assets/images/logo.png', width: 80, height: 80),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text('Period Tracker', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 4),
-                  FutureBuilder<PackageInfo>(
-                    future: PackageInfo.fromPlatform(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                GestureDetector(
-                                  onTap: _onVersionTapped,
-                                  child: Text(
-                                    'v${snapshot.data!.version}+${snapshot.data!.buildNumber}',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text('•'),
-                                if (_isCheckingForUpdate) ...[
-                                  const SizedBox(width: 4),
-                                  SizedBox(
-                                    height: 15,
-                                    width: 15,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                                    ),
-                                  ),
-                                ] else if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) ...[
-                                  const SizedBox(width: 4),
-                                  GestureDetector(
-                                    onTap: () => _openPlayStore(),
-                                    child: Text(
-                                      'Update available',
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ),
-                                ] else ...[
-                                  const SizedBox(width: 4),
-                                  GestureDetector(
-                                    onTap: () => _openPlayStore(),
-                                    child: Text(
-                                      'View on Google Play',
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('About', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Whether you want to track your period, predict your next period cycle, or simply understand your body better, Period Tracker gives you the insights you need, without the annoying ads or hidden subscriptions.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  if (_showVersionDetails) Text('Made with ❤️ for Nina'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('Support', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _buildActionButton(
-              context,
-              icon: Icons.mail_rounded,
-              title: 'Contact Developer',
-              subtitle: 'Have questions or suggestions?',
-              onTap: () => openEmail(EmailType.feedback),
-            ),
-            const SizedBox(height: 12),
-            _buildActionButton(
-              context,
-              icon: Icons.bug_report_rounded,
-              title: 'Report a Bug',
-              subtitle: 'Help improve the app',
-              onTap: () => openEmail(EmailType.bugReport),
-            ),
-            const SizedBox(height: 12),
-            _buildActionButton(
-              context,
-              icon: Icons.star_rounded,
-              title: 'Rate Period Tracker',
-              subtitle: 'Leave a review on Google Play',
-              onTap: () => _launchUrl(kGooglePlayStoreUrl),
-            ),
-            const SizedBox(height: 24),
-            Text('Development', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _buildActionButton(context, icon: Icons.code, title: 'View Source Code', subtitle: 'Open GitHub', onTap: () => _launchUrl(kGitHubUrl)),
-            const SizedBox(height: 12),
-            _buildActionButton(
-              context,
-              icon: Icons.favorite_rounded,
-              title: 'Buy Me a Ko-fi ☕',
-              subtitle: 'Support the development',
-              onTap: () => _launchUrl(kKofiUrl),
-              isPrimary: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    final c = context.colors;
+    final bool showVersionDetails = context.watch<UnlocksProvider>().versionDetails;
+    final bool updateAvailable = _updateInfo?.updateAvailability == UpdateAvailability.updateAvailable;
 
-  Widget _buildActionButton(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    bool isPrimary = false,
-  }) {
-    return Material(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Theme.of(context).colorScheme.primaryContainer),
+    return LargeTitleScaffold(
+      title: 'About',
+      largeTitle: false,
+      slivers: [
+        SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+            child: Column(
               children: [
-                Icon(icon, color: isPrimary ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: isPrimary ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
+                ClipRRect(borderRadius: BorderRadius.circular(22), child: Image.asset('assets/images/logo.png', width: 88, height: 88)),
+                const SizedBox(height: 16),
+                Text('Period Tracker', style: context.text.headlineSmall),
+                const SizedBox(height: 6),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return const SizedBox(height: 20);
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _onVersionTapped,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              'Version ${snapshot.data!.version} (${snapshot.data!.buildNumber})',
+                              style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                    ],
+                        if (updateAvailable) ...[
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: _openPlayStore,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(99)),
+                              child: Text(
+                                'Update available',
+                                style: context.text.labelMedium?.copyWith(color: c.onAccent, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Track your period and predict the next one, without ads or subscriptions. Your data stays on your device.',
+                  textAlign: TextAlign.center,
+                  style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
+                ),
+                if (showVersionDetails) ...[
+                  const SizedBox(height: 12),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(text: 'Made with '),
+                        TextSpan(text: '\u2764\uFE0F', style: _emojiStyle),
+                        const TextSpan(text: ' for Nina'),
+                      ],
+                    ),
+                    style: context.text.bodyMedium,
                   ),
-                ),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: isPrimary ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                ],
               ],
             ),
           ),
         ),
-      ),
+        SliverToBoxAdapter(
+          child: GroupedSection(
+            header: 'Support',
+            children: [
+              GroupedRow(
+                icon: Icons.chat_bubble_outline_rounded,
+                title: 'Feedback',
+                subtitle: 'Feedback, feature requests and bug reports',
+                onTap: () => context.push('/feedback'),
+              ),
+              GroupedRow(
+                icon: Icons.star_outline_rounded,
+                title: 'Rate Period Tracker',
+                subtitle: 'Leave a review on Google Play',
+                onTap: () => _launchUrl(kGooglePlayStoreUrl),
+              ),
+            ],
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: GroupedSection(
+            header: 'Development',
+            children: [
+              GroupedRow(icon: Icons.code_rounded, title: 'Source code', subtitle: 'Open on GitHub', onTap: () => _launchUrl(kGitHubUrl)),
+              GroupedRow(
+                icon: Icons.coffee_rounded,
+                iconColor: context.colors.accent,
+                title: 'Buy me a Ko-fi',
+                subtitle: 'Support the development',
+                onTap: () => _launchUrl(kKofiUrl),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
+
+/// Inter has its own monochrome heart; name the emoji font so the colour one is used.
+final TextStyle _emojiStyle = TextStyle(
+  fontFamily: (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) ? 'Apple Color Emoji' : 'Noto Color Emoji',
+  fontFamilyFallback: const ['Noto Color Emoji', 'Apple Color Emoji'],
+);

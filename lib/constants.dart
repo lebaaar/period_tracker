@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
-
 const String kPackageName = 'com.lebaaar.period_tracker';
 
 // UI
 const double kBorderRadius = 12;
-const double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2004, 3, 9);
@@ -13,23 +10,6 @@ final DateTime kLastCalendarDay = DateTime.utc(
   12,
   31,
 ); // 8 years into the future
-
-// table_calendar specific
-// gradients across the whole day cell background, built from the active theme's scheme
-Gradient _fromLeft(Color a, Color b, double s0, double s1) =>
-    LinearGradient(colors: [a, b], stops: [s0, s1], begin: Alignment.centerLeft, end: Alignment.centerRight);
-
-// logged period
-Gradient kLoggedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.secondary, 0.0, 0.33);
-Gradient kLoggedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.secondary, cs.surface, 0.66, 1.0);
-
-// logged selected period
-Gradient kLoggedSelectedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.primary, 0.0, 0.33);
-Gradient kLoggedSelectedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.primary, cs.surface, 0.66, 1.0);
-
-// TODO: upcoming period gradients - gradient just the border
-Gradient kUpcomingSelectedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.primary, 0.0, 0.33);
-Gradient kUpcomingSelectedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.primary, cs.surface, 0.66, 1.0);
 
 // Default cycle and period lengths
 const int kDefaultCycleLength = 28;
@@ -82,19 +62,18 @@ const String kDefaultPartnerMessageHeading =
 // Error codes
 const String kRestoreErrorCode = "RESTORE_ERR";
 const String kDogApiErrorCode = "DOG_ERR";
-const String kNoEmailAppErrorCode = "NO_EMAIL_APP_ERR";
+const String kNetworkErrorCode = "NETWORK_ERR";
+const String kFeedbackNotConfiguredErrorCode = "FEEDBACK_NOT_CONFIGURED_ERR";
 const String kUnknownErrorCode = "UNKNOWN_ERR";
 
-// Emails
-const String kFeedbackEmailSubject = 'Period Tracker Feedback';
-const String kBugReportEmailSubject = 'Issue with Period Tracker';
+// Feedback (Discord webhook URL is read from .env)
+const String kDiscordWebhookEnvKey = 'DISCORD_WEBHOOK_URL';
 
 // APIs
 const String kDogApiBase = 'https://dog.ceo/api/breed';
 const String kCatApiBase = 'https://api.thecatapi.com';
 
 // Contact
-const String kContactEmail = 'periodtracker@lan.si';
 const String kKofiUrl = 'https://ko-fi.com/lebaaar';
 const String kGitHubUrl = 'https://github.com/lebaaar/period_tracker';
 const String kGooglePlayStoreUrl =

@@ -1,86 +1,54 @@
-<div align="center">
-  <img src="images/logo.png" alt="Period Tracker icon" height="70">
-  <h1 align="center">Period Tracker</h1>
-</div>
-
-<div align="center">
-  Period tracking mobile app I built for my girlfriend. She needed a simple app to track her period cycle without all the annoying ads and premium subscription offers. Requires no internet access, all data is stored on device.
-</div>
-
-## Features
-- Effortless cycle logging with a clean, easy-to-use design
-- Insights - average cycle and average period length
-- Dynamic period prediction - smartly adjusts based on past cycles
-- Static mode - set a fixed period & cycle duration for consistent tracking
-- Customizable reminders - get notified n days before your period starts
-- Offline data transfer between devices (for restoring data on a new device)
-- Easter eggs :)
-
-<h2>Download&nbsp;<img src="https://img.shields.io/badge/Downloads-100%2B-brightgreen" alt="100+ downloads"></h2>
 <p align="center">
-  <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker" target="_blank">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/960px-Google_Play_Store_badge_EN.svg.png" width="220" alt="Get it on Google Play">
-  </a>
-  <br>
-  <br>
-  <a href="https://raw.githubusercontent.com/lebaaar/period_tracker/main/download/app-release.apk">
-    <img src="https://img.shields.io/badge/Download-APK-blue?logo=android&logoColor=white" width="220" alt="Download APK">
-  </a>
-  <br>
-  <p align="center">
-    <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because fuck Apple and their $99/year membership</i>
-  </p>
+  <img src="graphics/play/feature_graphic.png" alt="Period Tracker: Track your cycle. Nothing else.">
 </p>
 
-## Gallery
-<div align="center">
-<img src="graphics/app/home.png" alt="Home page" width="200px">
-<img src="graphics/app/insights.png" alt="Insights page" width="200px">
-<img src="graphics/app/profile.png" alt="Profile page" width="200px">
-<img src="graphics/app/restore.png" alt="Restore data page" width="200px">
-</div>
+<h1><img src="images/logo.png" width="36" align="absmiddle" alt="">&nbsp;&nbsp;Period Tracker</h1>
 
+**A simple, private period tracker for Android.** No ads, no account, no internet access, and nothing leaves your phone.
+<br>
+Built for my girlfriend, who just wanted to track her cycle without annoying ads or premium upsells.
+
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.lebaaar.period_tracker" target="_blank">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/960px-Google_Play_Store_badge_EN.svg.png" height="48" alt="Get it on Google Play">
+  </a>
+  &nbsp;
+  <a href="https://raw.githubusercontent.com/lebaaar/period_tracker/main/download/app-release.apk">
+    <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android&logoColor=white" height="36" alt="Download APK">
+  </a>
+  <br>
+  <img src="https://img.shields.io/badge/Downloads-300%2B-brightgreen" alt="300+ downloads">
+  <img src="https://img.shields.io/badge/Built%20with-Flutter-02569B?logo=flutter&logoColor=white" alt="Flutter">
+  <img src="https://img.shields.io/badge/License-GPLv3-blue" alt="GPL v3">
+</p>
+
+<p align="center">
+  <img src="graphics/play/01_home.png" width="160" alt="Your cycle, at a glance">
+  <img src="graphics/play/02_insights.png" width="160" alt="Insights: average cycle and period length">
+  <img src="graphics/play/03_log.png" width="160" alt="Log a period">
+  <img src="graphics/play/04_reminders.png" width="160" alt="Reminders">
+  <img src="graphics/play/05_transfer.png" width="160" alt="Transfer your data offline">
+</p>
+<p align="center">
+  <i>Available on Google Play Store and as a direct APK download. Not available on App Store because because fuck Apple and their $99/year membership</i>
+</p>
+
+## Features
+- **Quick logging** - log a period in a couple of taps with a clean, simple calendar
+- **Insights** - average cycle length, average period length and your full history
+- **Smart predictions** - the next period is predicted from your past cycles and adjusts over time
+- **Static mode** - prefer fixed numbers? Set your own cycle and period length
+- **Reminders** - get notified a chosen number of days before your period starts
+- **Offline backup** - move your data to a new phone without any cloud or account
+- **Private by design** - no ads, no account, no tracking
+- Light and dark theme, and a few easter eggs
+
+## Development
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
+
+Period Tracker is built with Flutter. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, running and testing, code structure, branch and PR naming, and how to release.
 
 ## Legal
 All data is stored locally on your device and is never transmitted. Complete privacy policy is available [here](https://www.freeprivacypolicy.com/live/46902e6f-ed7c-4546-9990-e86785c11694).
 
 Distributed under the [GNU General Public License v3](/LICENSE).
-
-## Development
-Pull requests are always welcome! For major changes, please open an issue first to discuss the changes.
-
-Period Tracker is built entirely with Flutter. To get started:
-- Install Flutter 3 or higher and Android Studio (needed for Android emulator)
-- Fork & clone the repository
-- Install dependencies: `flutter pub get`
-- Create a branch and name it like "*feature/issueId/short-desc*" for features or "*bugfix/issueId/short-desc*" for bugfixes.<br>
-Eg: *feature/23/backup*
-- Develop, test, commit, push (use descriptive commit messages)
-- Open a pull request and name it like "*fix: #issueId - issueTitle*". <br>
-Eg: *fix: #31 - Backup and restore data*<br>
-Please provide a clear PR description
-
-### Debug build
-To run the app in debug mode use:<br>
-```
-flutter run --debug
-```
-
-### Release build
-To run app in release mode you will need `android/key.properties` file. Structure of this file can be found in `example-key.properties` file.
-
-To run the app in release mode run:<br>
-```
-flutter run --release
-```
-
-To generate the .aab for publishing to Play Store run:
-```
-flutter build appbundle --release
-```
-Don't forget to update the version and build number in `pubspec.yaml` before publishing.
-
-### Useful tips
-- If you're encountering strange bugs, run `flutter clean` followed by `flutter pub get`
-- Running emulator via CLI:
-`emulator -avd <AVD_NAME> -no-snapshot-save -no-boot-anim -gpu host -accel on`

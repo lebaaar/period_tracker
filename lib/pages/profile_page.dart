@@ -9,12 +9,20 @@ import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/theme_provider.dart';
+import 'package:period_tracker/providers/unlocks_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
 import 'package:period_tracker/services/notification_service.dart';
-import 'package:period_tracker/services/period_service.dart';
-import 'package:period_tracker/shared_preferences/shared_preferences.dart';
-import 'package:period_tracker/widgets/section_title.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/utils/date_time_helper.dart';
+import 'package:period_tracker/utils/reminder_actions.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/delete_account_sheet.dart';
+import 'package:period_tracker/widgets/grouped_section.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:period_tracker/widgets/pressable.dart';
+import 'package:period_tracker/widgets/segmented_control.dart';
+import 'package:period_tracker/widgets/stepper_field.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,352 +36,211 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   AppUpdateInfo? _updateInfo;
-  late final TextEditingController _nameController;
-  late final TextEditingController _cycleLengthController;
-  late final TextEditingController _periodLengthController;
-  late final TextEditingController _partnerMessageHeadingController;
-
-  bool _animalGeneratorUnlocked = false;
-  bool _versionDetailsUnlocked = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
     _checkForUpdate();
-
-    _nameController = TextEditingController();
-    _cycleLengthController = TextEditingController();
-    _periodLengthController = TextEditingController();
-    _partnerMessageHeadingController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _cycleLengthController.dispose();
-    _periodLengthController.dispose();
-    _partnerMessageHeadingController.dispose();
-    super.dispose();
   }
 
   Future<void> _checkForUpdate() async {
     InAppUpdate.checkForUpdate()
         .then((info) {
-          setState(() {
-            _updateInfo = info;
-          });
+          if (mounted) setState(() => _updateInfo = info);
         })
         .catchError((e) {});
   }
 
-  Future<void> _loadPreferences() async {
-    final animal = await getAnimalGeneratorUnlocked();
-    final version = await getDisplayVersionDetails();
-    setState(() {
-      _animalGeneratorUnlocked = animal;
-      _versionDetailsUnlocked = version;
-    });
+  void _snack(String message) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
-    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
 
-    return SafeArea(
-      child: user == null || settings == null
-          ? const Center(child: CircularProgressIndicator())
-          : _buildProfileContent(user, settings, nextPeriodDate),
-    );
-  }
-
-  Widget _buildProfileContent(User user, Settings settings, DateTime? nextPeriodDate) {
-    return ListView(
-      children: [
-        const SizedBox(height: 16),
-        Center(
-          child: GestureDetector(
-            onTap: () {
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Do you really want to have a profile picture in a period tracking app?'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: CircleAvatar(
-              radius: 48,
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              child: Icon(Icons.person_rounded, size: 48, color: Theme.of(context).colorScheme.onPrimaryContainer),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Center(child: Text(_getUserName(user), style: Theme.of(context).textTheme.titleLarge)),
-        const SizedBox(height: 34),
-        SectionTitle('Personal Information'),
-        _buildListTile(user, settings, 'name'),
-        const Divider(),
-        SectionTitle('Notifications'),
-        Consumer<SettingsProvider>(
-          builder: (context, settingsProvider, child) {
-            final bool notificationsEnabled = settingsProvider.settings?.notificationsEnabled ?? false;
-            return Column(
-              children: [
-                _buildSwitchTile('Enable notifications', 'Receive reminders for your next period', notificationsEnabled, (value) async {
-                  settingsProvider.setNotificationEnabled(value);
-                  if (value) {
-                    // reschedule notifications
-                    await NotificationService().scheduleNotificationsForNextPeriod(
-                      nextPeriodDate,
-                      settings.notificationDaysBefore,
-                      settings.notificationTime,
-                    );
-                  } else {
-                    // cancel all notifications
-                    await NotificationService().cancelAllNotifications();
-                  }
-                }),
-                if (notificationsEnabled) _buildListTile(user, settings, 'notifications'),
-              ],
-            );
-          },
-        ),
-        const Divider(),
-        SectionTitle('Settings'),
-        Consumer<SettingsProvider>(
-          builder: (context, settingsProvider, child) {
-            final predictionMode = settingsProvider.settings?.predictionMode;
-
-            return Column(
-              children: [
-                _buildThemeTile(),
-                _buildSwitchTile(
-                  'Dynamic Period Prediction',
-                  predictionMode == 'dynamic'
-                      ? 'Next period date is based on your cycle history'
-                      : 'Next period date is based on the cycle length you specify below',
-                  predictionMode == 'dynamic',
-                  (value) {
-                    // show confirmation dialog
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Change Prediction Mode'),
-                          content: Text(
-                            value
-                                ? 'Are you sure you want to switch to dynamic prediction? This will adjust your future period predictions based on your cycle history.'
-                                : 'Are you sure you want to switch to static prediction? This will use the cycle length you specify in settings for future period predictions.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                String mode = value ? 'dynamic' : 'static';
-                                settingsProvider.setPredictionMode(mode);
-
-                                // nextPeriodDate changes here, reschedule notifications
-                                nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(mode == 'dynamic', user.cycleLength);
-                                await NotificationService().scheduleNotificationsForNextPeriod(
-                                  nextPeriodDate,
-                                  settings.notificationDaysBefore,
-                                  settings.notificationTime,
-                                );
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Confirm'),
-                            ),
-                          ],
-                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                        );
-                      },
-                    );
-                  },
-                ),
-                _buildListTile(user, settings, 'period_length', isDisabled: predictionMode == 'dynamic'),
-                _buildListTile(user, settings, 'cycle_length', isDisabled: predictionMode == 'dynamic'),
-                if (_animalGeneratorUnlocked && _versionDetailsUnlocked) _buildListTile(user, settings, 'partner_message_heading'),
-              ],
-            );
-          },
-        ),
-        const Divider(),
-        SectionTitle('Application & Data'),
-        _buildListTile(user, settings, 'about'),
-        _buildListTile(user, settings, 'transfer'),
-        _buildListTile(user, settings, 'delete'),
-        if (_animalGeneratorUnlocked)
-          Column(
-            children: [
-              Center(
-                child: ElevatedButton(onPressed: () => context.push('/animal'), child: const Text("To the doggy generator!")),
-              ),
-            ],
-          ),
+    return LargeTitleScaffold(
+      title: 'Settings',
+      showBack: false,
+      slivers: [
+        if (user == null || settings == null)
+          const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
+        else
+          SliverList.list(children: _content(user, settings)),
       ],
     );
   }
 
-  Widget _buildListTile(User user, Settings? settings, String tileType, {bool isDisabled = false}) {
-    final String title;
-    final String subtitle;
+  List<Widget> _content(User user, Settings settings) {
+    final UnlocksProvider unlocks = context.watch<UnlocksProvider>();
+    final bool dynamicMode = settings.predictionMode == 'dynamic';
+    final bool notificationsOn = settings.notificationsEnabled;
 
-    switch (tileType) {
-      case 'name':
-        title = 'Name';
-        subtitle = _getUserName(user);
-        break;
-      case 'cycle_length':
-        title = 'Cycle Length';
-        subtitle = user.cycleLength.toString();
-        break;
-      case 'period_length':
-        title = 'Period Length';
-        subtitle = user.periodLength.toString();
-        break;
-      case 'partner_message_heading':
-        title = 'Order Boyfriend Settings';
-        subtitle = 'Set title message for ordering boyfriend';
-        break;
-      case 'notifications':
-        title = 'Notifications';
-        subtitle = 'Manage your notification settings';
-        break;
-      case 'about':
-        title = 'App Info';
-        subtitle = 'Version, contact & support';
-        break;
-      case 'transfer':
-        title = 'Transfer Data';
-        subtitle = 'Save all your data in a backup file for transfer on another device';
-        break;
-      case 'delete':
-        title = 'Delete Account';
-        subtitle = 'Permanently delete your account and all data';
-        break;
-      default:
-        throw ArgumentError('Invalid tile type: $tileType');
-    }
-
-    return ListTile(
-      title: Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyLarge?.copyWith(color: isDisabled ? Theme.of(context).disabledColor : Theme.of(context).textTheme.bodyLarge?.color),
+    return [
+      _ProfileHeader(
+        name: _getUserName(user),
+        onEdit: () => _editName(user),
+        onAvatarTap: () => _snack('Do you really want to have a profile picture in a period tracking app?'),
       ),
-      subtitle: Text(
-        subtitle,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(color: isDisabled ? Theme.of(context).disabledColor : Theme.of(context).colorScheme.tertiary),
-      ),
-      trailing: Icon(Icons.chevron_right_rounded, color: isDisabled ? Theme.of(context).disabledColor : null),
-      onTap: isDisabled
-          ? null
-          : () {
-              switch (tileType) {
-                case 'name':
-                  _showEditNameDialog(user, (newName) {
-                    context.read<UserProvider>().updateUser(name: newName, cycleLength: user.cycleLength, periodLength: user.periodLength);
-                  });
-                  break;
-                case 'cycle_length':
-                  _showEditCycleLengthDialog(user, (newLength) async {
-                    context.read<UserProvider>().updateUser(cycleLength: int.parse(newLength), name: user.name, periodLength: user.periodLength);
-
-                    // update nextPeriodDate if prediction mode is static
-                    final DateTime? nextPeriodDate = context.read<PeriodProvider>().getNextPeriodDate(
-                      settings?.predictionMode == 'dynamic',
-                      int.parse(newLength),
-                    );
-                    await NotificationService().scheduleNotificationsForNextPeriod(
-                      nextPeriodDate,
-                      settings!.notificationDaysBefore,
-                      settings.notificationTime,
-                    );
-                  });
-                  break;
-                case 'period_length':
-                  _showEditPeriodLengthDialog(user, (newLength) {
-                    context.read<UserProvider>().updateUser(periodLength: int.parse(newLength), name: user.name, cycleLength: user.cycleLength);
-
-                    // periodLength change does not affect nextPeriodDate, no notification reschedule needed
-                    // periodLength is only used for auto-logging period end date
-                    // possible TODO: if user is currently on period, update the end date based on new period length
-                  });
-                  break;
-                case 'partner_message_heading':
-                  _showEditPartnerMessageHeadingDialog(user, (newMessage) {
-                    context.read<UserProvider>().updateUser(
-                      name: user.name,
-                      cycleLength: user.cycleLength,
-                      periodLength: user.periodLength,
-                      partnerMessageHeading: newMessage,
-                    );
-                  });
-                  break;
-                case 'notifications':
-                  context.go('/notifications');
-                  break;
-                case 'about':
-                  context.push('/about');
-                  break;
-                case 'transfer':
-                  _showTransferDialog();
-                  break;
-                case 'delete':
-                  _showDeleteAccountDialog();
-                  break;
-                default:
-                  throw ArgumentError('Invalid tile type: $tileType');
-              }
-            },
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-    );
-  }
-
-  Widget _buildThemeTile() {
-    final ThemeProvider themeProvider = context.watch<ThemeProvider>();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
+      GroupedSection(
+        header: 'Cycle',
+        footer: dynamicMode
+            ? 'Predictions follow the average of your recent cycles. Turn this off to set your cycle length yourself.'
+            : 'Predictions use the cycle and period length you set here.',
         children: [
-          Expanded(
-            child: Text('Theme', style: Theme.of(context).textTheme.bodyLarge),
+          GroupedRow(
+            title: 'Smart predictions',
+            subtitle: dynamicMode ? 'Based on your history' : 'Based on your settings',
+            onTap: () => _confirmPredictionMode(user, settings, !dynamicMode),
+            trailing: Switch(value: dynamicMode, onChanged: (v) => _confirmPredictionMode(user, settings, v)),
           ),
-          SegmentedButton<ThemeMode>(
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_rounded), tooltip: 'System default'),
-              ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_rounded), tooltip: 'Light'),
-              ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_rounded), tooltip: 'Dark'),
-            ],
-            selected: {themeProvider.mode},
-            onSelectionChanged: (s) => themeProvider.setMode(s.first),
+          GroupedRow(title: 'Period length', value: '${user.periodLength} days', enabled: !dynamicMode, onTap: () => _editPeriodLength(user)),
+          GroupedRow(title: 'Cycle length', value: '${user.cycleLength} days', enabled: !dynamicMode, onTap: () => _editCycleLength(user, settings)),
+          if (unlocks.orderBoyfriend)
+            GroupedRow(title: 'Order boyfriend message', subtitle: 'Title added to every message', onTap: () => _editPartnerHeading(user)),
+        ],
+      ),
+      GroupedSection(
+        header: 'Reminders',
+        children: [
+          GroupedRow(
+            title: 'Period reminders',
+            subtitle: 'Get notified before your period',
+            onTap: () => _toggleNotifications(user, settings, !notificationsOn),
+            trailing: Switch(value: notificationsOn, onChanged: (v) => _toggleNotifications(user, settings, v)),
+          ),
+          if (notificationsOn) ...[
+            GroupedRow(title: 'Days before', value: '${settings.notificationDaysBefore}', onTap: () => ReminderActions.editDaysBefore(context, settings)),
+            GroupedRow(title: 'Time', value: DateTimeHelper.displayTime(settings.notificationTime), onTap: () => ReminderActions.editTime(context, settings)),
+          ],
+        ],
+      ),
+      GroupedSection(
+        header: 'Appearance',
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: SegmentedControl<ThemeMode>(
+              onCard: true,
+              options: const [
+                SegmentOption(value: ThemeMode.system, label: 'Auto', icon: Icons.brightness_auto_rounded),
+                SegmentOption(value: ThemeMode.light, label: 'Light', icon: Icons.light_mode_rounded),
+                SegmentOption(value: ThemeMode.dark, label: 'Dark', icon: Icons.dark_mode_rounded),
+              ],
+              selected: context.watch<ThemeProvider>().mode,
+              onChanged: (m) => context.read<ThemeProvider>().setMode(m),
+            ),
           ),
         ],
       ),
-    );
+      GroupedSection(
+        header: 'Your data',
+        footer: 'Everything stays on this device. Use a backup file to move to a new phone.',
+        children: [
+          GroupedRow(title: 'Transfer data', subtitle: 'Save a backup file for another device', icon: Icons.ios_share_rounded, onTap: _showTransfer),
+          GroupedRow(
+            title: 'Delete account',
+            subtitle: 'Permanently erase all data',
+            icon: Icons.delete_outline_rounded,
+            destructive: true,
+            onTap: _confirmDelete,
+          ),
+        ],
+      ),
+      GroupedSection(
+        header: 'About',
+        children: [
+          GroupedRow(title: 'App info', subtitle: 'Version, contact & support', icon: Icons.info_outline_rounded, onTap: () => context.push('/about')),
+          if (unlocks.animalGenerator) GroupedRow(title: 'Doggy generator', icon: Icons.pets_rounded, onTap: () => context.push('/animal')),
+        ],
+      ),
+    ];
   }
 
-  Widget _buildSwitchTile(String title, String subtitle, bool value, Function(bool) onChanged) {
-    return SwitchListTile(
-      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.tertiary)),
-      value: value,
-      onChanged: onChanged,
-      activeThumbColor: Theme.of(context).colorScheme.primary,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+  Future<void> _editName(User user) async {
+    final String? name = await showTextSheet(
+      context: context,
+      title: 'Your name',
+      initial: user.name ?? '',
+      hint: 'Name',
+      capitalization: TextCapitalization.words,
     );
+    if (name == null || !mounted) return;
+    context.read<UserProvider>().updateUser(name: name.trim(), cycleLength: user.cycleLength, periodLength: user.periodLength);
+  }
+
+  Future<void> _editPeriodLength(User user) async {
+    final int? value = await showNumberSheet(
+      context: context,
+      title: 'Period length',
+      message: 'How many days your period usually lasts.',
+      initial: user.periodLength,
+      min: kMinPeriodLength,
+      max: kMaxPeriodLength,
+    );
+    if (value == null || !mounted) return;
+    // periodLength doesn't affect the next period date, so no reschedule is needed
+    context.read<UserProvider>().updateUser(periodLength: value, name: user.name, cycleLength: user.cycleLength);
+  }
+
+  Future<void> _editCycleLength(User user, Settings settings) async {
+    final int? value = await showNumberSheet(
+      context: context,
+      title: 'Cycle length',
+      message: 'Days from the first day of one period to the first day of the next.',
+      initial: user.cycleLength,
+      min: kMinCycleLength,
+      max: kMaxCycleLength,
+    );
+    if (value == null || !mounted) return;
+    context.read<UserProvider>().updateUser(cycleLength: value, name: user.name, periodLength: user.periodLength);
+
+    final DateTime? next = context.read<PeriodProvider>().getNextPeriodDate(settings.predictionMode == 'dynamic', value);
+    await NotificationService().scheduleNotificationsForNextPeriod(next, settings.notificationDaysBefore, settings.notificationTime);
+  }
+
+  Future<void> _editPartnerHeading(User user) async {
+    final String? text = await showTextSheet(
+      context: context,
+      title: 'Order boyfriend message',
+      message: 'This text is added at the start of every message you send from Today.',
+      initial: user.partnerMessageHeading ?? '',
+      hint: 'Title message',
+      maxLines: 4,
+    );
+    if (text == null || !mounted) return;
+    context.read<UserProvider>().updateUser(name: user.name, cycleLength: user.cycleLength, periodLength: user.periodLength, partnerMessageHeading: text);
+  }
+
+  Future<void> _toggleNotifications(User user, Settings settings, bool value) async {
+    final SettingsProvider provider = context.read<SettingsProvider>();
+    final DateTime? next = context.read<PeriodProvider>().getNextPeriodDate(settings.predictionMode == 'dynamic', user.cycleLength);
+    await provider.setNotificationEnabled(value);
+    if (value) {
+      await NotificationService().scheduleNotificationsForNextPeriod(next, settings.notificationDaysBefore, settings.notificationTime);
+    } else {
+      await NotificationService().cancelAllNotifications();
+    }
+  }
+
+  Future<void> _confirmPredictionMode(User user, Settings settings, bool dynamic) async {
+    final SettingsProvider provider = context.read<SettingsProvider>();
+    final PeriodProvider periods = context.read<PeriodProvider>();
+    final bool ok = await showConfirm(
+      context: context,
+      title: dynamic ? 'Use smart predictions?' : 'Use fixed cycle length?',
+      message: dynamic ? 'Future predictions will adapt to your cycle history.' : 'Future predictions will use the cycle length you set in settings.',
+      confirmLabel: 'Switch',
+    );
+    if (!ok) return;
+    final String mode = dynamic ? 'dynamic' : 'static';
+    provider.setPredictionMode(mode);
+    // nextPeriodDate changes here, reschedule notifications
+    final DateTime? next = periods.getNextPeriodDate(dynamic, user.cycleLength);
+    await NotificationService().scheduleNotificationsForNextPeriod(next, settings.notificationDaysBefore, settings.notificationTime);
   }
 
   Future<void> _exportData() async {
@@ -383,361 +250,135 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final bool emailSent = await ApplicationDataService().shareBackup(backupFile);
       if (!mounted) return;
-      if (emailSent) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Backup file sent successfully'), behavior: SnackBarBehavior.floating));
-      } else {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Warning: backup file not sent'), behavior: SnackBarBehavior.floating));
-      }
+      _snack(emailSent ? 'Backup file sent successfully' : 'Warning: backup file not sent');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to export backup :('), behavior: SnackBarBehavior.floating));
+      _snack('Failed to export backup :(');
     }
   }
 
-  // Dialogs
-  void _showEditNameDialog(User user, Function(String) onSave) {
-    _nameController.text = user.name ?? '';
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit name'),
-          content: TextField(
-            controller: _nameController,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: 'Your name',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                onSave(_nameController.text);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
-  }
-
-  void _showEditCycleLengthDialog(User user, Function(String) onSave) {
-    _cycleLengthController.text = user.cycleLength.toString();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit cycle length'),
-          content: TextField(
-            controller: _cycleLengthController,
-            decoration: InputDecoration(
-              hintText: 'Average cycle length',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-              ),
-            ),
-            keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (!PeriodService.validateCycleLength(int.tryParse(_cycleLengthController.text))) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please enter a valid cycle length ($kMinCycleLength - $kMaxCycleLength days)'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  return;
-                }
-                onSave(_cycleLengthController.text);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
-  }
-
-  void _showEditPeriodLengthDialog(User user, Function(String) onSave) {
-    _periodLengthController.text = user.periodLength.toString();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit period length'),
-          content: TextField(
-            controller: _periodLengthController,
-            decoration: InputDecoration(
-              hintText: 'Average period length',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-              ),
-            ),
-            keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (!PeriodService.validatePeriodLength(int.tryParse(_periodLengthController.text))) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please enter a valid period length ($kMinPeriodLength - $kMaxPeriodLength days)'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  return;
-                }
-                onSave(_periodLengthController.text);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
-  }
-
-  void _showEditPartnerMessageHeadingDialog(User user, Function(String) onSave) {
-    _partnerMessageHeadingController.text = user.partnerMessageHeading ?? '';
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit order boyfriend title'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                Text(
-                  'This text will be attached at the beginning of every message you send to your boyfriend by clicking Order boyfriend in the home page.',
-                ),
-                SizedBox(height: 12),
-                TextField(
-                  controller: _partnerMessageHeadingController,
-                  decoration: InputDecoration(
-                    hintText: 'Enter title message',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(kBorderRadius),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-                    ),
-                  ),
-                  maxLines: 3,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                onSave(_partnerMessageHeadingController.text);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
-  }
-
-  void _showTransferDialog() {
+  Future<void> _showTransfer() async {
     if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) {
-      _showUpdateNeededDialog();
+      await _showUpdateNeeded();
       return;
     }
 
-    showDialog(
+    bool send = false;
+    await showAppSheet<void>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Transfer Data'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'All your data will be saved into a $kBackupFileName file. Send this file to yourself (e.g. via email) so you can access it on your new device.\n'
-                  'On your new device, locate the file and open it with Period Tracker app to restore your data. Detailed instructions will be sent in the email.',
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size(0, 0),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    alignment: Alignment.centerLeft,
-                  ),
-                  onPressed: () {
-                    context.push('/help?initialPage=transfer');
-                  },
-                  child: Text(
-                    'Need help?',
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      decorationColor: Theme.of(context).colorScheme.tertiary,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                  ),
-                ),
-              ],
+      title: 'Transfer data',
+      actionLabel: 'Send backup file',
+      onAction: () => send = true,
+      builder: (sheetContext) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'All your data is saved into a $kBackupFileName file. Send it to yourself (for example by email) and open it with Period Tracker on your new device to restore everything.',
+            style: sheetContext.text.bodyMedium?.copyWith(color: sheetContext.colors.labelSecondary),
+          ),
+          const SizedBox(height: 8),
+          Pressable(
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              context.push('/help?initialPage=transfer');
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text('Need help?', style: sheetContext.text.titleSmall?.copyWith(decoration: TextDecoration.underline)),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _exportData();
-              },
-              child: const Text('Send backup file'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
+        ],
+      ),
     );
+    if (send) await _exportData();
   }
 
-  void _showUpdateNeededDialog() {
-    showDialog(
+  Future<void> _showUpdateNeeded() async {
+    final bool go = await showConfirm(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Update Needed'),
-          content: const Text(
-            'Please update the app to the latest version before restoring your data.\nBoth devices need to be on the same version in order to transfer data.',
+      title: 'Update needed',
+      message: 'Please update the app before transferring data. Both devices need to be on the same version.',
+      confirmLabel: 'Go to Play Store',
+      cancelLabel: 'Close',
+    );
+    if (!go || !Platform.isAndroid) return;
+    final Uri uri = Uri.parse(kGooglePlayStoreUrl);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else if (mounted) {
+        _snack('Cannot open link');
+      }
+    } catch (e) {
+      if (mounted) _snack('An error occurred');
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final bool ok = await showDeleteAccountSheet(context);
+    if (!ok || !mounted) return;
+
+    // delete account data, then remove scheduled notifications
+    final UnlocksProvider unlocks = context.read<UnlocksProvider>();
+    await ApplicationDataService().clearAppData();
+    await NotificationService().cancelAllNotifications();
+    await unlocks.reload();
+
+    if (mounted) {
+      _snack('Account deleted successfully');
+      context.go('/onboarding');
+    }
+  }
+
+  String _getUserName(User user) => user.name?.isNotEmpty == true ? user.name! : kMysteriousUserName;
+}
+
+class _ProfileHeader extends StatelessWidget {
+  final String name;
+  final VoidCallback onEdit;
+  final VoidCallback onAvatarTap;
+  const _ProfileHeader({required this.name, required this.onEdit, required this.onAvatarTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final String initial = name.isNotEmpty ? name.characters.first.toUpperCase() : '?';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: Pressable(
+        onTap: onEdit,
+        pressedScale: 0.985,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16)),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: onAvatarTap,
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
+                  child: Text(initial, style: context.text.titleLarge?.copyWith(color: c.onAccent)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: context.text.titleLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text('Edit name', style: context.text.bodySmall),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: c.labelTertiary),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (Platform.isAndroid) {
-                  final Uri uri = Uri.parse(kGooglePlayStoreUrl);
-                  try {
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } else {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(const SnackBar(content: Text('Cannot open link'), behavior: SnackBarBehavior.floating));
-                    }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).clearSnackBars();
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('An error occurred'), behavior: SnackBarBehavior.floating));
-                  }
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('Go to Play Store'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
+        ),
+      ),
     );
-  }
-
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete Account'),
-          content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                // delete account data
-                await ApplicationDataService().clearAppData();
-
-                // remove schedules notifications
-                await NotificationService().cancelAllNotifications();
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Account deleted successfully'), behavior: SnackBarBehavior.floating));
-                  context.go('/onboarding');
-                }
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
-    );
-  }
-
-  // Helpers
-  String _getUserName(User user) {
-    return user.name?.isNotEmpty == true ? user.name! : kMysteriousUserName;
   }
 }

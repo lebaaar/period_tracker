@@ -1,18 +1,26 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl/intl.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/unlocks_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/period_service.dart';
-import 'package:period_tracker/shared_preferences/shared_preferences.dart';
+import 'package:period_tracker/theme.dart';
 import 'package:period_tracker/utils/date_time_helper.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/cycle_ring.dart';
+import 'package:period_tracker/widgets/grouped_section.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:period_tracker/widgets/order_boyfriend_fields.dart';
+import 'package:period_tracker/widgets/period_calendar.dart';
+import 'package:period_tracker/widgets/primary_button.dart';
 import 'package:provider/provider.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,537 +30,378 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
-  late DateTime _selectedDay;
-  DateTime _focusedDay = DateTime.now();
-  bool _showOrderBoyfriend = false;
+class _HomePageState extends State<HomePage> {
+  DateTime _selectedDay = clock.now();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadPreferences();
-    _selectedDay = _focusedDay;
-  }
+  DateTime _utc(DateTime d) => DateTime.utc(d.year, d.month, d.day);
 
-  Future<void> _loadPreferences() async {
-    final versionDetails = await getDisplayVersionDetails();
-    final animalGenerator = await getAnimalGeneratorUnlocked();
-    if (!mounted) return;
-    setState(() {
-      _showOrderBoyfriend = versionDetails && animalGenerator;
-    });
+  void _openLog(Period? period) {
+    final DateTime now = clock.now();
+    // Future start dates are rejected, so open on today.
+    final DateTime day = period == null && _utc(_selectedDay).isAfter(_utc(now)) ? now : _selectedDay;
+    final String focused = Uri.encodeComponent(day.toIso8601String());
+    if (period != null) {
+      context.go('/log?isEditing=true&periodId=${period.id}&focusedDay=$focused');
+    } else {
+      context.go('/log?isEditing=false&focusedDay=$focused');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final periodProvider = Provider.of<PeriodProvider>(context);
-    final List<Period> periods = context.watch<PeriodProvider>().periods;
+    final PeriodProvider periodProvider = context.watch<PeriodProvider>();
+    final List<Period> periods = periodProvider.periods;
     final Settings? settings = context.watch<SettingsProvider>().settings;
     final User? user = context.watch<UserProvider>().user;
+    final bool showOrderBoyfriend = context.watch<UnlocksProvider>().orderBoyfriend;
 
-    final List<DateTime> next3PeriodDates = periodProvider.getNext3PeriodDates(settings?.predictionMode == 'dynamic', user?.cycleLength);
-    final DateTime? nextPeriodDate = next3PeriodDates.isNotEmpty ? next3PeriodDates[0] : null;
+    final bool dynamicMode = settings?.predictionMode == 'dynamic';
+    final List<DateTime> predicted = periodProvider.getNext3PeriodDates(dynamicMode, user?.cycleLength);
+    final DateTime? nextPeriodDate = predicted.isNotEmpty ? predicted.first : null;
+    final int periodLength = user?.periodLength ?? kDefaultPeriodLength;
+    final DateTime today = _utc(clock.now());
+    final _CycleStatus status = _CycleStatus.compute(
+      context: context,
+      periods: periods,
+      nextPeriodDate: nextPeriodDate,
+      today: today,
+      cycleDay: periodProvider.getCurrentCycleDay(today),
+      cycleLength: dynamicMode ? periodProvider.getAverageCycleLength(userCycleLength: user?.cycleLength) : user?.cycleLength.toDouble(),
+    );
 
-    final DateTime now = DateTime.now();
-    final int currentCycleDay = periodProvider.getCurrentCycleDay(DateTime.utc(now.year, now.month, now.day));
-    double? cycleLength;
-    if (settings?.predictionMode == 'dynamic') {
-      cycleLength = periodProvider.getAverageCycleLength(userCycleLength: user?.cycleLength); // provide userCycleLength if available
-    } else {
-      cycleLength = user?.cycleLength.toDouble();
-    }
+    final bool firstRun = periods.isEmpty && periodProvider.isLoaded;
 
-    final status = periodProvider.getStatusMessage(Theme.of(context).colorScheme.tertiary, nextPeriodDate);
-
-    final bool showProgressBar = cycleLength != null;
-    double progress = 0;
-    if (cycleLength != null && cycleLength > 0) {
-      progress = currentCycleDay / cycleLength;
-      if (progress > 1) progress = 1;
-    }
-
-    void orderBoyfriend() {
-      final TextEditingController messageController = TextEditingController();
-      final TextEditingController phoneController = TextEditingController();
-      String? userDbPhoneNumber = user?.partnerPhoneNumber;
-      String userIsoCountryCode = userDbPhoneNumber?.split('|')[0] ?? kDefaultIsoCountryCode; // SI
-      String userCountryCode = userDbPhoneNumber?.split('|')[1] ?? kDefaultCountryCode; // +386
-      String userPhoneNumber = userDbPhoneNumber?.split('|')[2] ?? '';
-
-      // Prefill phone number if it exists
-      if (userPhoneNumber.isNotEmpty) {
-        phoneController.text = userPhoneNumber;
-      }
-
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Order boyfriend'),
-            content: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IntlPhoneField(
-                      controller: phoneController,
-                      decoration: InputDecoration(
-                        hintText: 'Phone number',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      initialCountryCode: userIsoCountryCode,
-                      onCountryChanged: (value) {
-                        userIsoCountryCode = value.code;
-                        userCountryCode = value.dialCode;
-                      },
-                      onChanged: (phone) {
-                        userIsoCountryCode = phone.countryISOCode;
-                        userCountryCode = phone.countryCode;
-                        userPhoneNumber = phone.number;
-                      },
-                    ),
-                    if (user?.partnerMessageHeading?.isEmpty ?? true) const SizedBox(height: 12),
-                    if (user?.partnerMessageHeading?.isNotEmpty ?? false) const SizedBox(height: 6),
-                    if (user?.partnerMessageHeading?.isNotEmpty ?? false)
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(text: 'Title: ', style: DefaultTextStyle.of(context).style),
-                            TextSpan(
-                              text: user?.partnerMessageHeading ?? '',
-                              style: DefaultTextStyle.of(context).style.copyWith(fontStyle: FontStyle.italic),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (user?.partnerMessageHeading?.isNotEmpty ?? false) const SizedBox(height: 6),
-                    TextField(
-                      controller: messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Message',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      maxLines: 3,
-                    ),
-                  ],
-                ),
+    return LargeTitleScaffold(
+      // First run: the prompt is the page title.
+      title: firstRun ? 'Log your last period' : 'Today',
+      subtitle: firstRun ? _FirstRunIntro(onLog: () => _openLog(null)) : (periods.isEmpty ? null : _StatusText(status: status)),
+      titleTrailing: periods.isEmpty ? null : _StatusRing(status: status),
+      showBack: false,
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          sliver: SliverToBoxAdapter(
+            child: PeriodCalendar(
+              initialFocusedDay: _selectedDay,
+              firstDay: kFirstCalendarDay,
+              lastDay: kLastCalendarDay,
+              periods: periods,
+              predictedStarts: predicted,
+              predictedLength: periodLength,
+              selectedDay: _selectedDay,
+              onDaySelected: (day) => setState(() => _selectedDay = day),
+            ),
+          ),
+        ),
+        // The first-run intro already has a Log button.
+        if (!firstRun)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: _SelectedDayCard(
+                day: _selectedDay,
+                today: today,
+                periods: periods,
+                predicted: predicted,
+                predictedLength: periodLength,
+                cycleDay: periodProvider.getCurrentCycleDay(_utc(_selectedDay)),
+                onAction: _openLog,
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  if (userPhoneNumber.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a phone number')));
-                    return;
-                  }
+          ),
+        if (showOrderBoyfriend)
+          SliverToBoxAdapter(
+            child: GroupedSection(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              children: [
+                GroupedRow(
+                  icon: Icons.favorite_rounded,
+                  iconColor: context.colors.accent,
+                  title: 'Order boyfriend',
+                  subtitle: 'Send a message asking for backup',
+                  onTap: () => _orderBoyfriend(user),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
 
-                  // Update user with new phone number
-                  context.read<UserProvider>().updateUser(
-                    name: user?.name,
-                    cycleLength: user?.cycleLength ?? 28,
-                    periodLength: user?.periodLength ?? 5,
-                    partnerPhoneNumber: '$userIsoCountryCode|$userCountryCode|$userPhoneNumber',
-                  );
+  Future<void> _orderBoyfriend(User? user) async {
+    final String? stored = user?.partnerPhoneNumber;
+    final List<String> parts = stored?.split('|') ?? const [];
+    String isoCode = parts.isNotEmpty ? parts[0] : kDefaultIsoCountryCode;
+    String dialCode = parts.length > 1 ? parts[1] : kDefaultCountryCode;
+    String number = parts.length > 2 ? parts[2] : '';
+    String message = '';
+    final String heading = user?.partnerMessageHeading ?? '';
 
-                  // Build SMS message with optional heading
-                  String smsBody = messageController.text;
-                  if (user?.partnerMessageHeading?.isNotEmpty == true) {
-                    smsBody = '${user?.partnerMessageHeading}\n\n$smsBody';
-                  }
+    await showAppSheet<void>(
+      context: context,
+      title: 'Order boyfriend',
+      message: heading.isNotEmpty ? heading : null,
+      actionLabel: 'Send',
+      closeOnAction: false,
+      onAction: () async {
+        final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+        final NavigatorState navigator = Navigator.of(context);
+        if (number.isEmpty) {
+          messenger.showSnackBar(const SnackBar(content: Text('Please enter a phone number')));
+          return;
+        }
 
-                  // Send SMS
-                  final encodedBody = Uri.encodeComponent(smsBody);
-                  final uri = Uri.parse('sms:$userCountryCode$userPhoneNumber?body=$encodedBody');
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    Navigator.of(context).pop();
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open SMS app')));
-                    }
-                  }
-                },
-                child: const Text('Send'),
-              ),
-            ],
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          );
+        context.read<UserProvider>().updateUser(
+          name: user?.name,
+          cycleLength: user?.cycleLength ?? 28,
+          periodLength: user?.periodLength ?? 5,
+          partnerPhoneNumber: '$isoCode|$dialCode|$number',
+        );
+
+        String body = message;
+        if (heading.isNotEmpty) body = '$heading\n\n$body';
+        final Uri uri = Uri.parse('sms:$dialCode$number?body=${Uri.encodeComponent(body)}');
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          navigator.pop();
+        } else {
+          messenger.showSnackBar(const SnackBar(content: Text('Could not open SMS app')));
+        }
+      },
+      builder: (_) => OrderBoyfriendFields(
+        initialIsoCode: isoCode,
+        initialNumber: number,
+        onPhoneChanged: (iso, dial, value) {
+          isoCode = iso;
+          dialCode = dial;
+          number = value;
         },
-      );
+        onMessageChanged: (value) => message = value,
+      ),
+    );
+  }
+}
+
+/// Header text and ring values for the current cycle state.
+class _CycleStatus {
+  final String headline; // "Period in 14 days"
+  final String? detail; // "Next period Tue, 1 Dec"
+  final int cycleDay;
+  final double progress;
+  final bool late;
+
+  const _CycleStatus({required this.headline, required this.detail, required this.cycleDay, required this.progress, required this.late});
+
+  static _CycleStatus compute({
+    required BuildContext context,
+    required List<Period> periods,
+    required DateTime? nextPeriodDate,
+    required DateTime today,
+    required int cycleDay,
+    required double? cycleLength,
+  }) {
+    final Period? current = PeriodService.getPeriodInDate(today, periods);
+    final int? daysUntil = nextPeriodDate == null ? null : DateTimeHelper.stripTime(nextPeriodDate).difference(today).inDays;
+
+    String headline;
+    bool late = false;
+    if (current != null) {
+      final int dayOfPeriod = today.difference(DateTimeHelper.stripTime(current.startDate)).inDays + 1;
+      headline = 'Day $dayOfPeriod of your period';
+    } else if (daysUntil == null) {
+      headline = 'Not enough data yet';
+    } else if (daysUntil < 0) {
+      headline = '${-daysUntil} ${-daysUntil == 1 ? 'day' : 'days'} late';
+      late = true;
+    } else if (daysUntil == 0) {
+      headline = 'Period due today';
+    } else if (daysUntil == 1) {
+      headline = 'Period tomorrow';
+    } else {
+      headline = 'Period in $daysUntil days';
     }
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
+    return _CycleStatus(
+      headline: headline,
+      detail: nextPeriodDate == null ? null : 'Next period ${DateFormat('EEE, d MMM').format(nextPeriodDate)}',
+      cycleDay: cycleDay,
+      progress: (cycleLength != null && cycleLength > 0) ? (cycleDay / cycleLength).clamp(0.0, 1.0) : 0,
+      late: late,
+    );
+  }
+}
+
+class _StatusText extends StatelessWidget {
+  final _CycleStatus status;
+  const _StatusText({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(status.headline, style: context.text.titleMedium?.copyWith(color: status.late ? c.late : c.label)),
+        if (status.detail != null) Text(status.detail!, style: context.text.bodyMedium?.copyWith(color: c.labelSecondary)),
+      ],
+    );
+  }
+}
+
+/// Cycle progress ring beside the title; shows the cycle day.
+class _StatusRing extends StatelessWidget {
+  final _CycleStatus status;
+  const _StatusRing({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    if (status.cycleDay <= 0) return const SizedBox.shrink();
+    return Semantics(
+      label: 'Cycle day ${status.cycleDay}',
+      child: CycleRing(
+        progress: status.progress,
+        progressColor: status.late ? c.late : c.accent,
+        size: 68,
+        stroke: 7,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${status.cycleDay}', style: context.text.titleLarge?.copyWith(height: 1.0)),
+            Text('day', style: context.text.bodySmall?.copyWith(height: 1.2, fontSize: 11)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Intro and button under the first-run title.
+class _FirstRunIntro extends StatelessWidget {
+  final VoidCallback onLog;
+  const _FirstRunIntro({required this.onLog});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Add when it started and predictions will appear here.', style: context.text.bodyLarge?.copyWith(color: context.colors.labelSecondary)),
+        const SizedBox(height: 16),
+        PrimaryButton(label: 'Log period', icon: Icons.add_rounded, expand: false, height: 46, onPressed: onLog),
+      ],
+    );
+  }
+}
+
+class _SelectedDayCard extends StatelessWidget {
+  final DateTime day;
+  final DateTime today;
+  final List<Period> periods;
+  final List<DateTime> predicted;
+  final int predictedLength;
+  final int cycleDay;
+  final void Function(Period? period) onAction;
+
+  const _SelectedDayCard({
+    required this.day,
+    required this.today,
+    required this.periods,
+    required this.predicted,
+    required this.predictedLength,
+    required this.cycleDay,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final DateTime d = DateTimeHelper.stripTime(day);
+    final bool isFuture = d.isAfter(today);
+    final Period? period = PeriodService.getPeriodInDate(d, periods);
+
+    bool inPredicted = false;
+    for (final DateTime start in predicted) {
+      final DateTime s = DateTimeHelper.stripTime(start);
+      if (DateTimeHelper.dayBetweenDates(d, s, s.add(Duration(days: predictedLength - 1)))) {
+        inPredicted = true;
+      }
+    }
+
+    final int diff = d.difference(today).inDays;
+    final String fact;
+    if (period != null) {
+      final int dayOfPeriod = d.difference(DateTimeHelper.stripTime(period.startDate)).inDays + 1;
+      final int length = DateTimeHelper.stripTime(period.endDate!).difference(DateTimeHelper.stripTime(period.startDate)).inDays + 1;
+      fact = 'Period · day $dayOfPeriod of $length';
+    } else if (inPredicted) {
+      fact = 'Predicted period · in $diff ${diff == 1 ? 'day' : 'days'}';
+    } else if (isFuture) {
+      fact = 'In $diff ${diff == 1 ? 'day' : 'days'}';
+    } else {
+      fact = cycleDay > 0 ? 'Cycle day $cycleDay' : 'Before your first logged period';
+    }
+    final String notes = period?.notes?.trim() ?? '';
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+      decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(20)),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(DateFormat('EEE, d MMM').format(day), style: context.text.titleMedium),
+                      const SizedBox(height: 1),
+                      Text(
+                        fact,
+                        style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Semantics(
+                  label: period != null ? 'Edit period' : 'Log period',
+                  child: PrimaryButton(
+                    label: period != null ? 'Edit' : 'Log',
+                    icon: period != null ? Icons.edit_rounded : Icons.add_rounded,
+                    expand: false,
+                    compact: true,
+                    onPressed: () => onAction(period),
+                  ),
+                ),
+              ],
+            ),
+            if (notes.isNotEmpty) ...[
+              const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
+                padding: const EdgeInsets.only(right: 4),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.calendar_month_rounded, size: 40, color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Next period:', style: Theme.of(context).textTheme.bodyMedium),
-                            Text(
-                              nextPeriodDate != null ? DateTimeHelper.displayDate(nextPeriodDate) : 'Not enough data',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ],
-                        ),
-                        Spacer(),
-                        if (_showOrderBoyfriend)
-                          InkWell(
-                            onTap: orderBoyfriend,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.favorite_rounded, size: 28, color: Theme.of(context).colorScheme.primary),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Order boyfriend',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
+                    Icon(Icons.notes_rounded, size: 18, color: c.labelTertiary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(notes, style: context.text.bodyMedium, maxLines: 3, overflow: TextOverflow.ellipsis),
                     ),
-                    if (showProgressBar)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 26),
-                          Text('Current cycle day: $currentCycleDay', style: Theme.of(context).textTheme.bodyMedium),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: progress,
-                            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                            minHeight: 8,
-                            backgroundColor: Theme.of(context).colorScheme.secondary,
-                            borderRadius: BorderRadius.circular(99),
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 16),
-                    Text(status.text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: status.color)),
                   ],
                 ),
               ),
-              // Calendar section
-              SizedBox(
-                // height: 420, // probably don't need fixed height
-                child: TableCalendar(
-                  headerStyle: HeaderStyle(formatButtonVisible: false),
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-                  firstDay: kFirstCalendarDay,
-                  lastDay: kLastCalendarDay,
-                  focusedDay: _focusedDay,
-                  availableGestures: AvailableGestures.horizontalSwipe,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                  rangeStartDay: _rangeStart,
-                  rangeEndDay: _rangeEnd,
-                  calendarFormat: CalendarFormat.month,
-                  rangeSelectionMode: RangeSelectionMode.toggledOff,
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      if (!isSameDay(_selectedDay, selectedDay)) {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                        _rangeStart = null;
-                      }
-                    });
-                  },
-                  daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
-                  daysOfWeekStyle: DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
-                    weekendStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
-                  ),
-                  calendarStyle: CalendarStyle(outsideDaysVisible: false),
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, day, focusedDay) => _defaultBuilder(context, day, focusedDay, periods, next3PeriodDates, user),
-                    todayBuilder: (context, day, focusedDay) => _todayBuilder(context, day, focusedDay, periods, next3PeriodDates, user),
-                    selectedBuilder: (context, day, focusedDay) => _selectedBuilder(context, day, focusedDay, periods, next3PeriodDates, user),
-                  ),
-                ),
-              ),
-              Center(
-                child: Padding(padding: const EdgeInsets.all(16.0), child: periodProvider.getDataForDate(_selectedDay, context)),
-              ),
-              SizedBox(height: 80), // to avoid FAB overlapping content
+              const SizedBox(height: 4),
             ],
-          ),
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final Period? selectedPeriod = PeriodService.getPeriodInDate(_selectedDay, periods);
-          final bool isEditing = selectedPeriod != null;
-
-          if (isEditing) {
-            context.go('/log?isEditing=$isEditing&periodId=${selectedPeriod.id}&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}');
-            return;
-          }
-          context.go('/log?isEditing=false&focusedDay=${Uri.encodeComponent(_selectedDay.toIso8601String())}');
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99.0)),
-        child: PeriodService.getPeriodInDate(_selectedDay, periods) != null
-            ? Icon(Icons.edit_rounded, color: Theme.of(context).colorScheme.onPrimary)
-            : Icon(Icons.add_rounded, color: Theme.of(context).colorScheme.onPrimary),
-      ),
-    );
-  }
-
-  Widget _defaultBuilder(BuildContext context, DateTime day, DateTime focusedDay, periods, List<DateTime> next3PeriodDates, User? user) {
-    // distinguish 3 cases:
-    // - selected date is inside logged period
-    // - selected date is inside upcoming period
-    // - default builder for all other dates
-
-    Period? period = PeriodService.getPeriodInDate(day, periods);
-    final isInPeriod = period != null;
-    final isStartDay = PeriodService.isStartDay(day, periods);
-    final isEndDay = PeriodService.isEndDay(day, periods);
-
-    final bool isFirstDayOfMonth = DateTimeHelper.isFirstDayOfMonth(day);
-    final bool isLastDayOfMonth = DateTimeHelper.isLastDayOfMonth(day);
-    final bool spansMultipleMonths =
-        isStartDay &&
-            isEndDay // if this is true gradient is applied
-        ? false // period lasts 1 single day - should never happen
-        : (isFirstDayOfMonth || isLastDayOfMonth) && period != null && period.startDate.month != period.endDate!.month;
-
-    BoxDecoration? decoration;
-    Color? textColor;
-    Gradient? gradient;
-    if (spansMultipleMonths) {
-      if (isInPeriod) {
-        gradient = isFirstDayOfMonth
-            ? kLoggedPeriodFirstMonthDayGradient(Theme.of(context).colorScheme)
-            : isLastDayOfMonth
-            ? kLoggedPeriodLastMonthDayGradient(Theme.of(context).colorScheme)
-            : null;
-      }
-    }
-    if (isInPeriod) {
-      // day is inside logged period
-      textColor = Theme.of(context).colorScheme.onSurface;
-      decoration = BoxDecoration(
-        color: Theme.of(context).colorScheme.secondary,
-        gradient: gradient,
-        borderRadius: BorderRadius.horizontal(
-          left: isStartDay ? const Radius.circular(99) : Radius.zero,
-          right: isEndDay ? const Radius.circular(99) : Radius.zero,
-        ),
-      );
-    }
-    int periodDuration = kDefaultPeriodLength - 1;
-    if (user != null) {
-      periodDuration = user.periodLength - 1;
-    }
-
-    // next period dates (3) styling
-    DateTime current = DateTimeHelper.stripTime(day);
-    Color primaryColor = Theme.of(context).colorScheme.primary;
-
-    for (int periodIndex = 0; periodIndex < next3PeriodDates.length; periodIndex++) {
-      DateTime periodStart = DateTimeHelper.stripTime(next3PeriodDates[periodIndex]);
-      DateTime periodEnd = DateTimeHelper.stripTime(next3PeriodDates[periodIndex].add(Duration(days: periodDuration)));
-
-      if (DateTimeHelper.dayBetweenDates(current, periodStart, periodEnd)) {
-        // day is inside one of the upcoming periods
-        final isStartDay = DateTimeHelper.isSameDay(periodStart, day);
-        final isEndDay = DateTimeHelper.isSameDay(periodEnd, day);
-
-        decoration = BoxDecoration(
-          border: Border(
-            left: isStartDay ? BorderSide(color: primaryColor, width: 2.0) : BorderSide.none,
-            right: isEndDay ? BorderSide(color: primaryColor, width: 2.0) : BorderSide.none,
-            top: BorderSide(color: primaryColor, width: 2.0),
-            bottom: BorderSide(color: primaryColor, width: 2.0),
-          ),
-          borderRadius: BorderRadius.horizontal(
-            left: isStartDay ? const Radius.circular(99) : Radius.zero,
-            right: isEndDay ? const Radius.circular(99) : Radius.zero,
-          ),
-        );
-      }
-    }
-
-    // default builder
-    return Container(
-      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-      decoration: decoration,
-      child: Center(
-        child: Text('${day.day}', style: TextStyle(color: textColor)),
-      ),
-    );
-  }
-
-  Widget _todayBuilder(BuildContext context, DateTime day, DateTime focusedDay, periods, List<DateTime> next3PeriodDates, User? user) {
-    // distinguish 3 cases:
-    // - selected date is inside logged period
-    // - selected date is inside upcoming period
-    // - default builder for all other dates
-    final Period? period = PeriodService.getPeriodInDate(day, periods);
-    final isInPeriod = period != null;
-    int periodDuration = kDefaultPeriodLength - 1;
-    if (user != null) {
-      periodDuration = user.periodLength - 1;
-    }
-
-    if (isInPeriod) {
-      // today is inside logged period
-      return _defaultBuilder(context, day, focusedDay, periods, next3PeriodDates, user);
-    }
-
-    // default styling that is returned if today is just a regular day, meaning it doesn't fall into any of the logged or upcoming periods
-    BoxDecoration? decoration = BoxDecoration(
-      shape: BoxShape.circle,
-      border: Border.all(color: Theme.of(context).colorScheme.secondary, width: 2),
-    );
-    Color? textColor = Theme.of(context).colorScheme.onSurface;
-
-    // Check if today is in any of the upcoming periods
-    DateTime current = DateTimeHelper.stripTime(day);
-    for (DateTime periodDate in next3PeriodDates) {
-      DateTime periodStart = DateTimeHelper.stripTime(periodDate);
-      DateTime periodEnd = DateTimeHelper.stripTime(periodDate.add(Duration(days: periodDuration)));
-
-      if (DateTimeHelper.dayBetweenDates(current, periodStart, periodEnd)) {
-        // today is inside one of the upcoming periods
-        return _defaultBuilder(context, day, focusedDay, periods, next3PeriodDates, user);
-      }
-    }
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-      decoration: decoration,
-      child: Center(
-        child: Text('${day.day}', style: TextStyle(color: textColor)),
-      ),
-    );
-  }
-
-  Widget _selectedBuilder(BuildContext context, DateTime day, DateTime focusedDay, periods, List<DateTime> next3PeriodDates, User? user) {
-    // distinguish 3 cases:
-    // - selected date is inside logged period
-    // - selected date is inside upcoming period
-    // - default builder for all other dates
-    final Period? period = PeriodService.getPeriodInDate(day, periods);
-    final isInPeriod = period != null;
-    final isStartDay = PeriodService.isStartDay(day, periods);
-    final isEndDay = PeriodService.isEndDay(day, periods);
-
-    final bool isFirstDayOfMonth = DateTimeHelper.isFirstDayOfMonth(day);
-    final bool isLastDayOfMonth = DateTimeHelper.isLastDayOfMonth(day);
-    final bool spansMultipleMonths =
-        isStartDay &&
-            isEndDay // if this is true gradient is applied
-        ? false // period lasts 1 single day - should never happen
-        : (isFirstDayOfMonth || isLastDayOfMonth) && period != null && period.startDate.month != period.endDate!.month;
-
-    bool insideUpcomingPeriod = false;
-    bool isNextPeriodStartDay = false;
-    bool isNextPeriodEndDay = false;
-    bool upComingSpanMultipleMonths = false;
-    int periodDuration = kDefaultPeriodLength - 1;
-    if (user != null) {
-      periodDuration = user.periodLength - 1;
-    }
-
-    // Check if selected day is in any of the upcoming periods
-    DateTime current = DateTimeHelper.stripTime(day);
-    for (DateTime periodDate in next3PeriodDates) {
-      DateTime periodStart = DateTimeHelper.stripTime(periodDate);
-      DateTime periodEnd = DateTimeHelper.stripTime(periodDate.add(Duration(days: periodDuration)));
-
-      if (DateTimeHelper.dayBetweenDates(current, periodStart, periodEnd)) {
-        isNextPeriodStartDay = DateTimeHelper.isSameDay(periodStart, day);
-        isNextPeriodEndDay = DateTimeHelper.isSameDay(periodEnd, day);
-        insideUpcomingPeriod = true;
-
-        // Check if this upcoming period spans multiple months
-        upComingSpanMultipleMonths = (isFirstDayOfMonth || isLastDayOfMonth) && periodStart.month != periodEnd.month;
-
-        break; // Only consider the first matching period
-      }
-    }
-
-    BoxDecoration? decoration;
-    Color? textColor;
-    Gradient? gradient;
-    if (spansMultipleMonths) {
-      if (isInPeriod) {
-        gradient = isFirstDayOfMonth
-            ? kLoggedSelectedPeriodFirstMonthDayGradient(Theme.of(context).colorScheme)
-            : isLastDayOfMonth
-            ? kLoggedSelectedPeriodLastMonthDayGradient(Theme.of(context).colorScheme)
-            : null;
-      }
-    } else if (upComingSpanMultipleMonths) {
-      if (insideUpcomingPeriod) {
-        gradient = isFirstDayOfMonth
-            ? kUpcomingSelectedPeriodFirstMonthDayGradient(Theme.of(context).colorScheme)
-            : isLastDayOfMonth
-            ? kUpcomingSelectedPeriodLastMonthDayGradient(Theme.of(context).colorScheme)
-            : null;
-      }
-    }
-    if (isInPeriod) {
-      // selected date is inside logged period
-      decoration = BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        gradient: gradient,
-        borderRadius: BorderRadius.horizontal(
-          left: isStartDay ? const Radius.circular(99) : Radius.zero,
-          right: isEndDay ? const Radius.circular(99) : Radius.zero,
-        ),
-      );
-      textColor = Theme.of(context).colorScheme.surface;
-    } else if (insideUpcomingPeriod) {
-      // selected day is inside upcoming period
-      decoration = BoxDecoration(
-        gradient: gradient,
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.horizontal(
-          left: isNextPeriodStartDay ? const Radius.circular(99) : Radius.zero,
-          right: isNextPeriodEndDay ? const Radius.circular(99) : Radius.zero,
-        ),
-      );
-      textColor = Theme.of(context).colorScheme.surface;
-    } else {
-      // default selector builder
-      decoration = BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle);
-      textColor = Theme.of(context).colorScheme.onPrimary;
-    }
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-      decoration: decoration,
-      child: Center(
-        child: Text('${day.day}', style: TextStyle(color: textColor)),
       ),
     );
   }
