@@ -46,3 +46,7 @@ app.*.map.json
 
 # Secrets
 .env
+
+# Play Store graphics: generated intermediates
+graphics/play/shots/
+graphics/play/out/
