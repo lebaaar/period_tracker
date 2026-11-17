@@ -1,7 +1,6 @@
 // Renders the real app screens with seeded data for the Play Store graphics.
 // Run: flutter test test/shots_test.dart   (writes graphics/play/shots/*.png)
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
