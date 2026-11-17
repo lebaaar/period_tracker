@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
+import 'package:period_tracker/providers/unlocks_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/services/period_service.dart';
-import 'package:period_tracker/shared_preferences/shared_preferences.dart';
-import 'package:period_tracker/widgets/section_title.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/utils/date_time_helper.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/grouped_section.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:period_tracker/widgets/period_calendar.dart';
+import 'package:period_tracker/widgets/primary_button.dart';
 import 'package:provider/provider.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class LogPeriodPage extends StatefulWidget {
   final bool isEditing;
@@ -34,7 +40,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   DateTime? _rangeEnd;
   late DateTime _focusedDay;
 
-  bool _initialLoad = true;
   DateTime? _initialRangeStart;
   DateTime? _initialRangeEnd;
   String? _initialNotes;
@@ -74,9 +79,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     final bool isInFuture = rangeStartCheck.isAfter(checkDate);
     if (isInFuture) {
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('The start date cannot be in the future.'), behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The start date cannot be in the future.'), behavior: SnackBarBehavior.floating));
       return;
     }
 
@@ -88,9 +91,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       final int gapAfter = (p.startDate.difference(_rangeEnd!).inDays);
       if (gapBefore >= 0 && gapBefore < kMinDaysBetweenPeriods || gapAfter >= 0 && gapAfter < kMinDaysBetweenPeriods) {
         ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('There must be at least $kMinDaysBetweenPeriods days between periods'), behavior: SnackBarBehavior.floating),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('There must be at least $kMinDaysBetweenPeriods days between periods'), behavior: SnackBarBehavior.floating));
         return;
       }
     }
@@ -104,6 +107,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
         notes: _notesController.text,
       );
       await context.read<PeriodProvider>().updatePeriod(updatedPeriod);
+      if (!context.mounted) return;
 
       // nextPeriodDate changes here because an existing period is updated
       // schedule notifications for next period
@@ -113,7 +117,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       );
       await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
-      Navigator.of(context).pop();
+      if (context.mounted) Navigator.of(context).pop();
       return;
     }
 
@@ -123,7 +127,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
 
     final Period newPeriod = Period(startDate: rangeStart, endDate: rangeEnd, notes: _notesController.text);
     await context.read<PeriodProvider>().insertPeriod(newPeriod);
+    if (!context.mounted) return;
     await context.read<PeriodProvider>().fetchPeriods();
+    if (!context.mounted) return;
 
     // nextPeriodDate changes here because a new period is added
     // schedule notifications for next period
@@ -133,14 +139,14 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     );
     await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings!.notificationDaysBefore, settings.notificationTime);
 
-    Navigator.of(context).pop();
+    if (context.mounted) Navigator.of(context).pop();
   }
 
   bool isPageDirty() {
     if (isEditing && period != null) {
       return _rangeStart != _initialRangeStart || _rangeEnd != _initialRangeEnd || _notesController.text != _initialNotes;
     }
-    return _rangeStart != null && _rangeEnd != null && (_notesController.text.isNotEmpty || _notesController.text != '');
+    return _rangeStart != _initialRangeStart || _rangeEnd != _initialRangeEnd || _notesController.text.isNotEmpty;
   }
 
   void _scrollToTop() {
@@ -158,7 +164,6 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     _scrollController = ScrollController();
     _notesFocusNode = FocusNode();
     _today = DateTime.now();
-    _focusedDay = DateTime.now();
 
     _notesFocusNode.addListener(() {
       if (!_notesFocusNode.hasFocus) {
@@ -172,6 +177,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       _rangeStart = period!.startDate;
       _rangeEnd = period!.endDate;
       _notesController.text = period!.notes ?? '';
+    } else {
+      // Default the end date from the usual period length.
+      final User? user = context.read<UserProvider>().user;
+      if (user != null) _rangeEnd = _rangeStart!.add(Duration(days: user.periodLength - 1));
     }
     _initialRangeStart = _rangeStart;
     _initialRangeEnd = _rangeEnd;
@@ -182,216 +191,178 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
   void dispose() {
     _notesController.dispose();
     _notesFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _confirmDiscard() async {
+    final bool discard = await showConfirm(
+      context: context,
+      title: 'Discard changes?',
+      message: 'Your changes to this period won\'t be saved.',
+      confirmLabel: 'Discard',
+      cancelLabel: 'Keep editing',
+      destructive: true,
+    );
+    if (discard && mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _delete(User? user, Settings? settings) async {
+    final bool confirm = await showConfirm(
+      context: context,
+      title: 'Delete period?',
+      message: 'This removes the entry from your history.',
+      confirmLabel: 'Delete',
+      destructive: true,
+    );
+    if (!confirm || !mounted) return;
+
+    final PeriodProvider provider = context.read<PeriodProvider>();
+    final GoRouter router = GoRouter.of(context);
+    await provider.deletePeriod(period!.id!);
+
+    // nextPeriodDate changes here because the period was removed
+    final DateTime? nextPeriodDate = provider.getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
+    if (settings != null) {
+      await NotificationService().scheduleNotificationsForNextPeriod(nextPeriodDate, settings.notificationDaysBefore, settings.notificationTime);
+    }
+    router.go('/');
+  }
+
+  bool get _rangeComplete => _rangeStart != null && _rangeEnd != null;
+
+  String _summary() {
+    final DateFormat f = DateFormat('d MMM');
+    final int days = DateTimeHelper.stripTime(_rangeEnd!).difference(DateTimeHelper.stripTime(_rangeStart!)).inDays + 1;
+    if (days == 1) return f.format(_rangeStart!);
+    return '${f.format(_rangeStart!)} – ${f.format(_rangeEnd!)}';
+  }
+
+  String _summaryDetail() {
+    final int days = DateTimeHelper.stripTime(_rangeEnd!).difference(DateTimeHelper.stripTime(_rangeStart!)).inDays + 1;
+    return '$days ${days == 1 ? 'day' : 'days'}';
   }
 
   @override
   Widget build(BuildContext context) {
     final User? user = context.watch<UserProvider>().user;
     final Settings? settings = context.watch<SettingsProvider>().settings;
-    final PeriodProvider periodProvider = Provider.of<PeriodProvider>(context);
+    final List<Period> others = context.watch<PeriodProvider>().periods.where((p) => !(isEditing && period != null && p.id == period!.id)).toList();
+    final c = context.colors;
 
-    if (_initialLoad && !isEditing && user != null && _rangeStart != null) {
-      _initialLoad = false;
-      setState(() {
-        _rangeEnd = _rangeStart!.add(Duration(days: user.periodLength - 1));
-      });
-    }
-
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(isEditing ? 'Edit Period' : 'Add Period', style: Theme.of(context).textTheme.titleMedium),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          color: Theme.of(context).colorScheme.onSurface,
-          onPressed: () {
-            if (isPageDirty()) {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Unsaved Changes'),
-                  content: const Text('Do you want to discard changes?'),
-                  actions: [
-                    TextButton(
-                      style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Discard'),
-                    ),
-                  ],
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+    return PopScope(
+      canPop: !isPageDirty(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmDiscard();
+      },
+      child: LargeTitleScaffold(
+        title: isEditing ? 'Edit period' : 'Log period',
+        largeTitle: false,
+        controller: _scrollController,
+        bottom: PrimaryButton(label: 'Save', onPressed: () => _onSave(context, settings)),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              // Fixed height: no jump while the range is picked.
+              child: SizedBox(
+                height: 58,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 160),
+                  // AnimatedSwitcher centres by default; keep the title left-aligned
+                  layoutBuilder: (current, previous) => Stack(alignment: Alignment.topLeft, children: [...previous, ?current]),
+                  child: !_rangeComplete
+                      ? const SizedBox.expand(key: ValueKey('empty'))
+                      : Column(
+                          key: ValueKey(_summary()),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_summary(), style: context.text.headlineMedium),
+                            Text(_summaryDetail(), style: context.text.bodyLarge?.copyWith(color: c.labelSecondary)),
+                          ],
+                        ),
                 ),
-              );
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-        actions: [
-          if (isEditing && period != null)
-            IconButton(
-              icon: const Icon(Icons.delete_rounded),
-              color: Theme.of(context).colorScheme.onSurface,
-              tooltip: 'Delete Period',
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delete Period'),
-                    content: const Text('Are you sure you want to delete this period entry?'),
-                    actions: [
-                      TextButton(
-                        style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.tertiary),
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
-                    ],
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  ),
-                );
-
-                if (confirm == true) {
-                  Navigator.of(context).pop();
-                  await context.read<PeriodProvider>().deletePeriod(period!.id!);
-
-                  // nextPeriodDate changes here because period was removed
-                  // update nextPeriodDate
-                  DateTime? nextPeriodDate = periodProvider.getNextPeriodDate(settings?.predictionMode == 'dynamic', user?.cycleLength);
-                  await NotificationService().scheduleNotificationsForNextPeriod(
-                    nextPeriodDate,
-                    settings!.notificationDaysBefore,
-                    settings.notificationTime,
-                  );
-
-                  context.go('/');
-                }
-              },
+              ),
             ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Column(
-            children: [
-              SectionTitle('Period Range'),
-              TableCalendar(
-                headerStyle: HeaderStyle(formatButtonVisible: false),
-                startingDayOfWeek: StartingDayOfWeek.monday,
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            sliver: SliverToBoxAdapter(
+              child: PeriodCalendar(
+                initialFocusedDay: _focusedDay,
                 firstDay: kFirstCalendarDay,
                 lastDay: kLastCalendarDay,
-                focusedDay: _focusedDay,
-                calendarFormat: CalendarFormat.month,
-                rangeSelectionMode: RangeSelectionMode.toggledOn,
-                rangeStartDay: _rangeStart,
-                rangeEndDay: _rangeEnd,
-                daysOfWeekHeight: kTableCalendarDaysOfTheWeekHeight,
-                daysOfWeekStyle: DaysOfWeekStyle(
-                  weekdayStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
-                  weekendStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
-                ),
-                calendarStyle: CalendarStyle(
-                  rangeHighlightColor: Theme.of(context).colorScheme.secondary,
-                  rangeStartDecoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
-                  rangeStartTextStyle: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                  rangeEndDecoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
-                  rangeEndTextStyle: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                  withinRangeTextStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                  todayDecoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
-                  weekendTextStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                ),
-                calendarBuilders: CalendarBuilders(
-                  todayBuilder: (context, day, focusedDay) {
-                    return Container(
-                      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Theme.of(context).colorScheme.secondary, width: 2),
-                      ),
-                      child: Center(child: Text('${day.day}')),
-                    );
-                  },
-                ),
-                onRangeSelected: (start, end, newFocusedDay) {
-                  setState(() {
-                    _rangeStart = start;
-                    _rangeEnd = end;
-                    _focusedDay = newFocusedDay;
-                  });
-                },
-                onDaySelected: (selectedDay, newFocusedDay) {
-                  setState(() {
-                    _today = selectedDay;
-                    _focusedDay = newFocusedDay;
-                  });
-                },
+                periods: others,
+                mutedPeriods: true,
+                rangeStart: _rangeStart,
+                rangeEnd: _rangeEnd,
+                onRangeSelected: (start, end) => setState(() {
+                  _rangeStart = start;
+                  _rangeEnd = end;
+                }),
               ),
-              SectionTitle('Notes'),
-              SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _notesController,
-                  focusNode: _notesFocusNode,
-                  decoration: InputDecoration(
-                    hintText: 'Add notes about this period',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(kBorderRadius),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: GroupedSection(
+              header: 'Notes',
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: TextField(
+                    controller: _notesController,
+                    focusNode: _notesFocusNode,
+                    minLines: 3,
+                    maxLines: 6,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      hintText: 'Add notes about this period',
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
                     ),
+                    onChanged: (_) => setState(() {}),
                   ),
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize),
-                  onChanged: (value) {},
                 ),
-              ),
-              SizedBox(height: 25000),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              ],
+            ),
+          ),
+          if (isEditing && period != null)
+            SliverToBoxAdapter(
+              child: GroupedSection(
                 children: [
-                  Column(children: [const Text('You need a break from all that scrolling... 🐶')]),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await setAnimalGeneratorUnlockedValue(true);
-                      context.push('/animal');
-                    },
-                    child: const Text("To the doggy generator!"),
+                  GroupedRow(
+                    title: 'Delete period',
+                    icon: Icons.delete_outline_rounded,
+                    destructive: true,
+                    showChevron: false,
+                    onTap: () => _delete(user, settings),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _onSave(context, settings),
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kBorderRadius)),
-              ),
-              child: const Text('Save'),
+            ),
+          // Easter egg: scroll this far to reach the doggy generator.
+          const SliverToBoxAdapter(child: SizedBox(height: 25000)),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const Text('You need a break from all that scrolling... 🐶'),
+                const SizedBox(height: 12),
+                PrimaryButton(
+                  label: 'To the doggy generator!',
+                  style: AppButtonStyle.secondary,
+                  expand: false,
+                  onPressed: () async {
+                    await context.read<UnlocksProvider>().setAnimalGenerator(true);
+                    if (context.mounted) context.push('/animal');
+                  },
+                ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

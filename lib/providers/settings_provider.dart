@@ -8,8 +8,10 @@ class SettingsProvider extends ChangeNotifier {
 
   final DatabaseService _db = DatabaseService();
 
+  late final Future<void> ready;
+
   SettingsProvider() {
-    loadSettings();
+    ready = loadSettings();
   }
 
   Future<void> loadSettings() async {

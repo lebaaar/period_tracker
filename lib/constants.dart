@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
-
 const String kPackageName = 'com.lebaaar.period_tracker';
 
 // UI
 const double kBorderRadius = 12;
-const double kTableCalendarDaysOfTheWeekHeight = 30;
 
 // Date constants for calendar range
 final DateTime kFirstCalendarDay = DateTime.utc(2004, 3, 9);
@@ -13,23 +10,6 @@ final DateTime kLastCalendarDay = DateTime.utc(
   12,
   31,
 ); // 8 years into the future
-
-// table_calendar specific
-// gradients across the whole day cell background, built from the active theme's scheme
-Gradient _fromLeft(Color a, Color b, double s0, double s1) =>
-    LinearGradient(colors: [a, b], stops: [s0, s1], begin: Alignment.centerLeft, end: Alignment.centerRight);
-
-// logged period
-Gradient kLoggedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.secondary, 0.0, 0.33);
-Gradient kLoggedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.secondary, cs.surface, 0.66, 1.0);
-
-// logged selected period
-Gradient kLoggedSelectedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.primary, 0.0, 0.33);
-Gradient kLoggedSelectedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.primary, cs.surface, 0.66, 1.0);
-
-// TODO: upcoming period gradients - gradient just the border
-Gradient kUpcomingSelectedPeriodFirstMonthDayGradient(ColorScheme cs) => _fromLeft(cs.surface, cs.primary, 0.0, 0.33);
-Gradient kUpcomingSelectedPeriodLastMonthDayGradient(ColorScheme cs) => _fromLeft(cs.primary, cs.surface, 0.66, 1.0);
 
 // Default cycle and period lengths
 const int kDefaultCycleLength = 28;

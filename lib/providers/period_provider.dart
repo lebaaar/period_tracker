@@ -2,23 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/services/database_service.dart';
-import 'package:period_tracker/services/period_service.dart';
-import 'package:period_tracker/utils/date_time_helper.dart';
-import 'package:period_tracker/utils/period_status_message.dart';
-import 'package:period_tracker/utils/period_status_message_helper.dart';
 
 class PeriodProvider extends ChangeNotifier {
   List<Period> _periods = [];
   List<Period> get periods => _periods;
   final DatabaseService _db = DatabaseService();
 
+  /// Completes after the first database load.
+  late final Future<void> ready;
+  bool _loaded = false;
+  bool get isLoaded => _loaded;
+
   PeriodProvider() {
-    fetchPeriods();
+    ready = fetchPeriods();
   }
 
   Future<void> fetchPeriods() async {
     _periods = await _db.getAllPeriods();
     _periods.sort((a, b) => b.startDate.compareTo(a.startDate));
+    _loaded = true;
     notifyListeners();
   }
 
@@ -133,37 +135,6 @@ class PeriodProvider extends ChangeNotifier {
     return daysSinceStart > 0 ? daysSinceStart : 1;
   }
 
-  // Returns a status message (e.g., late, on track)
-  PeriodStatusMessage getStatusMessage(Color defaultColor, DateTime? nextPeriodDate) {
-    PeriodStatusMessage status = PeriodStatusMessage(text: '', color: defaultColor);
-
-    if (_periods.isEmpty || nextPeriodDate == null) {
-      // in this case status bar on home page is hidden
-      status.text = 'Start by tapping the + button below to log your most recent period';
-      return status;
-    }
-
-    status.color = Colors.green;
-
-    final List<Period> sortedPeriods = List<Period>.from(_periods)..sort((a, b) => a.startDate.compareTo(b.startDate));
-
-    final lastPeriod = sortedPeriods.last; // last period dates are normalized to UTC already
-
-    // ensure both nextPeriodDate and today are stripped of time and in UTC
-    final DateTime now = DateTime.now();
-    final DateTime today = DateTime.utc(now.year, now.month, now.day);
-
-    // Check if currently in period
-    if ((today.isAtSameMomentAs(lastPeriod.startDate) || today.isAtSameMomentAs(lastPeriod.endDate!)) ||
-        (today.isAfter(lastPeriod.startDate) && today.isBefore(lastPeriod.endDate!))) {
-      status.text = 'Currently in period';
-      return status;
-    }
-
-    final int diff = nextPeriodDate.difference(today).inDays;
-    return PeriodStatusMessageHelper.getPeriodStatusMessage(diff);
-  }
-
   // Returns average period length in days
   double? getAveragePeriodLength({bool? useRecent6}) {
     // Only consider periods with both start and end dates
@@ -209,39 +180,4 @@ class PeriodProvider extends ChangeNotifier {
   }
 
   // Returns a widget or data for a specific date (customize as needed)
-  Widget getDataForDate(DateTime date, BuildContext context) {
-    // find period for the date
-    final DateTime checkDate = DateTime.utc(date.year, date.month, date.day);
-    final int cycleDay = getCurrentCycleDay(checkDate);
-    // Selected date is before first period
-    if (cycleDay <= 0) return Container();
-
-    final Period? period = PeriodService.getPeriodInDate(checkDate, periods);
-    if (period == null) {
-      return Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium);
-    }
-
-    final String? notes;
-    if (period.notes != null && period.notes!.isNotEmpty) {
-      notes = 'Notes: ${period.notes!}';
-    } else {
-      notes = null;
-    }
-
-    return Center(
-      child: Column(
-        children: [
-          Text('Cycle Day: $cycleDay', style: Theme.of(context).textTheme.bodyMedium),
-          SizedBox(height: 4),
-          Text(
-            'Selected period: ${DateTimeHelper.displayDate(period.startDate)} - '
-            '${period.endDate != null ? DateTimeHelper.displayDate(period.endDate!) : 'Ongoing'}',
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 4),
-          if (notes != null) Text(notes, textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
 }

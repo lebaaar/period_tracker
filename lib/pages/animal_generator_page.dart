@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/dog_breed.dart';
 import 'package:period_tracker/enums/email_type.dart';
 import 'package:period_tracker/exceptions/email_exception.dart';
 import 'package:period_tracker/services/animal_image_service.dart';
 import 'package:period_tracker/services/email_service.dart';
+import 'package:period_tracker/theme.dart';
+import 'package:period_tracker/widgets/app_sheet.dart';
+import 'package:period_tracker/widgets/large_title_scaffold.dart';
+import 'package:period_tracker/widgets/pressable.dart';
+import 'package:period_tracker/widgets/primary_button.dart';
 
 class AnimalGeneratorPage extends StatefulWidget {
   const AnimalGeneratorPage({super.key});
@@ -43,48 +47,41 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
     }
   }
 
+  void _snack(String message) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> openEmail() async {
     try {
       await EmailService.openEmail(EmailType.bugReport, kDogApiErrorCode);
     } on EmailException catch (e) {
+      if (!mounted) return;
       switch (e.errorCode) {
         case kNoEmailAppErrorCode:
-          showNoMailAppsDialog(context);
+          showInfo(context: context, title: 'No email app found', message: 'Install an email app to contact support.');
           return;
         case kUnknownErrorCode:
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+          _snack('An error occurred while trying to open email app');
           return;
       }
     } catch (_) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('An error occurred while trying to open email app'), behavior: SnackBarBehavior.floating));
+      if (!mounted) return;
+      _snack('An error occurred while trying to open email app');
     }
   }
 
-  void showNoMailAppsDialog(BuildContext context) {
-    showDialog(
+  Future<void> _pickBreed() async {
+    final DogBreed? picked = await showSelectSheet<DogBreed>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Cannot Open Email App"),
-          content: const Text("No email apps installed on this device. Please install an email app to contact support."),
-          actions: [
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        );
-      },
+      title: 'Breed',
+      selected: _selectedDogBreed,
+      options: [for (final DogBreed b in DogBreed.values) SelectOption(value: b, label: b.display)],
     );
+    if (picked == null || !mounted) return;
+    setState(() => _selectedDogBreed = picked);
+    fetchImage(picked);
   }
 
   @override
@@ -95,149 +92,85 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('Doggy Generator', style: Theme.of(context).textTheme.titleMedium),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          color: Theme.of(context).colorScheme.onSurface,
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: DropdownButtonFormField<DogBreed>(
-                decoration: const InputDecoration(labelText: 'Select Dog Breed', border: OutlineInputBorder()),
-                initialValue: _selectedDogBreed,
-                items: DogBreed.values.map((breed) {
-                  return DropdownMenuItem<DogBreed>(value: breed, child: Text(breed.display));
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedDogBreed = value;
-                    });
-                    fetchImage(value);
-                  }
-                },
+    final c = context.colors;
+    return LargeTitleScaffold(
+      title: 'Doggy generator',
+      largeTitle: false,
+      bottom: PrimaryButton(label: 'Next doggy', onPressed: _isLoadingImage ? null : () => fetchImage(_selectedDogBreed)),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 20),
+            child: Pressable(
+              onTap: _pickBreed,
+              pressedScale: 0.985,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16)),
+                child: Row(
+                  children: [
+                    Icon(Icons.pets_rounded, size: 20, color: c.labelSecondary),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(_selectedDogBreed.display, style: context.text.bodyLarge)),
+                    Icon(Icons.unfold_more_rounded, size: 22, color: c.labelTertiary),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: Center(
-                child: _isLoadingImage
-                    ? const CircularProgressIndicator()
-                    : _displayError
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Failed to fetch doggy image :(',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: Theme.of(context).textTheme.headlineSmall?.fontSize,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Make sure you are connected to the internet and try again.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('If the issue persists ', style: Theme.of(context).textTheme.bodyMedium),
-                                TextButton(
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: const Size(0, 0),
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    alignment: Alignment.centerLeft,
-                                  ),
-                                  onPressed: () => openEmail(),
-                                  child: Text(
-                                    'contact support',
-                                    style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: Theme.of(context).colorScheme.onSurface,
-                                      color: Theme.of(context).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                                Text('.'),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )
-                    : (_imageUrl != null
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: GestureDetector(
-                                onTap: () {
-                                  ScaffoldMessenger.of(context).clearSnackBars();
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(const SnackBar(content: Text('Good doggy! 🐶'), behavior: SnackBarBehavior.floating));
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(kBorderRadius),
-                                  child: Image.network(
-                                    _imageUrl!,
-                                    height: 300,
-                                    fit: BoxFit.cover,
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return const Center(child: CircularProgressIndicator());
-                                    },
-                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 80),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink()),
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                // Use the enum value directly for API call (its .name is used in the service)
-                fetchImage(_selectedDogBreed);
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kBorderRadius)),
-              ),
-              child: const Text('Next doggy'),
             ),
           ),
         ),
-      ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: _isLoadingImage
+                  ? const SizedBox(
+                      key: ValueKey('loading'),
+                      height: 360,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : _displayError
+                  ? Padding(
+                      key: const ValueKey('error'),
+                      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 8),
+                      child: Column(
+                        children: [
+                          Text('Couldn\'t fetch a doggy :(', textAlign: TextAlign.center, style: context.text.titleLarge),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Check your internet connection and try again.',
+                            textAlign: TextAlign.center,
+                            style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
+                          ),
+                          const SizedBox(height: 16),
+                          PrimaryButton(label: 'Contact support', expand: false, style: AppButtonStyle.secondary, onPressed: openEmail),
+                        ],
+                      ),
+                    )
+                  : (_imageUrl != null
+                        ? GestureDetector(
+                            key: ValueKey(_imageUrl),
+                            onTap: () => _snack('Good doggy! 🐶'),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: Image.network(
+                                _imageUrl!,
+                                height: 360,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, progress) =>
+                                    progress == null ? child : const SizedBox(height: 360, child: Center(child: CircularProgressIndicator())),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const SizedBox(height: 360, child: Center(child: Icon(Icons.error_outline_rounded, size: 48))),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink()),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
