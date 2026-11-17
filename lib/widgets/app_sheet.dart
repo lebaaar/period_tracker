@@ -113,6 +113,40 @@ Future<bool> showConfirm({
   return result ?? false;
 }
 
+/// Centred dialog, for prompts that interrupt (for example a permission request on first launch)
+/// instead of following something the user just tapped.
+Future<bool> showConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  required String confirmLabel,
+  String cancelLabel = 'Cancel',
+}) async {
+  final bool? result = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: dialogContext.text.titleLarge),
+            const SizedBox(height: 8),
+            Text(message, style: dialogContext.text.bodyMedium?.copyWith(color: dialogContext.colors.labelSecondary)),
+            const SizedBox(height: 24),
+            PrimaryButton(label: confirmLabel, onPressed: () => Navigator.of(dialogContext).pop(true)),
+            const SizedBox(height: 8),
+            PrimaryButton(label: cancelLabel, style: AppButtonStyle.quiet, onPressed: () => Navigator.of(dialogContext).pop(false)),
+          ],
+        ),
+      ),
+    ),
+  );
+  return result ?? false;
+}
+
 Future<void> showInfo({required BuildContext context, required String title, required String message, String buttonLabel = 'OK'}) {
   return showAppSheet<void>(
     context: context,

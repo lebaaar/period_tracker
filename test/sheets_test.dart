@@ -175,6 +175,36 @@ void panelTests() {
     expect(result, isFalse);
   });
 
+  testWidgets('confirm dialog is a centred modal (not a bottom panel) and resolves true / false', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
+    bool? result;
+    await tester.pumpWidget(
+      app((context) async {
+        result = await showConfirmDialog(context: context, title: 'Get reminders on time', message: 'Allow alarms.', confirmLabel: 'Open settings', cancelLabel: 'Not now');
+      }),
+    );
+
+    await tester.tap(find.text('open'));
+    await frames(tester);
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(find.byType(Dialog), findsOneWidget);
+    final double screenH = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    expect(tester.getCenter(find.byType(Dialog)).dy, closeTo(screenH / 2, 1));
+
+    await tester.tap(find.text('Open settings'));
+    await frames(tester);
+    expect(result, isTrue);
+
+    await tester.tap(find.text('open'));
+    await frames(tester);
+    await tester.tap(find.text('Not now'));
+    await frames(tester);
+    expect(result, isFalse);
+  });
+
   testWidgets('inputs inside a sheet are visibly different from the sheet surface', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3;

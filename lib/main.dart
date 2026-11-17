@@ -288,7 +288,7 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
     if (await NotificationService().canScheduleExact() || !mounted) return;
     _exactPromptShown = true;
 
-    final bool open = await showConfirm(
+    final bool open = await showConfirmDialog(
       context: context,
       title: 'Get reminders on time',
       message: 'To send your period reminders exactly on the day, allow "Alarms & reminders" for Period Tracker on the next screen.',
