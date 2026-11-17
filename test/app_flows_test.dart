@@ -486,6 +486,21 @@ void main() {
     );
   });
 
+  _flow('reminder time uses the Material time picker', (tester) async {
+    final _App app = await _launch(tester);
+    await _tap(tester, find.text('Settings'));
+    await _tap(tester, find.text('9:03'));
+    expect(find.byType(TimePickerDialog), findsOneWidget);
+    expect(find.text('Reminder time'), findsOneWidget);
+    expect(find.byType(BottomSheet), findsNothing);
+
+    app.calls.notifications.clear();
+    await _tap(tester, find.text('OK'));
+    expect(find.byType(TimePickerDialog), findsNothing);
+    expect(app.settings.settings!.notificationTime, const TimeOfDay(hour: 9, minute: 3));
+    expect(app.calls.scheduled(), isNotEmpty);
+  });
+
   _flow('export backup from Settings', (tester) async {
     final _App app = await _launch(tester);
     await _tap(tester, find.text('Settings'));

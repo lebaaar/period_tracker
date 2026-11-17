@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart' show CupertinoDatePicker, CupertinoDatePickerMode, CupertinoTextThemeData, CupertinoTheme, CupertinoThemeData;
 import 'package:flutter/material.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:period_tracker/widgets/pressable.dart';
@@ -124,24 +123,17 @@ Future<bool> showConfirmDialog({
 }) async {
   final bool? result = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) => Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: dialogContext.text.titleLarge),
-            const SizedBox(height: 8),
-            Text(message, style: dialogContext.text.bodyMedium?.copyWith(color: dialogContext.colors.labelSecondary)),
-            const SizedBox(height: 24),
-            PrimaryButton(label: confirmLabel, onPressed: () => Navigator.of(dialogContext).pop(true)),
-            const SizedBox(height: 8),
-            PrimaryButton(label: cancelLabel, style: AppButtonStyle.quiet, onPressed: () => Navigator.of(dialogContext).pop(false)),
-          ],
+    builder: (dialogContext) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(cancelLabel)),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          style: TextButton.styleFrom(foregroundColor: dialogContext.colors.accent),
+          child: Text(confirmLabel),
         ),
-      ),
+      ],
     ),
   );
   return result ?? false;
@@ -224,37 +216,15 @@ Future<T?> showSelectSheet<T>({
 }
 
 /// 24-hour time wheel in a panel. Returns the time, or null if dismissed.
-Future<TimeOfDay?> showTimeSheet({required BuildContext context, required String title, String? message, required TimeOfDay initial}) async {
-  TimeOfDay value = initial;
-  bool saved = false;
-  await showAppSheet<void>(
+/// The platform's own time picker (Material dial on Android), in 24-hour format like the rest of the app.
+/// [message] is unused: the picker has no room for it, [title] becomes its heading.
+Future<TimeOfDay?> showTimeSheet({required BuildContext context, required String title, String? message, required TimeOfDay initial}) {
+  return showTimePicker(
     context: context,
-    title: title,
-    message: message,
-    actionLabel: 'Save',
-    onAction: () => saved = true,
-    builder: (sheetContext) {
-      final c = sheetContext.colors;
-      return CupertinoTheme(
-        data: CupertinoThemeData(
-          brightness: Theme.of(sheetContext).brightness,
-          textTheme: CupertinoTextThemeData(
-            dateTimePickerTextStyle: TextStyle(fontFamily: 'Inter', fontSize: 22, color: c.label),
-          ),
-        ),
-        child: SizedBox(
-          height: 180,
-          child: CupertinoDatePicker(
-            mode: CupertinoDatePickerMode.time,
-            use24hFormat: true,
-            initialDateTime: DateTime(2000, 1, 1, initial.hour, initial.minute),
-            onDateTimeChanged: (d) => value = TimeOfDay(hour: d.hour, minute: d.minute),
-          ),
-        ),
-      );
-    },
+    initialTime: initial,
+    helpText: title,
+    builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!),
   );
-  return saved ? value : null;
 }
 
 /// Single text field in a sheet. Returns the entered text, or null if dismissed.

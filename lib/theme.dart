@@ -291,6 +291,7 @@ ThemeData buildTheme(Brightness brightness) {
     timePickerTheme: TimePickerThemeData(
       backgroundColor: c.card,
       hourMinuteShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      hourMinuteTextStyle: const TextStyle(fontFamily: 'Inter', fontSize: 34, fontWeight: FontWeight.w500), // the default is 57sp, far too big
       dialHandColor: c.accent,
       dialBackgroundColor: c.background,
       hourMinuteColor: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.selected) ? c.accent : c.background),

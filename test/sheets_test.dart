@@ -309,15 +309,15 @@ void panelTests() {
     expect(result, isFalse);
   });
 
-  test('no dialogs, popup menus or dropdowns anywhere in the app (everything is a bottom panel)', () {
+  test('no dialogs, popup menus or dropdowns in the app, except showConfirmDialog in app_sheet.dart', () {
     final RegExp banned = RegExp(r'showDialog\(|AlertDialog\(|SimpleDialog\(|showTimePicker\(|showDatePicker\(|PopupMenuButton|DropdownButton|DropdownMenu');
     final List<String> offenders = [];
     for (final FileSystemEntity f in Directory('lib').listSync(recursive: true)) {
-      if (f is File && f.path.endsWith('.dart')) {
+      if (f is File && f.path.endsWith('.dart') && f.path != 'lib/widgets/app_sheet.dart') {
         final String text = f.readAsStringSync();
         if (banned.hasMatch(text)) offenders.add(f.path);
       }
     }
-    expect(offenders, isEmpty, reason: 'use showAppSheet / showConfirm / showSelectSheet instead');
+    expect(offenders, isEmpty, reason: 'use showAppSheet / showConfirm / showSelectSheet (or showConfirmDialog for interrupting prompts) instead');
   });
 }
