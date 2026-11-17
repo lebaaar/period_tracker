@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
 import 'package:period_tracker/enums/dog_breed.dart';
-import 'package:period_tracker/enums/email_type.dart';
-import 'package:period_tracker/exceptions/email_exception.dart';
+import 'package:period_tracker/enums/feedback_type.dart';
+import 'package:period_tracker/pages/feedback_page.dart';
 import 'package:period_tracker/services/animal_image_service.dart';
-import 'package:period_tracker/services/email_service.dart';
 import 'package:period_tracker/theme.dart';
 import 'package:period_tracker/widgets/app_sheet.dart';
 import 'package:period_tracker/widgets/large_title_scaffold.dart';
@@ -53,23 +53,11 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> openEmail() async {
-    try {
-      await EmailService.openEmail(EmailType.bugReport, kDogApiErrorCode);
-    } on EmailException catch (e) {
-      if (!mounted) return;
-      switch (e.errorCode) {
-        case kNoEmailAppErrorCode:
-          showInfo(context: context, title: 'No email app found', message: 'Install an email app to contact support.');
-          return;
-        case kUnknownErrorCode:
-          _snack('An error occurred while trying to open email app');
-          return;
-      }
-    } catch (_) {
-      if (!mounted) return;
-      _snack('An error occurred while trying to open email app');
-    }
+  void openFeedback() {
+    context.push(
+      '/feedback',
+      extra: const FeedbackArgs(type: FeedbackType.bugReport, errorCode: kDogApiErrorCode),
+    );
   }
 
   Future<void> _pickBreed() async {
@@ -144,7 +132,7 @@ class _AnimalGeneratorPageState extends State<AnimalGeneratorPage> {
                             style: context.text.bodyMedium?.copyWith(color: c.labelSecondary),
                           ),
                           const SizedBox(height: 16),
-                          PrimaryButton(label: 'Contact support', expand: false, style: AppButtonStyle.secondary, onPressed: openEmail),
+                          PrimaryButton(label: 'Report this issue', expand: false, style: AppButtonStyle.secondary, onPressed: openFeedback),
                         ],
                       ),
                     )

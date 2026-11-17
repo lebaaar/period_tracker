@@ -12,6 +12,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.2.1
   flutter_local_notifications: ^19.4.1
   go_router: ^16.0.0
   http: ^1.5.0
@@ -31,7 +32,6 @@ dependencies:
   sqflite: ^2.4.2
   table_calendar: ^3.2.0
   timezone: ^0.10.1
-  open_mail: ^1.2.0
   restart_app: ^1.3.2
   url_launcher: ^6.3.2
   flutter_timezone: ^5.1.1
@@ -59,6 +59,7 @@ flutter:
   # https://flutter.dev/to/resolution-aware-images
   # https://flutter.dev/to/asset-from-package
   assets:
+    - .env
     - assets/images/logo.png
     - assets/images/tutorials/transfer-profile-page.png
     - assets/images/tutorials/transfer-dialog.png

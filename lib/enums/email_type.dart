@@ -1,1 +1,0 @@
-enum EmailType { feedback, bugReport }

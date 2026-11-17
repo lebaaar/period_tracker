@@ -2,16 +2,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
-import 'package:period_tracker/enums/email_type.dart';
-import 'package:period_tracker/exceptions/email_exception.dart';
+import 'package:period_tracker/enums/feedback_type.dart';
 import 'package:period_tracker/models/period_model.dart';
 import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
+import 'package:period_tracker/pages/feedback_page.dart';
 import 'package:period_tracker/providers/period_provider.dart';
 import 'package:period_tracker/providers/settings_provider.dart';
 import 'package:period_tracker/providers/user_provider.dart';
 import 'package:period_tracker/services/application_data_service.dart';
-import 'package:period_tracker/services/email_service.dart';
 import 'package:period_tracker/services/notification_service.dart';
 import 'package:period_tracker/shared_preferences/shared_preferences.dart';
 import 'package:period_tracker/theme.dart';
@@ -207,29 +206,11 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
     }
   }
 
-  Future<void> openEmail() async {
-    try {
-      await EmailService.openEmail(EmailType.bugReport, kRestoreErrorCode, sharedFileContent: _sharedFileContent);
-    } on EmailException catch (e) {
-      if (!mounted) return;
-      switch (e.errorCode) {
-        case kNoEmailAppErrorCode:
-          showInfo(context: context, title: 'No email app found', message: 'Install an email app to contact support.');
-          return;
-        case kUnknownErrorCode:
-          _snack('An error occurred while trying to open email app');
-          return;
-      }
-    } catch (_) {
-      if (!mounted) return;
-      _snack('An error occurred while trying to open email app');
-    }
-  }
-
-  void _snack(String message) {
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void openFeedback() {
+    context.push(
+      '/feedback',
+      extra: FeedbackArgs(type: FeedbackType.bugReport, errorCode: kRestoreErrorCode, error: _error, sharedFileContent: _sharedFileContent),
+    );
   }
 
   @override
@@ -281,10 +262,10 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
           PrimaryButton(label: 'Exit restore', onPressed: () => context.go(exitRoute)),
           const SizedBox(height: 4),
           Pressable(
-            onTap: openEmail,
+            onTap: openFeedback,
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Text('Contact support', style: context.text.titleSmall?.copyWith(color: c.labelSecondary)),
+              child: Text('Report this issue', style: context.text.titleSmall?.copyWith(color: c.labelSecondary)),
             ),
           ),
           Pressable(

@@ -120,9 +120,6 @@ class _LargeTitleScaffoldState extends State<LargeTitleScaffold> {
                   padding: EdgeInsets.only(top: top),
                   decoration: BoxDecoration(
                     color: c.background.withValues(alpha: hasBar ? 0.72 * collapse : 0),
-                    border: Border(
-                      bottom: BorderSide(color: c.hairline.withValues(alpha: hasBar ? collapse * 0.8 : 0), width: 0.5),
-                    ),
                   ),
                   child: Stack(
                     alignment: Alignment.center,

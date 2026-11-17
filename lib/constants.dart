@@ -62,19 +62,18 @@ const String kDefaultPartnerMessageHeading =
 // Error codes
 const String kRestoreErrorCode = "RESTORE_ERR";
 const String kDogApiErrorCode = "DOG_ERR";
-const String kNoEmailAppErrorCode = "NO_EMAIL_APP_ERR";
+const String kNetworkErrorCode = "NETWORK_ERR";
+const String kFeedbackNotConfiguredErrorCode = "FEEDBACK_NOT_CONFIGURED_ERR";
 const String kUnknownErrorCode = "UNKNOWN_ERR";
 
-// Emails
-const String kFeedbackEmailSubject = 'Period Tracker Feedback';
-const String kBugReportEmailSubject = 'Issue with Period Tracker';
+// Feedback (Discord webhook URL is read from .env)
+const String kDiscordWebhookEnvKey = 'DISCORD_WEBHOOK_URL';
 
 // APIs
 const String kDogApiBase = 'https://dog.ceo/api/breed';
 const String kCatApiBase = 'https://api.thecatapi.com';
 
 // Contact
-const String kContactEmail = 'periodtracker@lan.si';
 const String kKofiUrl = 'https://ko-fi.com/lebaaar';
 const String kGitHubUrl = 'https://github.com/lebaaar/period_tracker';
 const String kGooglePlayStoreUrl =

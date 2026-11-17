@@ -2,15 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:period_tracker/constants.dart';
-import 'package:period_tracker/enums/email_type.dart';
-import 'package:period_tracker/exceptions/email_exception.dart';
-import 'package:period_tracker/services/email_service.dart';
 import 'package:period_tracker/providers/unlocks_provider.dart';
 import 'package:period_tracker/theme.dart';
-import 'package:period_tracker/widgets/app_sheet.dart';
 import 'package:period_tracker/widgets/grouped_section.dart';
 import 'package:period_tracker/widgets/large_title_scaffold.dart';
 import 'package:provider/provider.dart';
@@ -70,25 +67,6 @@ class _AboutPageState extends State<AboutPage> {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> openEmail(EmailType emailType) async {
-    try {
-      await EmailService.openEmail(emailType, null);
-    } on EmailException catch (e) {
-      if (!mounted) return;
-      switch (e.errorCode) {
-        case kNoEmailAppErrorCode:
-          showInfo(context: context, title: 'No email app found', message: 'Install an email app to contact support.');
-          return;
-        case kUnknownErrorCode:
-          _snack('An error occurred while trying to open email app');
-          return;
-      }
-    } catch (_) {
-      if (!mounted) return;
-      _snack('An error occurred while trying to open email app');
-    }
   }
 
   Future<void> _openPlayStore() async {
@@ -196,12 +174,11 @@ class _AboutPageState extends State<AboutPage> {
             header: 'Support',
             children: [
               GroupedRow(
-                icon: Icons.mail_outline_rounded,
-                title: 'Contact developer',
-                subtitle: 'Questions or suggestions',
-                onTap: () => openEmail(EmailType.feedback),
+                icon: Icons.chat_bubble_outline_rounded,
+                title: 'Feedback',
+                subtitle: 'Feedback, feature requests and bug reports',
+                onTap: () => context.push('/feedback'),
               ),
-              GroupedRow(icon: Icons.bug_report_outlined, title: 'Report a bug', subtitle: 'Help improve the app', onTap: () => openEmail(EmailType.bugReport)),
               GroupedRow(
                 icon: Icons.star_outline_rounded,
                 title: 'Rate Period Tracker',

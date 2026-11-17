@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:period_tracker/constants.dart';
@@ -11,6 +12,7 @@ import 'package:period_tracker/models/settings_model.dart';
 import 'package:period_tracker/models/user_model.dart';
 import 'package:period_tracker/pages/about_page.dart';
 import 'package:period_tracker/pages/animal_generator_page.dart';
+import 'package:period_tracker/pages/feedback_page.dart';
 import 'package:period_tracker/pages/notifications_page.dart';
 import 'package:period_tracker/pages/onboarding_restore_data_page.dart';
 import 'package:period_tracker/pages/onboarding_screen.dart';
@@ -38,6 +40,12 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterL
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await dotenv.load();
+  } catch (_) {
+    // missing .env: feedback submission reports it as not configured
+  }
 
   await NotificationService().init();
 
@@ -165,6 +173,10 @@ class _PeriodTrackerAppState extends State<PeriodTrackerApp> {
               },
             ),
           ],
+        ),
+        GoRoute(
+          path: '/feedback',
+          builder: (context, state) => FeedbackPage(args: state.extra is FeedbackArgs ? state.extra as FeedbackArgs : const FeedbackArgs()),
         ),
         GoRoute(
           path: '/onboarding',
