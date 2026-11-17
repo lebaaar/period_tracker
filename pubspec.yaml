@@ -10,15 +10,17 @@ environment:
 # `flutter pub upgrade --major-versions` - upgrade package dependencies to the latest versions
 # `flutter pub outdated` - see dependencies with newer versions available.
 dependencies:
+  clock: ^1.1.3
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.2.1
   flutter_local_notifications: ^19.4.1
+  flutter_timezone: ^5.1.1
   go_router: ^16.0.0
   http: ^1.5.0
+  in_app_update: ^4.2.5
   intl: ^0.20.2
   intl_phone_field: ^3.2.0
-  in_app_update: ^4.2.5
   package_info_plus: ^9.0.0
   path: ^1.9.1
   path_provider: ^2.1.5
@@ -27,19 +29,19 @@ dependencies:
     git:
       url: https://github.com/KasemJaffer/receive_sharing_intent
       ref: 2cea396843cd3ab1b5ec4334be4233864637874e
+  restart_app: ^1.3.2
   share_plus: ^12.0.0
   shared_preferences: ^2.5.3
   sqflite: ^2.4.2
   table_calendar: ^3.2.0
   timezone: ^0.10.1
-  restart_app: ^1.3.2
   url_launcher: ^6.3.2
-  flutter_timezone: ^5.1.1
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  sqflite_common_ffi: ^2.4.7
 flutter:
   uses-material-design: true
 

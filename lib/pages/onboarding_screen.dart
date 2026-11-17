@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -287,9 +288,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Container(
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(20)),
               child: CalendarDatePicker(
-                initialDate: _lastPeriodDate ?? DateTime.now(),
+                initialDate: _lastPeriodDate ?? clock.now(),
                 firstDate: kFirstCalendarDay,
-                lastDate: DateTime.now(),
+                lastDate: clock.now(),
                 onDateChanged: (picked) => setState(() => _lastPeriodDate = picked),
               ),
             ),

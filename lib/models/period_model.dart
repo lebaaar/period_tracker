@@ -1,10 +1,17 @@
+import 'package:period_tracker/utils/date_time_helper.dart';
+
+/// A logged period. Dates are calendar days: always stored as UTC midnight, so there is no
+/// time-of-day or timezone drift. Older data (UTC or local timestamps) is normalised on read
+/// by keeping the calendar day it was written with, so no database migration is needed.
 class Period {
   final int? id;
   final DateTime startDate;
   final DateTime? endDate;
   final String? notes;
 
-  Period({this.id, required this.startDate, this.endDate, this.notes});
+  Period({this.id, required DateTime startDate, DateTime? endDate, this.notes})
+    : startDate = DateTimeHelper.stripTime(startDate),
+      endDate = endDate == null ? null : DateTimeHelper.stripTime(endDate);
 
   bool get isOngoing => endDate == null;
   bool get isCompleted => endDate != null;

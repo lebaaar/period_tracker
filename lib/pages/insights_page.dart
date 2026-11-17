@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -105,7 +106,7 @@ class _InsightsPageState extends State<InsightsPage> {
     return '$start – ${DateFormat('d MMM yyyy').format(p.endDate!)}';
   }
 
-  void _logPeriod() => context.go('/log?isEditing=false&focusedDay=${Uri.encodeComponent(DateTime.now().toIso8601String())}');
+  void _logPeriod() => context.go('/log?isEditing=false&focusedDay=${Uri.encodeComponent(clock.now().toIso8601String())}');
 
   Future<void> _pickSort() async {
     final SortOption? picked = await showSelectSheet<SortOption>(

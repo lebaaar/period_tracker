@@ -64,8 +64,8 @@ class PeriodService {
     Period? period;
     for (final Period p in periods) {
       final DateTime periodStart = DateTime.utc(p.startDate.year, p.startDate.month, p.startDate.day);
-      // hardcoded period.endDate! - no support for ongoing periods in v1
-      final DateTime periodEnd = DateTime.utc(p.endDate!.year, p.endDate!.month, p.endDate!.day);
+      final DateTime end = p.endDate ?? p.startDate;
+      final DateTime periodEnd = DateTime.utc(end.year, end.month, end.day);
 
       if (checkDate.isAtSameMomentAs(periodStart) ||
           checkDate.isAtSameMomentAs(periodEnd) ||

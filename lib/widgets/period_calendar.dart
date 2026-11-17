@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:period_tracker/models/period_model.dart';
@@ -99,7 +100,7 @@ class _PeriodCalendarState extends State<PeriodCalendar> {
     final c = context.colors;
     final _Run? run = _runOf(day);
     final bool selected = widget.selectedDay != null && isSameDay(widget.selectedDay, day);
-    final bool today = isSameDay(day, DateTime.now());
+    final bool today = isSameDay(day, clock.now());
 
     final bool roundLeft = run != null && (run.isStart || day.weekday == DateTime.monday || day.day == 1);
     final bool roundRight = run != null && (run.isEnd || day.weekday == DateTime.sunday || DateTimeHelper.isLastDayOfMonth(day));
@@ -210,7 +211,7 @@ class _PeriodCalendarState extends State<PeriodCalendar> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final DateTime now = DateTime.now();
+    final DateTime now = clock.now();
     final bool onCurrentMonth = _focused.year == now.year && _focused.month == now.month;
     Widget builder(BuildContext ctx, DateTime day, DateTime focused) => _cell(ctx, day);
 
@@ -235,7 +236,7 @@ class _PeriodCalendarState extends State<PeriodCalendar> {
                 ),
                 if (!onCurrentMonth)
                   Pressable(
-                    onTap: () => setState(() => _focused = DateTime.now()),
+                    onTap: () => setState(() => _focused = clock.now()),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       child: Text('Today', style: context.text.titleSmall?.copyWith(color: c.labelSecondary)),

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -71,9 +72,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       return;
     }
 
-    final DateTime now = DateTime.now();
-    final DateTime rangeStartCheck = DateTime.utc(_rangeStart!.year, _rangeStart!.month, _rangeStart!.day);
-    final DateTime checkDate = DateTime.utc(now.year, now.month, now.day);
+    final DateTime now = clock.now();
+    final DateTime rangeStartCheck = DateTimeHelper.stripTime(_rangeStart!);
+    final DateTime checkDate = DateTimeHelper.stripTime(now);
 
     // Check if period is in the future
     final bool isInFuture = rangeStartCheck.isAfter(checkDate);
@@ -163,7 +164,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     _notesController = TextEditingController();
     _scrollController = ScrollController();
     _notesFocusNode = FocusNode();
-    _today = DateTime.now();
+    _today = clock.now();
 
     _notesFocusNode.addListener(() {
       if (!_notesFocusNode.hasFocus) {
@@ -171,8 +172,9 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       }
     });
 
-    _focusedDay = widget.focusedDay ?? _today;
-    _rangeStart = widget.focusedDay ?? _today;
+    final DateTime startDay = DateTimeHelper.stripTime(widget.focusedDay ?? _today);
+    _focusedDay = startDay;
+    _rangeStart = startDay;
     if (isEditing && period != null) {
       _rangeStart = period!.startDate;
       _rangeEnd = period!.endDate;
@@ -297,8 +299,8 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
                 rangeStart: _rangeStart,
                 rangeEnd: _rangeEnd,
                 onRangeSelected: (start, end) => setState(() {
-                  _rangeStart = start;
-                  _rangeEnd = end;
+                  _rangeStart = start == null ? null : DateTimeHelper.stripTime(start);
+                  _rangeEnd = end == null ? null : DateTimeHelper.stripTime(end);
                 }),
               ),
             ),

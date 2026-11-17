@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -30,12 +31,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  DateTime _selectedDay = DateTime.now();
+  DateTime _selectedDay = clock.now();
 
   DateTime _utc(DateTime d) => DateTime.utc(d.year, d.month, d.day);
 
   void _openLog(Period? period) {
-    final DateTime now = DateTime.now();
+    final DateTime now = clock.now();
     // Future start dates are rejected, so open on today.
     final DateTime day = period == null && _utc(_selectedDay).isAfter(_utc(now)) ? now : _selectedDay;
     final String focused = Uri.encodeComponent(day.toIso8601String());
@@ -58,7 +59,7 @@ class _HomePageState extends State<HomePage> {
     final List<DateTime> predicted = periodProvider.getNext3PeriodDates(dynamicMode, user?.cycleLength);
     final DateTime? nextPeriodDate = predicted.isNotEmpty ? predicted.first : null;
     final int periodLength = user?.periodLength ?? kDefaultPeriodLength;
-    final DateTime today = _utc(DateTime.now());
+    final DateTime today = _utc(clock.now());
     final _CycleStatus status = _CycleStatus.compute(
       context: context,
       periods: periods,
