@@ -25,7 +25,7 @@ class ApplicationDataService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     await DatabaseService().truncateDatabaseTables();
-    setOnboardingValue(false);
+    await setOnboardingValue(false);
     final directory = await getApplicationCacheDirectory();
     if (await directory.exists()) {
       await directory.delete(recursive: true);
@@ -110,13 +110,13 @@ class ApplicationDataService {
 
       // Load database data
       final Map<String, dynamic> database = backupData['database'];
-      final User user = User.fromMap(database['user'] as Map<String, dynamic>);
+      final Map<String, dynamic>? userMap = database['user'] as Map<String, dynamic>?;
       final Settings settings = Settings.fromMap(database['settings'] as Map<String, dynamic>);
       final List<dynamic> periodsList = database['periods'] as List<dynamic>;
       final List<Period> periods = periodsList.map((periodMap) => Period.fromMap(periodMap as Map<String, dynamic>)).toList();
 
       // Restore user data
-      await databaseService.insertUser(user);
+      if (userMap != null) await databaseService.insertUser(User.fromMap(userMap));
 
       // Restore settings data
       await databaseService.insertSettings(settings);
@@ -127,24 +127,24 @@ class ApplicationDataService {
       }
 
       // Restore shared preferences data
-      final Map<String, dynamic> sharedPrefsData = backupData['sharedPreferences'] as Map<String, dynamic>;
-
-      if (backupData['sharedPreferences'] == null) {
-        return true;
-      }
+      final Map<String, dynamic>? sharedPrefsData = backupData['sharedPreferences'] as Map<String, dynamic>?;
+      if (sharedPrefsData == null) return true;
 
       for (final MapEntry<String, dynamic> entry in sharedPrefsData.entries) {
         final String key = entry.key;
         final dynamic value = entry.value;
         switch (key) {
           case 'onboarding_complete':
-            setOnboardingValue(value as bool);
+            await setOnboardingValue(value as bool);
             break;
           case 'display_version_details':
-            setDisplayVersionDetailsValue(value as bool);
+            await setDisplayVersionDetailsValue(value as bool);
+            break;
+          case 'theme_mode':
+            await setThemeModeValue(value as String);
             break;
           case 'animal_generator_unlocked':
-            setAnimalGeneratorUnlockedValue(value as bool);
+            await setAnimalGeneratorUnlockedValue(value as bool);
             break;
           default:
             continue;

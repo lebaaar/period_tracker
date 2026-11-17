@@ -218,7 +218,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _toggleNotifications(User user, Settings settings, bool value) async {
     final SettingsProvider provider = context.read<SettingsProvider>();
     final DateTime? next = context.read<PeriodProvider>().getNextPeriodDate(settings.predictionMode == 'dynamic', user.cycleLength);
-    provider.setNotificationEnabled(value);
+    await provider.setNotificationEnabled(value);
     if (value) {
       await NotificationService().scheduleNotificationsForNextPeriod(next, settings.notificationDaysBefore, settings.notificationTime);
     } else {

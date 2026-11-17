@@ -126,7 +126,7 @@ class _RestoreDataPreviewPageState extends State<RestoreDataPreviewPage> {
       setState(() {
         _sharedFileContent = _sharedFileContent!;
         _loading = false;
-        _name = _sharedFileContent!['database']['user']['name'];
+        _name = (_sharedFileContent!['database']['user'] as Map<String, dynamic>?)?['name'] as String?;
         _periods = (_sharedFileContent!['database']['periods']).map((e) => Period.fromMap(e as Map<String, dynamic>)).toList();
       });
 
