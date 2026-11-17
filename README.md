@@ -13,7 +13,7 @@ Built for my girlfriend, who just wanted to track her cycle without annoying ads
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/960px-Google_Play_Store_badge_EN.svg.png" height="48" alt="Get it on Google Play">
   </a>
   &nbsp;
-  <a href="https://raw.githubusercontent.com/lebaaar/period_tracker/main/download/app-release.apk">
+  <a href="https://github.com/lebaaar/period_tracker/releases/latest/download/app-release.apk">
     <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android&logoColor=white" height="36" alt="Download APK">
   </a>
   <br>
